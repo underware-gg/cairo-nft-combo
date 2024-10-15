@@ -78,7 +78,7 @@ const TOKEN_ID_3: u256 = 3;
 const TOKEN_ID_4: u256 = 4;
 const TOKEN_ID_5: u256 = 5;
 
-fn setup_uninitialized(fee_amount: u256) -> (IWorldDispatcher, ICharacterDispatcher) {
+fn setup_uninitialized() -> (IWorldDispatcher, ICharacterDispatcher) {
     testing::set_block_number(1);
     testing::set_block_timestamp(1);
     let mut world = spawn_test_world(
@@ -99,8 +99,8 @@ fn setup_uninitialized(fee_amount: u256) -> (IWorldDispatcher, ICharacterDispatc
     (world, token)
 }
 
-fn setup(fee_amount: u256) -> (IWorldDispatcher, ICharacterDispatcher) {
-    let (mut world, mut token) = setup_uninitialized(fee_amount);
+fn setup() -> (IWorldDispatcher, ICharacterDispatcher) {
+    let (mut world, mut token) = setup_uninitialized();
 
     // initialize contracts
     mint(token, OWNER(), TOKEN_ID_1);
@@ -123,7 +123,7 @@ fn mint(token: ICharacterDispatcher, recipient: ContractAddress, token_id: u256)
 
 #[test]
 fn test_initializer() {
-    let (_world, mut token) = setup(100);
+    let (_world, mut token) = setup();
 println!("NAME: [{}]", token.name());
 println!("SYMBOL: [{}]", token.symbol());
     // assert(token.name() == "Sample Character", 'Name is wrong');
@@ -153,54 +153,24 @@ println!("SYMBOL: [{}]", token.symbol());
     // assert(token.supports_interface(interface::IERC721_ENUMERABLE_ID) == true, 'should support ENUMERABLE');
 }
 
-// #[test]
-// fn test_token_uri() {
-//     let (mut world, mut token) = setup(100);
+#[test]
+fn test_token_uri() {
+    let (mut _world, mut token) = setup();
 
-//     let duelist = Duelist {
-//         duelist_id: TOKEN_ID_1.low,
-//         name: 'Ser Walker',
-//         profile_pic_type: ProfilePicType::Duelist,
-//         profile_pic_uri: "1",
-//         timestamp: 999999,
-//         score: Score {
-//             honour: 99,
-//             level_villain: 0,
-//             level_trickster: 0,
-//             level_lord: 91,
-//             total_duels: 6,
-//             total_wins: 3,
-//             total_losses: 2,
-//             total_draws: 1,
-//             honour_history: 0,
-//         },
-//     };
-//     let scoreboard: Scoreboard = Scoreboard{
-//         table_id: TABLES::LORDS,
-//         duelist_id: TOKEN_ID_1.low,
-//         score: duelist.score,
-//         wager_won: (1000 * CONST::ETH_TO_WEI.low),
-//         wager_lost: (200 * CONST::ETH_TO_WEI.low),
-//     };
-
-//     tester::set_Duelist(world, duelist);
-//     tester::set_Scoreboard(world, scoreboard);
-
-//     let uri_1 = token.token_uri(TOKEN_ID_1);
-//     let uri_2 = token.token_uri(TOKEN_ID_2);
+    let uri_1 = token.token_uri(TOKEN_ID_1);
+    // let uri_2 = token.token_uri(TOKEN_ID_2);
     
-//     println!("{}", uri_1);
-//     println!("{}", uri_2);
+    println!("token_uri(1): {}", uri_1);
+    // println!("token_uri(2): {}", uri_2);
 
-//     assert(uri_1[0] == '{', 'Uri 1 should not be empty');
-//     assert(uri_2[0] == '{', 'Uri 2 should not be empty');
-//     // assert(uri_1.len() > uri_2.len(), 'uri_1 > uri_2');
-// }
+    assert(uri_1[0] == '{', 'Uri 1 should not be empty');
+    // assert(uri_2[0] == '{', 'Uri 2 should not be empty');
+}
 
 #[test]
 #[should_panic(expected: ('ERC721: invalid token ID', 'ENTRYPOINT_FAILED'))]
 fn test_token_uri_invalid() {
-    let (_world, mut token) = setup(100);
+    let (_world, mut token) = setup();
     token.token_uri(999);
 }
 
@@ -211,7 +181,7 @@ fn test_token_uri_invalid() {
 
 #[test]
 fn test_approve() {
-    let (world, mut token) = setup(100);
+    let (world, mut token) = setup();
 
     utils::impersonate(OWNER(),);
 
@@ -230,7 +200,7 @@ fn test_approve() {
 
 #[test]
 fn test_transfer_from() {
-    let (world, mut token) = setup(100);
+    let (world, mut token) = setup();
 
     utils::impersonate(OWNER(),);
     token.approve(SPENDER(), TOKEN_ID_1);
@@ -257,7 +227,7 @@ fn test_transfer_from() {
 
 #[test]
 fn test_mint_free() {
-    let (_world, mut token) = setup(0);
+    let (_world, mut token) = setup();
     // assert(token.total_supply() == 2, 'invalid total_supply init');
     assert(token.balance_of(RECIPIENT()) == 1, 'invalid balance_of');
     // assert(token.token_of_owner_by_index(RECIPIENT(), 0) == TOKEN_ID_2, 'token_of_owner_by_index_2');
@@ -269,7 +239,7 @@ fn test_mint_free() {
 
 #[test]
 fn test_mint() {
-    let (_world, mut token) = setup(100);
+    let (_world, mut token) = setup();
     // assert(token.total_supply() == 2, 'invalid total_supply init');
     mint(token, RECIPIENT(), TOKEN_ID_3);
     assert(token.balance_of(RECIPIENT()) == 2, 'invalid balance_of');
@@ -280,7 +250,7 @@ fn test_mint() {
 // #[should_panic(expected: ('ERC721: no allowance', 'ENTRYPOINT_FAILED'))]
 // fn test_mint_no_allowance() {
 //     // TODO: this...
-//     // let (_world, mut token) = setup(100);
+//     // let (_world, mut token) = setup();
 //     // token.token_uri(999);
 // }
 
@@ -290,7 +260,7 @@ fn test_mint() {
 
 // #[test]
 // fn test_burn() {
-//     let (_world, mut token) = setup(100);
+//     let (_world, mut token) = setup();
 //     assert(token.total_supply() == 2, 'invalid total_supply init');
 //     assert(token.balance_of(OWNER()) == 1, 'invalid balance_of (1)');
 //     token.delete_duelist(TOKEN_ID_1.low);
