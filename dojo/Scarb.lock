@@ -7,8 +7,80 @@ version = "1.0.0-alpha.4"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.16#3b3a78cd8239ca2ee524c49c83f36db4d79cb4bc"
 
 [[package]]
+name = "openzeppelin_access"
+version = "0.15.1"
+dependencies = [
+ "openzeppelin_introspection",
+ "openzeppelin_utils",
+]
+
+[[package]]
+name = "openzeppelin_account"
+version = "0.15.1"
+dependencies = [
+ "openzeppelin_introspection",
+ "openzeppelin_utils",
+]
+
+[[package]]
+name = "openzeppelin_governance"
+version = "0.15.1"
+dependencies = [
+ "openzeppelin_access",
+ "openzeppelin_introspection",
+]
+
+[[package]]
+name = "openzeppelin_introspection"
+version = "0.15.1"
+
+[[package]]
+name = "openzeppelin_test_common"
+version = "0.15.1"
+dependencies = [
+ "openzeppelin_access",
+ "openzeppelin_account",
+ "openzeppelin_testing",
+ "openzeppelin_token",
+ "openzeppelin_upgrades",
+ "openzeppelin_utils",
+ "snforge_std",
+]
+
+[[package]]
+name = "openzeppelin_testing"
+version = "0.15.1"
+dependencies = [
+ "snforge_std",
+]
+
+[[package]]
+name = "openzeppelin_token"
+version = "0.15.1"
+dependencies = [
+ "openzeppelin_account",
+ "openzeppelin_governance",
+ "openzeppelin_introspection",
+]
+
+[[package]]
+name = "openzeppelin_upgrades"
+version = "0.15.1"
+
+[[package]]
+name = "openzeppelin_utils"
+version = "0.15.1"
+
+[[package]]
 name = "oz_token"
 version = "0.1.0"
 dependencies = [
  "dojo",
+ "openzeppelin_test_common",
+ "openzeppelin_token",
 ]
+
+[[package]]
+name = "snforge_std"
+version = "0.26.0"
+source = "git+https://github.com/foundry-rs/starknet-foundry.git?tag=v0.26.0#50eb589db65e113efe4f09241feb59b574228c7e"
