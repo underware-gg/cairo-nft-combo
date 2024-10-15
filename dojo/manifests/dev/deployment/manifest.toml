@@ -1,0 +1,167 @@
+[world]
+kind = "WorldContract"
+class_hash = "0x6f38d5d9507c5d9546290e1a27e309efe5a9af3770b6cc1627db4a1b90a7dce"
+original_class_hash = "0x6f38d5d9507c5d9546290e1a27e309efe5a9af3770b6cc1627db4a1b90a7dce"
+abi = "manifests/dev/deployment/abis/dojo-world.json"
+address = "0x13b08a38159ca43e35c4931251339ca889c0e9012be3f5a3274239717bf560a"
+transaction_hash = "0x3b787dca730b20a51bf83b269805b7439cbd3b09ad7921e305fa929a60a2452"
+block_number = 3
+seed = "oz_token"
+manifest_name = "dojo-world"
+
+[world.metadata]
+profile_name = "dev"
+rpc_url = "http://localhost:5050/"
+
+[base]
+kind = "Class"
+class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+original_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+abi = "manifests/dev/deployment/abis/dojo-base.json"
+tag = "dojo-base"
+manifest_name = "dojo-base"
+
+[[contracts]]
+kind = "DojoContract"
+address = "0x32a9d8110999c03ed3d39a06087423699e9a9c9738444c87984966bc3e5d68b"
+class_hash = "0x57f6a4854544a4966bbe3a802b7fdf3b1cca2fe9426f670596fbee04b431caa"
+original_class_hash = "0x57f6a4854544a4966bbe3a802b7fdf3b1cca2fe9426f670596fbee04b431caa"
+base_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+abi = "manifests/dev/deployment/abis/contracts/oz_token-actions-63d87cac.json"
+reads = []
+writes = [
+    "oz_token-Moves",
+    "oz_token-Position",
+    "oz_token-DirectionsAvailable",
+]
+init_calldata = []
+tag = "oz_token-actions"
+systems = [
+    "spawn",
+    "move",
+]
+manifest_name = "oz_token-actions-63d87cac"
+
+[[contracts]]
+kind = "DojoContract"
+address = "0x2037ffbff6c96e5aba4f71c05bbe08acdeca0e5da39fc9ca46912b48e53186a"
+class_hash = "0x62fd548b8f2d65f361f7642e4544235626e37af86674e2d18c1253d5fc5fcac"
+original_class_hash = "0x62fd548b8f2d65f361f7642e4544235626e37af86674e2d18c1253d5fc5fcac"
+base_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+abi = "manifests/dev/deployment/abis/contracts/oz_token-character-7e2ce6f5.json"
+reads = []
+writes = ["oz_token-TokenConfig"]
+init_calldata = []
+tag = "oz_token-character"
+systems = ["mint"]
+manifest_name = "oz_token-character-7e2ce6f5"
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x5feff6da881f2decb37d907b53122f72dc46f6c7399b1d50707dcf7a30d47d5"
+original_class_hash = "0x5feff6da881f2decb37d907b53122f72dc46f6c7399b1d50707dcf7a30d47d5"
+abi = "manifests/dev/deployment/abis/models/oz_token-DirectionsAvailable-3f68cee5.json"
+tag = "oz_token-DirectionsAvailable"
+qualified_path = "oz_token::models::starter::directions_available"
+manifest_name = "oz_token-DirectionsAvailable-3f68cee5"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "directions"
+type = "Array<Direction>"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x7d0490d3c4aeacbbe1dc3f42373e86335e20b17e250450b7b6d7e575801e512"
+original_class_hash = "0x7d0490d3c4aeacbbe1dc3f42373e86335e20b17e250450b7b6d7e575801e512"
+abi = "manifests/dev/deployment/abis/models/oz_token-Moved-1b1986db.json"
+tag = "oz_token-Moved"
+qualified_path = "oz_token::systems::actions::actions::moved"
+manifest_name = "oz_token-Moved-1b1986db"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "direction"
+type = "Direction"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x745de43654dd5f5a81fad851d4ae847d81dd961a8533efefea16bff7240040"
+original_class_hash = "0x745de43654dd5f5a81fad851d4ae847d81dd961a8533efefea16bff7240040"
+abi = "manifests/dev/deployment/abis/models/oz_token-Moves-3696545e.json"
+tag = "oz_token-Moves"
+qualified_path = "oz_token::models::starter::moves"
+manifest_name = "oz_token-Moves-3696545e"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "remaining"
+type = "u8"
+key = false
+
+[[models.members]]
+name = "last_direction"
+type = "Direction"
+key = false
+
+[[models.members]]
+name = "can_move"
+type = "bool"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x774ac049af9670baf998cea70b1a1ffa4de397a143c9325996a1d67438c15e5"
+original_class_hash = "0x774ac049af9670baf998cea70b1a1ffa4de397a143c9325996a1d67438c15e5"
+abi = "manifests/dev/deployment/abis/models/oz_token-Position-1aa9ff02.json"
+tag = "oz_token-Position"
+qualified_path = "oz_token::models::starter::position"
+manifest_name = "oz_token-Position-1aa9ff02"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "vec"
+type = "Vec2"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x352aa08044c723f2fa44ab23d772ccca470e95a928a4fc2fabc11122a5b3c11"
+original_class_hash = "0x352aa08044c723f2fa44ab23d772ccca470e95a928a4fc2fabc11122a5b3c11"
+abi = "manifests/dev/deployment/abis/models/oz_token-TokenConfig-2d52d04c.json"
+tag = "oz_token-TokenConfig"
+qualified_path = "oz_token::models::token_config::token_config"
+manifest_name = "oz_token-TokenConfig-2d52d04c"
+
+[[models.members]]
+name = "token_address"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "minter_contract"
+type = "ContractAddress"
+key = false
+
+[[models.members]]
+name = "minted_count"
+type = "u128"
+key = false

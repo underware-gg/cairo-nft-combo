@@ -1,0 +1,27 @@
+kind = "DojoModel"
+class_hash = "0x745de43654dd5f5a81fad851d4ae847d81dd961a8533efefea16bff7240040"
+original_class_hash = "0x745de43654dd5f5a81fad851d4ae847d81dd961a8533efefea16bff7240040"
+abi = "manifests/dev/base/abis/models/oz_token-Moves-3696545e.json"
+tag = "oz_token-Moves"
+qualified_path = "oz_token::models::starter::moves"
+manifest_name = "oz_token-Moves-3696545e"
+
+[[members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[members]]
+name = "remaining"
+type = "u8"
+key = false
+
+[[members]]
+name = "last_direction"
+type = "Direction"
+key = false
+
+[[members]]
+name = "can_move"
+type = "bool"
+key = false

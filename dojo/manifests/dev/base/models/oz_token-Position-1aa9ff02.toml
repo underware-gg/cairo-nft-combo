@@ -1,0 +1,17 @@
+kind = "DojoModel"
+class_hash = "0x774ac049af9670baf998cea70b1a1ffa4de397a143c9325996a1d67438c15e5"
+original_class_hash = "0x774ac049af9670baf998cea70b1a1ffa4de397a143c9325996a1d67438c15e5"
+abi = "manifests/dev/base/abis/models/oz_token-Position-1aa9ff02.json"
+tag = "oz_token-Position"
+qualified_path = "oz_token::models::starter::position"
+manifest_name = "oz_token-Position-1aa9ff02"
+
+[[members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[members]]
+name = "vec"
+type = "Vec2"
+key = false

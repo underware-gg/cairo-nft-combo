@@ -1,0 +1,11 @@
+kind = "DojoContract"
+class_hash = "0x11e8e154fab01e1a44cad1c8bb876680a3505d6823216882fc17c9e9a875996"
+original_class_hash = "0x11e8e154fab01e1a44cad1c8bb876680a3505d6823216882fc17c9e9a875996"
+base_class_hash = "0x0"
+abi = "manifests/dev/base/abis/contracts/oz_token-character-7e2ce6f5.json"
+reads = []
+writes = []
+init_calldata = []
+tag = "oz_token-character"
+systems = ["mint"]
+manifest_name = "oz_token-character-7e2ce6f5"

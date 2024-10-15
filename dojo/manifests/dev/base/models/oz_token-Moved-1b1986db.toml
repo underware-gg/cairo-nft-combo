@@ -1,0 +1,17 @@
+kind = "DojoModel"
+class_hash = "0x7d0490d3c4aeacbbe1dc3f42373e86335e20b17e250450b7b6d7e575801e512"
+original_class_hash = "0x7d0490d3c4aeacbbe1dc3f42373e86335e20b17e250450b7b6d7e575801e512"
+abi = "manifests/dev/base/abis/models/oz_token-Moved-1b1986db.json"
+tag = "oz_token-Moved"
+qualified_path = "oz_token::systems::actions::actions::moved"
+manifest_name = "oz_token-Moved-1b1986db"
+
+[[members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[members]]
+name = "direction"
+type = "Direction"
+key = false
