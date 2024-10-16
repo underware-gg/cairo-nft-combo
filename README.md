@@ -6,8 +6,11 @@ Dojo OpenZeppelin ERC-721 Token sample
 
 | Project State                    | Memory Usage |
 |----------------------------------|--------------|
-| dojo_starter                     | 2.51 GB       |
-| added openzeppelin dependency    | 3.35 GB       |
+| dojo_starter                     | 2.51 GB      |
+| added openzeppelin dependency    | 3.35 GB      |
+| OZ erc721 implementation         | 9.13 GB      |
+| removed erc1155, erc20 from OZ   | 6.55 GB      |
+| removed erc1155 from OZ          | 7.16 GB      |
 
 
 
