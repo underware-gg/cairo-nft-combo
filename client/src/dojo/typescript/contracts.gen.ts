@@ -104,14 +104,14 @@ export async function setupWorld(provider: DojoProvider) {
 
         
         // Call the `balance_of` system with the specified Account and calldata
-        const balance_of = async (props: { account: Account, account: bigint }) => {
+        const balance_of = async (props: { account: Account, address: bigint }) => {
             try {
                 return await provider.execute(
                     props.account,
                     {
                         contractName: contract_name,
                         entrypoint: "balance_of",
-                        calldata: [props.account],
+                      calldata: [props.address],
                     },
                     "oz_token"
                 );
@@ -144,7 +144,7 @@ export async function setupWorld(provider: DojoProvider) {
 
     
         // Call the `safe_transfer_from` system with the specified Account and calldata
-        const safe_transfer_from = async (props: { account: Account, from: bigint, to: bigint, token_id: models.U256, data: RecsType.BigIntArray }) => {
+        const safe_transfer_from = async (props: { account: Account, from: bigint, to: bigint, token_id: models.U256, data: bigint[] }) => {
             try {
                 return await provider.execute(
                     props.account,
@@ -352,14 +352,14 @@ export async function setupWorld(provider: DojoProvider) {
 
     
         // Call the `balanceOf` system with the specified Account and calldata
-        const balanceOf = async (props: { account: Account, account: bigint }) => {
+        const balanceOf = async (props: { account: Account, address: bigint }) => {
             try {
                 return await provider.execute(
                     props.account,
                     {
                         contractName: contract_name,
                         entrypoint: "balanceOf",
-                        calldata: [props.account],
+                      calldata: [props.address],
                     },
                     "oz_token"
                 );
@@ -392,7 +392,7 @@ export async function setupWorld(provider: DojoProvider) {
 
     
         // Call the `safeTransferFrom` system with the specified Account and calldata
-        const safeTransferFrom = async (props: { account: Account, from: bigint, to: bigint, tokenId: models.U256, data: RecsType.BigIntArray }) => {
+      const safeTransferFrom = async (props: { account: Account, from: bigint, to: bigint, tokenId: models.U256, data: bigint[] }) => {
             try {
                 return await provider.execute(
                     props.account,

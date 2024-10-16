@@ -99,6 +99,12 @@ export interface Position {
     vec: Vec2;
     
 }
+export const Vec2Definition = {
+  x: RecsType.Number,
+  y: RecsType.Number,
+
+};
+
 export const PositionDefinition = {
     player: RecsType.BigInt,
     vec: Vec2Definition,
@@ -111,11 +117,6 @@ export interface Vec2 {
     y: Number;
     
 }
-export const Vec2Definition = {
-    x: RecsType.Number,
-    y: RecsType.Number,
-    
-};
 
 
 // Type definition for `oz_token::models::token_config::TokenConfig` struct
@@ -132,6 +133,10 @@ export const TokenConfigDefinition = {
     
 };
 
+export interface U256 {
+  low: BigInt;
+  high: BigInt;
+}
 
 export function defineContractComponents(world: World) {
     return {
