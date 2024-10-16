@@ -2,4 +2,4 @@
 
 [book](https://book.dojoengine.org/)
 
-sozo build --typescript --manifest-path ../../../dojo/dojo-starter/Scarb.toml --bindings-output ./src
+sozo build --typescript --manifest-path ../dojo/Scarb.toml --bindings-output ./src/dojo
