@@ -7,7 +7,7 @@ mod tests {
     // import test utils
     use oz_token::{
         systems::{actions::{actions, IActionsDispatcher, IActionsDispatcherTrait}},
-        models::{{Position, Vec2, position, Moves, Direction, moves}}
+        models::starter::{{Position, Vec2, position, Moves, Direction, moves}}
     };
 
     #[test]

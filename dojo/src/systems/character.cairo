@@ -2,10 +2,9 @@ use starknet::{ContractAddress};
 use dojo::world::IWorldDispatcher;
 
 #[starknet::interface]
-trait ICharacter<TState> {
-    // Dojo
+pub trait ICharacter<TState> {
+    // IWorldProvider
     fn world(self: @TState,) -> IWorldDispatcher;
-    fn dojo_resource(ref self: TState) -> felt252;
 
     // ISRC5
     fn supports_interface(self: @TState, interface_id: felt252) -> bool;
@@ -34,24 +33,22 @@ trait ICharacter<TState> {
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
 
     // ITokenComponentPublic
-    fn mint(ref self: TState, recipient: ContractAddress, token_id: u256);
-    fn calc_price(self: @TState, recipient: ContractAddress) -> u256;
+    fn mint(ref self: TState, recipient: ContractAddress);
     fn render_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
 #[starknet::interface]
-trait ITokenComponentPublic<TState> {
-    fn mint(ref self: TState, recipient: ContractAddress, token_id: u256);
-    fn calc_price(self: @TState, recipient: ContractAddress) -> (ContractAddress, u256);
+pub trait ITokenComponentPublic<TState> {
+    fn mint(ref self: TState, recipient: ContractAddress);
     fn render_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
 #[starknet::interface]
-trait ITokenComponentInternal<TState> {
+pub trait ITokenComponentInternal<TState> {
 }
 
 #[dojo::contract]
-mod character {    
+pub mod character {    
     // use debug::PrintTrait;
     use core::byte_array::ByteArrayTrait;
     use starknet::{ContractAddress, get_contract_address, get_caller_address, get_block_timestamp};
@@ -63,18 +60,24 @@ mod character {
     // OpenZeppelin start
     //
     use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_token::erc721::{ERC721Component};    
+    use openzeppelin_token::erc721::{ERC721Component};
+    use oz_token::systems::components::erc721_hooks::{ERC721HooksImpl};
+    use oz_token::systems::components::token_component::{TokenComponent};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
+    component!(path: TokenComponent, storage: token, event: TokenEvent);
     #[abi(embed_v0)]
     impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
+    impl TokenInternalImpl = TokenComponent::InternalImpl<ContractState>;
     #[storage]
     struct Storage {
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
         src5: SRC5Component::Storage,
+        #[substorage(v0)]
+        token: TokenComponent::Storage,
     }
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -83,6 +86,8 @@ mod character {
         SRC5Event: SRC5Component::Event,
         #[flat]
         ERC721Event: ERC721Component::Event,
+        #[flat]
+        TokenEvent: TokenComponent::Event,
     }
     //
     // OpenZeppelin end
@@ -112,17 +117,7 @@ mod character {
             TOKEN_SYMBOL(),
             BASE_URI(),
         );
-
-        // let store: Store = StoreTrait::new(self.world());
-        // let token_config: TokenConfig = TokenConfig{
-        //     token_address: get_contract_address(),
-        //     minter_contract,
-        //     renderer_contract,
-        //     treasury_contract,
-        //     fee_contract,
-        //     fee_amount,
-        // };
-        // store.set_token_config(@token_config);
+        self.token.initialize(ZERO());
     }
 
 
@@ -132,48 +127,12 @@ mod character {
     use super::{ITokenComponentPublic};
     #[abi(embed_v0)]
     impl TokenComponentPublicImpl of ITokenComponentPublic<ContractState> {
-        fn mint(
-            ref self: ContractState,
-            recipient: ContractAddress,
-            token_id: u256,
-        ) {
-            self.erc721.mint(recipient, token_id);
-        }
-
-        fn calc_price(
-            self: @ContractState,
-            recipient: ContractAddress,
-        ) -> (ContractAddress, u256) {
-            // if (self.erc721.balance_of(recipient) == 0) {
-            //     (ZERO(), 0)
-            // } else {
-            //     let store = StoreTrait::new(self.world());
-            //     let token_config: TokenConfig = store.get_token_config(get_contract_address());
-            //     (token_config.fee_contract, token_config.fee_amount)
-            // }
-            (ZERO(), 0)
+        fn mint(ref self: ContractState, recipient: ContractAddress) {
+            self.token.mint(recipient);
         }
 
         fn render_uri(self: @ContractState, token_id: u256) -> ByteArray {
             format!("{{\"name\":\"{}\"}}", self.erc721._name())
-        }
-    }
-
-    //-----------------------------------
-    // Hooks
-    //
-    use super::{ICharacterDispatcher, ICharacterDispatcherTrait};
-    pub impl ERC721HooksImpl<TContractState> of ERC721Component::ERC721HooksTrait<TContractState> {
-        fn before_update(ref self: ERC721Component::ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
-        fn after_update(ref self: ERC721Component::ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
-        fn token_uri(
-            self: @ERC721Component::ComponentState<TContractState>,
-            base_uri: ByteArray,
-            token_id: u256,
-        ) -> ByteArray {
-            ICharacterDispatcher{
-                contract_address: get_contract_address()
-            }.render_uri(token_id)
         }
     }
 

@@ -11,6 +11,7 @@ use oz_token::tests::{
 use oz_token::systems::character::{
     character, ICharacterDispatcher, ICharacterDispatcherTrait,
 };
+use oz_token::models::token_config::{TokenConfig};
 
 use openzeppelin_token::erc721::interface;
 use openzeppelin_token::erc721::{
@@ -103,8 +104,8 @@ fn setup() -> (IWorldDispatcher, ICharacterDispatcher) {
     let (mut world, mut token) = setup_uninitialized();
 
     // initialize contracts
-    mint(token, OWNER(), TOKEN_ID_1);
-    mint(token, RECIPIENT(), TOKEN_ID_2);
+    _mint(token, OWNER());
+    _mint(token, RECIPIENT());
 
     // drop all events
     utils::drop_all_events(world.contract_address);
@@ -113,8 +114,13 @@ fn setup() -> (IWorldDispatcher, ICharacterDispatcher) {
     (world, token)
 }
 
-fn mint(token: ICharacterDispatcher, recipient: ContractAddress, token_id: u256) {
-    token.mint(recipient, token_id);
+fn _mint(token: ICharacterDispatcher, recipient: ContractAddress) {
+    token.mint(recipient);
+}
+
+fn _assert_minted_count(world: IWorldDispatcher, token: ICharacterDispatcher, minted_count: u128) {
+    let token_config: TokenConfig = get!(world, token.contract_address, TokenConfig);
+    assert(token_config.minted_count == minted_count, 'token_config.minted_count');
 }
 
 //
@@ -123,9 +129,10 @@ fn mint(token: ICharacterDispatcher, recipient: ContractAddress, token_id: u256)
 
 #[test]
 fn test_initializer() {
-    let (_world, mut token) = setup();
-println!("NAME: [{}]", token.name());
-println!("SYMBOL: [{}]", token.symbol());
+    let (world, mut token) = setup();
+
+    println!("NAME: [{}]", token.name());
+    println!("SYMBOL: [{}]", token.symbol());
     // assert(token.name() == "Sample Character", 'Name is wrong');
     assert(token.symbol() == "CHARACTER", 'Symbol is wrong');
 
@@ -151,6 +158,8 @@ println!("SYMBOL: [{}]", token.symbol());
     assert(token.supports_interface(interface::IERC721_ID) == true, 'should support IERC721_ID');
     assert(token.supports_interface(interface::IERC721_METADATA_ID) == true, 'should support METADATA');
     // assert(token.supports_interface(interface::IERC721_ENUMERABLE_ID) == true, 'should support ENUMERABLE');
+
+    _assert_minted_count(world, token, 2);
 }
 
 #[test]
@@ -227,23 +236,25 @@ fn test_transfer_from() {
 
 #[test]
 fn test_mint_free() {
-    let (_world, mut token) = setup();
+    let (world, mut token) = setup();
     // assert(token.total_supply() == 2, 'invalid total_supply init');
     assert(token.balance_of(RECIPIENT()) == 1, 'invalid balance_of');
     // assert(token.token_of_owner_by_index(RECIPIENT(), 0) == TOKEN_ID_2, 'token_of_owner_by_index_2');
-    mint(token, RECIPIENT(), TOKEN_ID_3);
+    _mint(token, RECIPIENT());
     // assert(token.total_supply() == 3, 'invalid total_supply');
     assert(token.balance_of(RECIPIENT()) == 2, 'invalid balance_of');
     // assert(token.token_of_owner_by_index(RECIPIENT(), 1) == TOKEN_ID_3, 'token_of_owner_by_index_3');
+    _assert_minted_count(world, token, 3);
 }
 
 #[test]
 fn test_mint() {
-    let (_world, mut token) = setup();
+    let (world, mut token) = setup();
     // assert(token.total_supply() == 2, 'invalid total_supply init');
-    mint(token, RECIPIENT(), TOKEN_ID_3);
+    _mint(token, RECIPIENT());
     assert(token.balance_of(RECIPIENT()) == 2, 'invalid balance_of');
     // assert(token.total_supply() == 3, 'invalid total_supply');
+    _assert_minted_count(world, token, 3);
 }
 
 // #[test]

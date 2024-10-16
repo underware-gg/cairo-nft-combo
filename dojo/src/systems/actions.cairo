@@ -1,5 +1,5 @@
-use oz_token::models::Direction;
-use oz_token::models::Position;
+use oz_token::models::starter::Direction;
+use oz_token::models::starter::Position;
 
 // define the interface
 #[dojo::interface]
@@ -13,7 +13,7 @@ trait IActions {
 mod actions {
     use super::{IActions, next_position};
     use starknet::{ContractAddress, get_caller_address};
-    use oz_token::models::{Position, Vec2, Moves, Direction, DirectionsAvailable};
+    use oz_token::models::starter::{Position, Vec2, Moves, Direction, DirectionsAvailable};
 
     #[derive(Copy, Drop, Serde)]
     #[dojo::model]
