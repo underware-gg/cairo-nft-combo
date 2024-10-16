@@ -7,7 +7,7 @@ export type ContractComponents = Awaited<
     ReturnType<typeof defineContractComponents>
 >;
 
-// Type definition for `dojo_starter::models::Direction` enum
+// Type definition for `oz_token::models::Direction` enum
 export type Direction =
     | { type: "None" }
     | { type: "Left" }
@@ -56,7 +56,7 @@ export const FieldLayoutDefinition = {
     layout: LayoutDefinition,
 };
 
-// Type definition for `dojo_starter::models::Moves` struct
+// Type definition for `oz_token::models::Moves` struct
 export interface Moves {
     player: BigInt;
     remaining: Number;
@@ -70,7 +70,7 @@ export const MovesDefinition = {
     can_move: RecsType.Boolean,
 };
 
-// Type definition for `dojo_starter::models::DirectionsAvailable` struct
+// Type definition for `oz_token::models::DirectionsAvailable` struct
 export interface DirectionsAvailable {
     player: BigInt;
     directions: String[];
@@ -80,7 +80,7 @@ export const DirectionsAvailableDefinition = {
     directions: RecsType.StringArray,
 };
 
-// Type definition for `dojo_starter::systems::actions::actions::Moved` struct
+// Type definition for `oz_token::systems::actions::actions::Moved` struct
 export interface Moved {
     player: BigInt;
     direction: Direction;
@@ -90,7 +90,7 @@ export const MovedDefinition = {
     direction: DirectionDefinition,
 };
 
-// Type definition for `dojo_starter::models::Vec2` struct
+// Type definition for `oz_token::models::Vec2` struct
 export interface Vec2 {
     x: Number;
     y: Number;
@@ -100,7 +100,7 @@ export const Vec2Definition = {
     y: RecsType.Number,
 };
 
-// Type definition for `dojo_starter::models::Position` struct
+// Type definition for `oz_token::models::Position` struct
 export interface Position {
     player: BigInt;
     vec: Vec2;
@@ -112,7 +112,7 @@ export const PositionDefinition = {
 
 export function defineContractComponents(world: World) {
     return {
-        // Model definition for `dojo_starter::models::Moves` model
+        // Model definition for `oz_token::models::Moves` model
         Moves: (() => {
             return defineComponent(
                 world,
@@ -124,7 +124,7 @@ export function defineContractComponents(world: World) {
                 },
                 {
                     metadata: {
-                        namespace: "dojo_starter",
+                        namespace: "oz_token",
                         name: "Moves",
                         types: ["ContractAddress", "u8", "Direction", "bool"],
                         customTypes: [],
@@ -133,7 +133,7 @@ export function defineContractComponents(world: World) {
             );
         })(),
 
-        // Model definition for `dojo_starter::models::DirectionsAvailable` model
+        // Model definition for `oz_token::models::DirectionsAvailable` model
         DirectionsAvailable: (() => {
             return defineComponent(
                 world,
@@ -143,7 +143,7 @@ export function defineContractComponents(world: World) {
                 },
                 {
                     metadata: {
-                        namespace: "dojo_starter",
+                        namespace: "oz_token",
                         name: "DirectionsAvailable",
                         types: ["ContractAddress", "array"],
                         customTypes: [],
@@ -152,7 +152,7 @@ export function defineContractComponents(world: World) {
             );
         })(),
 
-        // Model definition for `dojo_starter::systems::actions::actions::Moved` model
+        // Model definition for `oz_token::systems::actions::actions::Moved` model
         Moved: (() => {
             return defineComponent(
                 world,
@@ -162,7 +162,7 @@ export function defineContractComponents(world: World) {
                 },
                 {
                     metadata: {
-                        namespace: "dojo_starter",
+                        namespace: "oz_token",
                         name: "Moved",
                         types: ["ContractAddress", "Direction"],
                         customTypes: [],
@@ -171,7 +171,7 @@ export function defineContractComponents(world: World) {
             );
         })(),
 
-        // Model definition for `dojo_starter::models::Position` model
+        // Model definition for `oz_token::models::Position` model
         Position: (() => {
             return defineComponent(
                 world,
@@ -181,7 +181,7 @@ export function defineContractComponents(world: World) {
                 },
                 {
                     metadata: {
-                        namespace: "dojo_starter",
+                        namespace: "oz_token",
                         name: "Position",
                         types: ["ContractAddress"],
                         customTypes: ["Vec2"],

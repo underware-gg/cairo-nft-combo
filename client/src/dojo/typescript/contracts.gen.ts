@@ -9,7 +9,7 @@ import * as models from "./models.gen";
 export type IWorld = Awaited<ReturnType<typeof setupWorld>>;
 
 export async function setupWorld(provider: DojoProvider) {
-    // System definitions for `dojo_starter-actions` contract
+    // System definitions for `oz_token-actions` contract
     function actions() {
         const contract_name = "actions";
 
@@ -23,7 +23,7 @@ export async function setupWorld(provider: DojoProvider) {
                         entrypoint: "spawn",
                         calldata: [],
                     },
-                    "dojo_starter"
+                    "oz_token"
                 );
             } catch (error) {
                 console.error("Error executing spawn:", error);
@@ -48,7 +48,7 @@ export async function setupWorld(provider: DojoProvider) {
                             ),
                         ],
                     },
-                    "dojo_starter"
+                    "oz_token"
                 );
             } catch (error) {
                 console.error("Error executing spawn:", error);
@@ -66,7 +66,7 @@ export async function setupWorld(provider: DojoProvider) {
                         entrypoint: "world",
                         calldata: [],
                     },
-                    "dojo_starter"
+                    "oz_token"
                 );
             } catch (error) {
                 console.error("Error executing spawn:", error);
