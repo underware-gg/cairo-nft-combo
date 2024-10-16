@@ -5,6 +5,7 @@ import { getEntityIdFromKeys } from "@dojoengine/utils";
 
 import { useDojo } from "./dojo/useDojo";
 import Tokens from "./Tokens";
+import TokensQL from "./TokensQL";
 
 function App() {
   const {
@@ -151,7 +152,9 @@ function App() {
               </button>
             </div>
           </div>
-          <Tokens />
+          
+          {/* <Tokens /> */}
+          <TokensQL />
 
         </div>
 
