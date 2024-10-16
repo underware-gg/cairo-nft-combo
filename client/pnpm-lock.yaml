@@ -16,10 +16,13 @@ importers:
         version: 1.0.0-alpha.20(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)
       '@dojoengine/react':
         specifier: 1.0.0-alpha.20
-        version: 1.0.0-alpha.20(@types/node@20.16.11)(@types/react@18.3.11)(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(type-fest@0.20.2)(typescript@5.6.3)(zod@3.23.8)
+        version: 1.0.0-alpha.20(@types/node@20.16.11)(@types/react@18.3.11)(immer@10.1.1)(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(type-fest@0.20.2)(typescript@5.6.3)(zod@3.23.8)
       '@dojoengine/recs':
         specifier: 2.0.13
         version: 2.0.13(typescript@5.6.3)(zod@3.23.8)
+      '@dojoengine/sdk':
+        specifier: 1.0.0-alpha.20
+        version: 1.0.0-alpha.20(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)
       '@dojoengine/state':
         specifier: 1.0.0-alpha.20
         version: 1.0.0-alpha.20(@types/node@20.16.11)(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)(zod@3.23.8)
@@ -238,6 +241,12 @@ packages:
 
   '@dojoengine/recs@2.0.13':
     resolution: {integrity: sha512-Cgz4Unlnk2FSDoFTYKrJexX/KiSYPMFMxftxQkC+9LUKS5yNGkgFQM7xu4/L1HvpDAenL7NjUmH6ynRAS7Iifw==}
+
+  '@dojoengine/sdk@1.0.0-alpha.20':
+    resolution: {integrity: sha512-+bo29gXjgsylfGUjD7JaOGDjJ7A4mJwMpYBEe+JKk1/X6N5YRoMOCZM3ft2a+M4neVGMn1DmI19iWzVZlKuiNw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      starknet: 6.11.0
 
   '@dojoengine/state@1.0.0-alpha.20':
     resolution: {integrity: sha512-sMT22dKR9fQsd50X2IG0haRyg7v8eOfCmYsk/giCAbXqtetihW0jlfjFDHrGeB0v+cXrWF0/2khSmVqGmWAmnA==}
@@ -1791,6 +1800,9 @@ packages:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
 
+  immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
+
   immutable@4.3.7:
     resolution: {integrity: sha512-1hqclzwYwjRDFLjcFxOM5AYkkG0rpFPpr1RLPMEuGczoS7YA8gLhy8SWXYRAA/XwfEHpfo3cw5JGioS32fnMRw==}
 
@@ -2948,7 +2960,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@dojoengine/react@1.0.0-alpha.20(@types/node@20.16.11)(@types/react@18.3.11)(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(type-fest@0.20.2)(typescript@5.6.3)(zod@3.23.8)':
+  '@dojoengine/react@1.0.0-alpha.20(@types/node@20.16.11)(@types/react@18.3.11)(immer@10.1.1)(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(type-fest@0.20.2)(typescript@5.6.3)(zod@3.23.8)':
     dependencies:
       '@dojoengine/recs': 2.0.13(typescript@5.6.3)(zod@3.23.8)
       '@dojoengine/state': 1.0.0-alpha.20(@types/node@20.16.11)(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)(zod@3.23.8)
@@ -2963,7 +2975,7 @@ snapshots:
       rxjs: 7.5.5
       starknet: 6.11.0(encoding@0.1.13)
       type-fest: 0.20.2
-      zustand: 4.5.5(@types/react@18.3.11)(react@18.3.1)
+      zustand: 4.5.5(@types/react@18.3.11)(immer@10.1.1)(react@18.3.1)
     transitivePeerDependencies:
       - '@edge-runtime/vm'
       - '@types/node'
@@ -2997,6 +3009,22 @@ snapshots:
       - typescript
       - utf-8-validate
       - zod
+
+  '@dojoengine/sdk@1.0.0-alpha.20(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)':
+    dependencies:
+      '@dojoengine/core': 1.0.0-alpha.20(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)
+      '@dojoengine/create-burner': 1.0.0-alpha.20(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)
+      '@dojoengine/torii-client': 1.0.0-alpha.20
+      immer: 10.1.1
+      starknet: 6.11.0(encoding@0.1.13)
+      zustand: 4.5.5(@types/react@18.3.11)(immer@10.1.1)(react@18.3.1)
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - react
+      - react-dom
+      - typescript
+      - utf-8-validate
 
   '@dojoengine/state@1.0.0-alpha.20(@types/node@20.16.11)(starknet@6.11.0(encoding@0.1.13))(typescript@5.6.3)(zod@3.23.8)':
     dependencies:
@@ -4749,6 +4777,8 @@ snapshots:
 
   ignore@5.3.2: {}
 
+  immer@10.1.1: {}
+
   immutable@4.3.7: {}
 
   import-fresh@3.3.0:
@@ -5631,9 +5661,10 @@ snapshots:
 
   zod@3.23.8: {}
 
-  zustand@4.5.5(@types/react@18.3.11)(react@18.3.1):
+  zustand@4.5.5(@types/react@18.3.11)(immer@10.1.1)(react@18.3.1):
     dependencies:
       use-sync-external-store: 1.2.2(react@18.3.1)
     optionalDependencies:
       '@types/react': 18.3.11
+      immer: 10.1.1
       react: 18.3.1
