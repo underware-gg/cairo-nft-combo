@@ -9,7 +9,7 @@ import { Entity } from "@dojoengine/recs";
 import { ApolloClient, gql, InMemoryCache, useQuery } from "@apollo/client";
 import { BigNumberish } from "starknet";
 
-export const isBigint = (v: BigNumberish | null): boolean => {try {return (v != null && BigInt(v) >= 0n)} catch {return false}}
+export const isBigint = (v: BigNumberish | null): boolean => { try { return (v != null && BigInt(v) >= 0n) } catch { return false } }
 export const bigintToHex = (v: BigNumberish | null | undefined) => (!v ? '0x0' : `0x${BigInt(v).toString(16)}`)
 export const isPositiveBigint = (v: BigNumberish | null): boolean => (isBigint(v) && BigInt(v ?? 0) > 0n)
 
@@ -132,7 +132,7 @@ export function useTokensByOwner(owner: BigNumberish) {
     address: bigintToHex(owner).toLowerCase(),
   }), [owner]);
   const { data, refetch } = useCustomQuery(
-    dojoConfig.toriiUrl+'/graphql',
+    dojoConfig.toriiUrl + '/graphql',
     ercBalance,
     variables,
     !isPositiveBigint(owner)
@@ -176,7 +176,7 @@ export function useTokensByOwner(owner: BigNumberish) {
         tokens[type][tokenIndex].tokenIds.push(BigInt(token.tokenMetadata.tokenId))
       }
     })
-    // console.log(`TOKENS:`, tokens)
+    console.log(`>>> TOKENS:`, tokens)
     return tokens;
   }, [data])
   return {
@@ -193,7 +193,7 @@ function TokensQL() {
     setup: {
       client,
       clientComponents: { TokenConfig },
-     },
+    },
   } = useDojo();
 
   //
@@ -203,6 +203,7 @@ function TokensQL() {
     BigInt(character_contract?.address ?? 0),
   ]) as Entity, [character_contract?.address])
   const token_config = useComponentValue(TokenConfig, entityId);
+  console.log(`>> TOKEN_CONFIG:`, token_config)
 
   //
   // Tokens
@@ -214,12 +215,9 @@ function TokensQL() {
   return (
     <div className="bg-gray-800 shadow-md rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 w-full sm:w-96 my-4 sm:my-8">
       <div>
-        <div className="mb-3 sm:mb-4">
-          Minted: {(token_config?.minted_count ?? 0n).toString()}
-        </div>
         <button
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 text-sm sm:text-base rounded transition duration-300 ease-in-out"
-          onClick={async () => { 
+          className="w-half bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 text-sm sm:text-base rounded transition duration-300 ease-in-out"
+          onClick={async () => {
             await client.character.mint({
               account: account.account,
               recipient: BigInt(account.account.address),
@@ -229,11 +227,30 @@ function TokensQL() {
         >
           Mint Character
         </button>
+
         {tokens.ERC721.map((token) => (
-          <div key={token.symbol}>
+          <div  key={token.symbol}>
             {token.symbol}: {token.balance.toString()} ({token.tokenIds.map(id => id.toString()).join(', ')})
           </div>
         ))}
+        <div className="mb-3 sm:mb-4">
+          {/* @ts-ignore */}
+          Minted: {BigInt(token_config?.minted_count ?? 0).toString()}
+        </div>
+
+        <button
+          className="w-half bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 text-sm sm:text-base rounded transition duration-300 ease-in-out"
+          onClick={async () => {
+            await client.cash.faucet({
+              account: account.account,
+              recipient: BigInt(account.account.address),
+            })
+          }}
+          disabled={BigInt(account?.account?.address ?? 0) == 0n}
+        >
+          Faucet CA$H (refresh)
+        </button>
+
         {tokens.ERC20.map((token) => (
           <div key={token.symbol}>
             {token.symbol}: {token.balance_eth.toString()}
