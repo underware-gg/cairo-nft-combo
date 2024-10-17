@@ -2,23 +2,12 @@
 Dojo OpenZeppelin ERC-721 Token sample
 
 
-### Profiling
-
-| Project State                    | Memory Usage |
-|----------------------------------|--------------|
-| dojo_starter                     | 2.51 GB      |
-| added openzeppelin dependency    | 3.35 GB      |
-| OZ erc721 implementation         | 9.13 GB      |
-| removed erc1155, erc20 from OZ   | 6.55 GB      |
-| removed erc1155 from OZ          | 7.16 GB      |
-
-
 
 ## OpenZeppelin samples
 
-* Preset: [presets/erc721.cairo](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/presets/src/erc721.cairo)
+* Presets: [erc721.cairo](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/presets/src/erc721.cairo) / [erc20.cairo](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/presets/src/erc20.cairo)
 
-* Main component: [erc721.cairo](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo)
+* Main components: [erc721.cairo](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) / [erc20.cairo](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc20/erc20.cairo)
 
 * Enumerable component (not used): [erc721_enumerable.cairo](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/extensions/erc721_enumerable/erc721_enumerable.cairo)
 
@@ -64,5 +53,15 @@ git checkout pistols
 git rebase --onto v0.Xx.0 origin/master
 ```
 
+
+## sozo test profiling
+
+| Project State                    | Memory Usage |
+|----------------------------------|--------------|
+| dojo_starter                     | 2.51 GB      |
+| added openzeppelin dependency    | 3.35 GB      |
+| OZ erc721 implementation         | 9.13 GB      |
+| removed erc1155, erc20 from OZ   | 6.55 GB      |
+| removed erc1155 from OZ          | 7.16 GB      |
 
 
