@@ -44,9 +44,30 @@ manifest_name = "oz_token-actions-63d87cac"
 
 [[contracts]]
 kind = "DojoContract"
+address = "0x71dbe1b78425369d03079171fab2f264d52bc660bce30d5e90e61bd92ecc36a"
+class_hash = "0x68770540d2972223ed70bded7df09979f85e95fcecbd68d2c503e5f1922539c"
+original_class_hash = "0x68770540d2972223ed70bded7df09979f85e95fcecbd68d2c503e5f1922539c"
+base_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+abi = "manifests/dev/deployment/abis/contracts/oz_token-cash-3d2ed65a.json"
+reads = []
+writes = ["oz_token-CoinConfig"]
+init_calldata = [
+    "$contract_address:oz_token-actions",
+    "1000000000000000000000",
+    "0",
+]
+tag = "oz_token-cash"
+systems = [
+    "mint",
+    "faucet",
+]
+manifest_name = "oz_token-cash-3d2ed65a"
+
+[[contracts]]
+kind = "DojoContract"
 address = "0x2037ffbff6c96e5aba4f71c05bbe08acdeca0e5da39fc9ca46912b48e53186a"
-class_hash = "0x62fd548b8f2d65f361f7642e4544235626e37af86674e2d18c1253d5fc5fcac"
-original_class_hash = "0x62fd548b8f2d65f361f7642e4544235626e37af86674e2d18c1253d5fc5fcac"
+class_hash = "0x101ab1c76fd01ddca5c17c703df544d956257b1ff1432c7914e27400d5377ed"
+original_class_hash = "0x101ab1c76fd01ddca5c17c703df544d956257b1ff1432c7914e27400d5377ed"
 base_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
 abi = "manifests/dev/deployment/abis/contracts/oz_token-character-7e2ce6f5.json"
 reads = []
@@ -55,6 +76,30 @@ init_calldata = []
 tag = "oz_token-character"
 systems = ["mint"]
 manifest_name = "oz_token-character-7e2ce6f5"
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x35435c72ce7a795254dbf2d397332c26ea5022a67a3995a5b9beb2c05436be8"
+original_class_hash = "0x35435c72ce7a795254dbf2d397332c26ea5022a67a3995a5b9beb2c05436be8"
+abi = "manifests/dev/deployment/abis/models/oz_token-CoinConfig-5f4d1c18.json"
+tag = "oz_token-CoinConfig"
+qualified_path = "oz_token::models::coin_config::coin_config"
+manifest_name = "oz_token-CoinConfig-5f4d1c18"
+
+[[models.members]]
+name = "coin_address"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "minter_contract_address"
+type = "ContractAddress"
+key = false
+
+[[models.members]]
+name = "faucet_amount"
+type = "u256"
+key = false
 
 [[models]]
 kind = "DojoModel"
@@ -144,8 +189,8 @@ key = false
 
 [[models]]
 kind = "DojoModel"
-class_hash = "0x352aa08044c723f2fa44ab23d772ccca470e95a928a4fc2fabc11122a5b3c11"
-original_class_hash = "0x352aa08044c723f2fa44ab23d772ccca470e95a928a4fc2fabc11122a5b3c11"
+class_hash = "0x70e25585a526c9cf07889647103ad37d3b33e95db6e25043d609283a248b3db"
+original_class_hash = "0x70e25585a526c9cf07889647103ad37d3b33e95db6e25043d609283a248b3db"
 abi = "manifests/dev/deployment/abis/models/oz_token-TokenConfig-2d52d04c.json"
 tag = "oz_token-TokenConfig"
 qualified_path = "oz_token::models::token_config::token_config"
@@ -157,11 +202,11 @@ type = "ContractAddress"
 key = true
 
 [[models.members]]
-name = "minter_contract"
+name = "minter_contract_address"
 type = "ContractAddress"
 key = false
 
 [[models.members]]
 name = "minted_count"
-type = "u128"
+type = "u256"
 key = false

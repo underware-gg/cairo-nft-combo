@@ -363,8 +363,8 @@
   },
   {
     "type": "impl",
-    "name": "token_configImpl",
-    "interface_name": "oz_token::models::token_config::Itoken_config"
+    "name": "coin_configImpl",
+    "interface_name": "oz_token::models::coin_config::Icoin_config"
   },
   {
     "type": "struct",
@@ -382,10 +382,10 @@
   },
   {
     "type": "struct",
-    "name": "oz_token::models::token_config::TokenConfig",
+    "name": "oz_token::models::coin_config::CoinConfig",
     "members": [
       {
-        "name": "token_address",
+        "name": "coin_address",
         "type": "core::starknet::contract_address::ContractAddress"
       },
       {
@@ -393,14 +393,14 @@
         "type": "core::starknet::contract_address::ContractAddress"
       },
       {
-        "name": "minted_count",
+        "name": "faucet_amount",
         "type": "core::integer::u256"
       }
     ]
   },
   {
     "type": "interface",
-    "name": "oz_token::models::token_config::Itoken_config",
+    "name": "oz_token::models::coin_config::Icoin_config",
     "items": [
       {
         "type": "function",
@@ -408,7 +408,7 @@
         "inputs": [
           {
             "name": "model",
-            "type": "oz_token::models::token_config::TokenConfig"
+            "type": "oz_token::models::coin_config::CoinConfig"
           }
         ],
         "outputs": [],
@@ -418,7 +418,7 @@
   },
   {
     "type": "event",
-    "name": "oz_token::models::token_config::token_config::Event",
+    "name": "oz_token::models::coin_config::coin_config::Event",
     "kind": "enum",
     "variants": []
   }

@@ -147,7 +147,7 @@
   {
     "type": "impl",
     "name": "TokenComponentPublicImpl",
-    "interface_name": "oz_token::systems::character::ITokenComponentPublic"
+    "interface_name": "oz_token::systems::character::ITokenPublic"
   },
   {
     "type": "struct",
@@ -165,7 +165,7 @@
   },
   {
     "type": "interface",
-    "name": "oz_token::systems::character::ITokenComponentPublic",
+    "name": "oz_token::systems::character::ITokenPublic",
     "items": [
       {
         "type": "function",

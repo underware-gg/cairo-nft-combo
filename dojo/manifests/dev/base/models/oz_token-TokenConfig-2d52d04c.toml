@@ -1,6 +1,6 @@
 kind = "DojoModel"
-class_hash = "0x352aa08044c723f2fa44ab23d772ccca470e95a928a4fc2fabc11122a5b3c11"
-original_class_hash = "0x352aa08044c723f2fa44ab23d772ccca470e95a928a4fc2fabc11122a5b3c11"
+class_hash = "0x70e25585a526c9cf07889647103ad37d3b33e95db6e25043d609283a248b3db"
+original_class_hash = "0x70e25585a526c9cf07889647103ad37d3b33e95db6e25043d609283a248b3db"
 abi = "manifests/dev/base/abis/models/oz_token-TokenConfig-2d52d04c.json"
 tag = "oz_token-TokenConfig"
 qualified_path = "oz_token::models::token_config::token_config"
@@ -12,11 +12,11 @@ type = "ContractAddress"
 key = true
 
 [[members]]
-name = "minter_contract"
+name = "minter_contract_address"
 type = "ContractAddress"
 key = false
 
 [[members]]
 name = "minted_count"
-type = "u128"
+type = "u256"
 key = false
