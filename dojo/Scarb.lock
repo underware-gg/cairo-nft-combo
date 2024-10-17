@@ -9,7 +9,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.16#3b3a78cd823
 [[package]]
 name = "openzeppelin_access"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
@@ -18,7 +18,7 @@ dependencies = [
 [[package]]
 name = "openzeppelin_account"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
@@ -27,7 +27,7 @@ dependencies = [
 [[package]]
 name = "openzeppelin_governance"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 dependencies = [
  "openzeppelin_access",
  "openzeppelin_introspection",
@@ -36,12 +36,12 @@ dependencies = [
 [[package]]
 name = "openzeppelin_introspection"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 
 [[package]]
 name = "openzeppelin_test_common"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 dependencies = [
  "openzeppelin_access",
  "openzeppelin_account",
@@ -55,7 +55,7 @@ dependencies = [
 [[package]]
 name = "openzeppelin_testing"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 dependencies = [
  "snforge_std",
 ]
@@ -63,7 +63,7 @@ dependencies = [
 [[package]]
 name = "openzeppelin_token"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 dependencies = [
  "openzeppelin_account",
  "openzeppelin_governance",
@@ -73,12 +73,12 @@ dependencies = [
 [[package]]
 name = "openzeppelin_upgrades"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 
 [[package]]
 name = "openzeppelin_utils"
 version = "0.15.1"
-source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#f0f6b984d4b6040c1bc102bf82cb59fb3f241b4e"
+source = "git+https://github.com/underware-gg/cairo-contracts?branch=pistols#81149391fe13e9e72c7983d510c58de7fc01f5c3"
 
 [[package]]
 name = "oz_token"
