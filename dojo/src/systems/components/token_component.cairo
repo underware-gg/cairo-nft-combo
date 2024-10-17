@@ -25,7 +25,7 @@ pub mod TokenComponent {
     pub enum Event {}
 
     mod Errors {
-        const CALLER_IS_NOT_MINTER: felt252     = 'TOKEN: aller is not minter';
+        const CALLER_IS_NOT_MINTER: felt252 = 'TOKEN: caller is not minter';
     }
 
     #[generate_trait]
@@ -40,12 +40,12 @@ pub mod TokenComponent {
     > of InternalTrait<TContractState> {
         fn initialize(
             ref self: ComponentState<TContractState>,
-            minter_contract: ContractAddress,
+            minter_contract_address: ContractAddress,
         ) {
             let store: Store = StoreTrait::new(self.get_contract().world());
             let token_config: TokenConfig = TokenConfig{
                 token_address: get_contract_address(),
-                minter_contract,
+                minter_contract_address,
                 minted_count: 0,
             };
             store.set_token_config(@token_config);
@@ -58,8 +58,8 @@ pub mod TokenComponent {
             let store: Store = StoreTrait::new(self.get_contract().world());
             let token_config: TokenConfigEntity = store.get_token_config_entity(get_contract_address());
             (
-                (token_config.minter_contract).is_zero() // anyone can mint
-                || caller_address == token_config.minter_contract // caller is minter contract
+                token_config.minter_contract_address.is_zero() ||      // anyone can mint
+                caller_address == token_config.minter_contract_address // caller is minter contract
             )
         }
 
@@ -76,7 +76,7 @@ pub mod TokenComponent {
 
             // let erc721 = get_dep_component!(self, ERC721);
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
-            erc721.mint(recipient, token_config.minted_count.into());
+            erc721.mint(recipient, token_config.minted_count);
         }
     }
 }

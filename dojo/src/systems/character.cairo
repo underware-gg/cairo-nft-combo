@@ -32,13 +32,13 @@ pub trait ICharacter<TState> {
     // IERC721MetadataCamelOnly
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
 
-    // ITokenComponentPublic
+    // ITokenPublic
     fn mint(ref self: TState, recipient: ContractAddress);
     fn render_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
 #[starknet::interface]
-pub trait ITokenComponentPublic<TState> {
+pub trait ITokenPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
     fn render_uri(self: @TState, token_id: u256) -> ByteArray;
 }
@@ -94,13 +94,6 @@ pub mod character {
     //-----------------------------------
 
 
-    mod Errors {
-        const CALLER_IS_NOT_MINTER: felt252     = 'CHARACTER: Caller is not minter';
-        const TRANSFER_FAILED: felt252          = 'CHARACTER: Transfer failed';
-        const INVALID_CHARACTER: felt252        = 'CHARACTER: Invalid character';
-        const NOT_YOUR_CHARACTER: felt252       = 'CHARACTER: Not your character';
-    }
-
     //*******************************
     fn TOKEN_NAME() -> ByteArray {("Sample Character")}
     fn TOKEN_SYMBOL() -> ByteArray {("CHARACTER")}
@@ -124,9 +117,9 @@ pub mod character {
     //-----------------------------------
     // Public
     //
-    use super::{ITokenComponentPublic};
+    use super::{ITokenPublic};
     #[abi(embed_v0)]
-    impl TokenComponentPublicImpl of ITokenComponentPublic<ContractState> {
+    impl TokenComponentPublicImpl of ITokenPublic<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress) {
             self.token.mint(recipient);
         }
