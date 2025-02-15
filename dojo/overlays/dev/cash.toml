@@ -1,9 +1,0 @@
-tag = "oz_token-cash"
-writes = [
-  "oz_token-CoinConfig",
-]
-init_calldata = [
-  "$contract_address:oz_token-actions", # game_contract_address
-  "1000000000000000000000", # faucet_amount.low: 1000 CA$H
-  "0", # faucet_amount.high
-]

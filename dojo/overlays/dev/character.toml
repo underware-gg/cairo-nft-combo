@@ -1,4 +1,0 @@
-tag = "oz_token-character"
-writes = [
-  "oz_token-TokenConfig",
-]

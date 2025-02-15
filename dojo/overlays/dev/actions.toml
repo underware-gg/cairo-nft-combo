@@ -1,6 +1,0 @@
-tag = "oz_token-actions"
-writes = [
-    "oz_token-Moves",
-    "oz_token-Position",
-    "oz_token-DirectionsAvailable",
-]
