@@ -1,25 +1,27 @@
 mod systems {
-    mod actions;
-    mod character;
-    mod cash;
-    mod components {
-        mod erc721_hooks;
-        mod coin_component;
-        mod token_component;
+    pub mod actions;
+    pub mod character;
+    pub mod cash;
+    pub mod components {
+        pub mod coin_component;
+        pub mod token_component;
     }
 }
 
 mod models {
-    mod store;
-    mod coin_config;
-    mod token_config;
-    mod starter;
+    pub mod coin_config;
+    pub mod token_config;
+}
+
+mod libs {
+    pub mod store;
+    pub mod dns;
 }
 
 #[cfg(test)]
 mod tests {
-    mod test_cash;
-    mod test_character;
-    mod test_world;
-    mod utils;
+    pub mod test_cash;
+    pub mod test_character;
+    pub mod test_world;
+    pub mod utils;
 }

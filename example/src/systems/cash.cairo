@@ -33,15 +33,10 @@ pub trait ICoinPublic<TState> {
     fn faucet(ref self: TState, recipient: ContractAddress);
 }
 
-#[starknet::interface]
-pub trait ICoinInternal<TState> {
-}
-
 #[dojo::contract]
 pub mod cash {
-    // use debug::PrintTrait;
-    use core::byte_array::ByteArrayTrait;
-    use starknet::{ContractAddress, get_contract_address, get_caller_address, get_block_timestamp};
+    use starknet::{ContractAddress};
+    use dojo::world::{WorldStorage};
 
     //-----------------------------------
     // OpenZeppelin start
@@ -54,7 +49,7 @@ pub mod cash {
     #[abi(embed_v0)]
     impl ERC20MixinImpl = ERC20Component::ERC20MixinImpl<ContractState>;
     impl ERC20InternalImpl = ERC20Component::InternalImpl<ContractState>;
-    impl CoinInternalImpl = CoinComponent::InternalImpl<ContractState>;
+    impl CoinComponentInternalImpl = CoinComponent::CoinComponentInternalImpl<ContractState>;
     #[storage]
     struct Storage {
         #[substorage(v0)]
@@ -74,6 +69,8 @@ pub mod cash {
     // OpenZeppelin end
     //-----------------------------------
 
+    use example::libs::dns::{DnsTrait};
+
 
     //*******************************************
     fn COIN_NAME() -> ByteArray {("Sample Cash")}
@@ -84,18 +81,27 @@ pub mod cash {
 
     fn dojo_init(
         ref self: ContractState,
-        game_contract_address: ContractAddress,
-        faucet_amount: u256,
+        faucet_amount: u128,
     ) {
+        let mut world = self.world_default();
         self.erc20.initializer(
             COIN_NAME(),
             COIN_SYMBOL(),
         );
         self.coin.initialize(
-            game_contract_address,
+            world.actions_address(),
             faucet_amount,
         );
     }
+
+    #[generate_trait]
+    impl WorldDefaultImpl of WorldDefaultTrait {
+        #[inline(always)]
+        fn world_default(self: @ContractState) -> WorldStorage {
+            (self.world(@"example"))
+        }
+    }
+
 
     //-----------------------------------
     // Public

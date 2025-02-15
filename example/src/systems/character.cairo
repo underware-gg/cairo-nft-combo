@@ -43,25 +43,17 @@ pub trait ITokenPublic<TState> {
     fn render_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
-#[starknet::interface]
-pub trait ITokenComponentInternal<TState> {
-}
-
 #[dojo::contract]
 pub mod character {    
-    // use debug::PrintTrait;
-    use core::byte_array::ByteArrayTrait;
-    use starknet::{ContractAddress, get_contract_address, get_caller_address, get_block_timestamp};
-
-    // use graffiti::json::JsonImpl;
-    // use graffiti::{Tag, TagImpl};
+    use starknet::{ContractAddress};
+    use dojo::world::{WorldStorage};
 
     //-----------------------------------
     // OpenZeppelin start
     //
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::{ERC721Component};
-    use example::systems::components::erc721_hooks::{ERC721HooksImpl};
+    use openzeppelin_token::erc721::ERC721HooksEmptyImpl;
     use example::systems::components::token_component::{TokenComponent};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
@@ -93,11 +85,13 @@ pub mod character {
     // OpenZeppelin end
     //-----------------------------------
 
+    use example::libs::dns::{DnsTrait};
+
 
     //*******************************
     fn TOKEN_NAME() -> ByteArray {("Sample Character")}
     fn TOKEN_SYMBOL() -> ByteArray {("CHARACTER")}
-    fn BASE_URI() -> ByteArray {("https://underware.gg")}
+    fn BASE_URI() -> ByteArray {("https://underware.gg/")}
     //*******************************
 
     fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
@@ -105,12 +99,23 @@ pub mod character {
     fn dojo_init(
         ref self: ContractState,
     ) {
+        let mut world = self.world_default();
         self.erc721.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
             BASE_URI(),
         );
-        self.token.initialize(ZERO());
+        self.token.initialize(
+            world.actions_address(),
+        );
+    }
+
+    #[generate_trait]
+    impl WorldDefaultImpl of WorldDefaultTrait {
+        #[inline(always)]
+        fn world_default(self: @ContractState) -> WorldStorage {
+            (self.world(@"example"))
+        }
     }
 
 
@@ -125,7 +130,7 @@ pub mod character {
         }
 
         fn render_uri(self: @ContractState, token_id: u256) -> ByteArray {
-            format!("{{\"name\":\"{}\"}}", self.erc721._name())
+            format!("{{\"name\":\"{}\"}}", self.erc721.name())
         }
     }
 

@@ -1,23 +1,31 @@
 [package]
-cairo-version = "=2.7.0"
 name = "example"
 version = "0.1.0"
+cairo-version = "2.9.2"
+edition = "2024_07"
 
 [cairo]
 sierra-replace-ids = true
 
 [scripts]
 migrate = "sozo build && sozo migrate apply"
-spawn = "./scripts/spawn.sh"
-move = "./scripts/move.sh"
+mint_character = "./scripts/mint_character.sh"
+cash_faucet = "./scripts/cash_faucet.sh"
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.16" }
-openzeppelin_token = { git = "https://github.com/underware-gg/cairo-contracts", branch = "pistols" }
-# openzeppelin_token = { path = "../../cairo-contracts" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.2.0" }
+openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
+openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
 
 [dev-dependencies]
-openzeppelin_test_common = { git = "https://github.com/underware-gg/cairo-contracts", branch = "pistols" }
-# openzeppelin_test_common = { path = "../../cairo-contracts" }
+cairo_test = "=2.9.2"
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.2.0" }
 
-[[target.dojo]]
+
+#--------------------------
+# Dojo profiles declaration
+#
+[profile.dev]
+[profile.slot]
+[profile.sepolia]
+[profile.mainnet]
