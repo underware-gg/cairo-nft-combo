@@ -12,6 +12,12 @@ migrate = "sozo build && sozo migrate apply"
 mint_character = "./scripts/mint_character.sh"
 cash_faucet = "./scripts/cash_faucet.sh"
 
+[[target.starknet-contract]]
+sierra = true
+build-external-contracts = [
+  "dojo::world::world_contract::world",
+]
+
 [dependencies]
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.2.0" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }

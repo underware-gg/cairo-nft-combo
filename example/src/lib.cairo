@@ -20,8 +20,8 @@ mod libs {
 
 #[cfg(test)]
 mod tests {
+    pub mod tester;
     pub mod test_cash;
     pub mod test_character;
-    pub mod test_world;
-    pub mod utils;
+    pub mod test_actions;
 }

@@ -1,176 +1,116 @@
-use debug::PrintTrait;
-use starknet::{ContractAddress, get_contract_address, get_caller_address, testing};
-use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-use dojo::model::{Model, ModelTest, ModelIndex, ModelEntityTest};
-use dojo::utils::test::spawn_test_world;
-
-use example::tests::{
-    utils,
-    utils::{OWNER, RECIPIENT, SPENDER, ZERO},
-};
-use example::systems::cash::{
-    cash, ICashDispatcher, ICashDispatcherTrait,
-};
-use example::models::coin_config::{CoinConfig};
-
-use openzeppelin_token::erc20::interface;
-use openzeppelin_token::erc20::{
-    ERC20Component,
-    ERC20Component::{
-        Transfer, Approval,
+// use starknet::{ContractAddress};
+use example::tests::tester::{
+    tester,
+    tester::{
+        setup_world, TestSystems,
+        // IActionsDispatcherTrait,
+        // ICharacterDispatcherTrait,
+        ICashDispatcherTrait,
+        OWNER, RECIPIENT, SPENDER, ZERO,
+        ETH_TO_WEI,
     }
 };
 
-//
-// Setup
-//
-
-const ETH_TO_WEI: u256 = 1_000_000_000_000_000_000;
-const FAUCET_AMOUNT: u256 = 1000;
-const MINT_AMOUNT: u256 = 128;
-const SPEND_AMOUNT: u256 = 111;
-
-fn setup_uninitialized(faucet_amount: u256) -> (IWorldDispatcher, ICashDispatcher) {
-    testing::set_block_number(1);
-    testing::set_block_timestamp(1);
-    let mut world = spawn_test_world(
-        ["example"].span(),
-        get_models_test_class_hashes!(),
-    );
-
-    let mut coin = ICashDispatcher {
-        contract_address: world.deploy_contract('salt', cash::TEST_CLASS_HASH.try_into().unwrap())
-    };
-    world.grant_owner(dojo::utils::bytearray_hash(@"example"), coin.contract_address);
-    // world.grant_writer(selector_from_tag!("example-CoinConfig"), coin.contract_address);
-    let call_data: Span<felt252> = array![
-        OWNER().into(),
-        faucet_amount.low.into(),
-        faucet_amount.high.into(),
-    ].span();
-    world.init_contract(selector_from_tag!("example-cash"), call_data);
-
-    utils::impersonate(OWNER());
-
-    (world, coin)
-}
-
-fn setup(faucet_amount: u256) -> (IWorldDispatcher, ICashDispatcher) {
-    let (mut world, mut coin) = setup_uninitialized(faucet_amount);
-
-    // initialize contracts
-    coin.mint(OWNER(), MINT_AMOUNT);
-    coin.mint(RECIPIENT(), MINT_AMOUNT);
-
-    // drop all events
-    utils::drop_all_events(world.contract_address);
-    utils::drop_all_events(coin.contract_address);
-
-    (world, coin)
-}
-
-//
-// initialize
-//
+const FAUCET_AMOUNT: u256 = 1000 * ETH_TO_WEI;
+const SPEND_AMOUNT: u256 = 200 * ETH_TO_WEI;
 
 #[test]
 fn test_initializer() {
-    let (_world, mut coin) = setup(FAUCET_AMOUNT);
-
-    println!("cash NAME:[{}] SYMBOL:[{}]", coin.symbol(), coin.name());
-    // assert(coin.name() == "Sample Cash", 'Name is wrong');
-    assert(coin.symbol() == "CA$H", 'Symbol is wrong');
-
-    assert(coin.total_supply() == MINT_AMOUNT * 2, 'total_supply');
-    assert(coin.balance_of(OWNER(),) == MINT_AMOUNT, 'balance_of (OWNER)');
-    assert(coin.balance_of(RECIPIENT()) == MINT_AMOUNT, 'balance_of (RECIPIENT)');
-    assert(coin.balance_of(SPENDER()) == 0, 'balance_of (SPENDER)');
+    let sys: TestSystems = setup_world(0);
+    println!("cash SYMBOL:[{}] NAME:[{}]", sys.cash.symbol(), sys.cash.name());
+    assert_eq!(sys.cash.symbol(), "CA$H", "Symbol is wrong");
+    assert_ne!(sys.cash.name(), "", "Name is wrong");
 }
-
-
 
 //
 // mint
 //
 
 #[test]
-fn test_mint() {
-    let (_world, mut coin) = setup(FAUCET_AMOUNT);
-    utils::impersonate(OWNER());
-    coin.mint(OWNER(), MINT_AMOUNT);
-    coin.mint(RECIPIENT(), MINT_AMOUNT);
-    assert(coin.total_supply() == MINT_AMOUNT * 4, 'total_supply');
-    assert(coin.balance_of(OWNER(),) == MINT_AMOUNT * 2, 'balance_of (OWNER)');
-    assert(coin.balance_of(RECIPIENT()) == MINT_AMOUNT * 2, 'balance_of (RECIPIENT)');
-}
-
-#[test]
-#[should_panic(expected: ('COIN: caller is not minter', 'ENTRYPOINT_FAILED'))]
+#[should_panic(expected:('COIN: caller is not minter', 'ENTRYPOINT_FAILED'))]
 fn test_mint_not_minter() {
-    let (_world, mut coin) = setup(FAUCET_AMOUNT);
-    utils::impersonate(RECIPIENT());
-    coin.mint(RECIPIENT(), MINT_AMOUNT);
+    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    tester::impersonate(RECIPIENT());
+    sys.cash.mint(RECIPIENT(), FAUCET_AMOUNT);
 }
 
 #[test]
 fn test_faucet() {
-    let (_world, mut coin) = setup(FAUCET_AMOUNT);
-    utils::impersonate(OWNER());
-    coin.faucet(OWNER());
-    coin.faucet(RECIPIENT());
-    utils::impersonate(RECIPIENT());
-    coin.faucet(OWNER());
-    coin.faucet(RECIPIENT());
-    assert(coin.total_supply() == MINT_AMOUNT * 2 + FAUCET_AMOUNT * 4, 'total_supply');
-    assert(coin.balance_of(OWNER(),) == MINT_AMOUNT + FAUCET_AMOUNT * 2, 'balance_of (OWNER)');
-    assert(coin.balance_of(RECIPIENT()) == MINT_AMOUNT + FAUCET_AMOUNT * 2, 'balance_of (RECIPIENT)');
+    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    assert_eq!(sys.cash.total_supply(), 0, "total_supply_INTI");
+    tester::impersonate(OWNER());
+    sys.cash.faucet(OWNER());
+    sys.cash.faucet(RECIPIENT());
+    tester::impersonate(RECIPIENT());
+    sys.cash.faucet(OWNER());
+    sys.cash.faucet(RECIPIENT());
+    assert_eq!(sys.cash.total_supply(), FAUCET_AMOUNT * 4, "total_supply_AFTER");
+    assert_eq!(sys.cash.balance_of(OWNER()), FAUCET_AMOUNT * 2, "balance_of (OWNER)");
+    assert_eq!(sys.cash.balance_of(RECIPIENT()), FAUCET_AMOUNT * 2, "balance_of (RECIPIENT)");
 }
 
 #[test]
-#[should_panic(expected: ('COIN: faucet unavailable', 'ENTRYPOINT_FAILED'))]
-fn test_faucet_unavailable() {
-    let (_world, mut coin) = setup(0);
-    utils::impersonate(RECIPIENT());
-    coin.faucet(RECIPIENT());
+#[should_panic(expected:('COIN: faucet unavailable', 'ENTRYPOINT_FAILED'))]
+fn test_faucet_to_zero_address() {
+    let sys: TestSystems = setup_world(0);
+    tester::impersonate(OWNER());
+    sys.cash.faucet(ZERO());
 }
 
-
+#[test]
+#[should_panic(expected:('COIN: faucet unavailable', 'ENTRYPOINT_FAILED'))]
+fn test_faucet_unavailable() {
+    let sys: TestSystems = setup_world(0);
+    tester::impersonate(OWNER());
+    sys.cash.faucet(OWNER());
+}
 
 //
 // approve / transfer
 //
 
 #[test]
-fn test_approve() {
-    let (_world, mut coin) = setup(FAUCET_AMOUNT);
-    utils::impersonate(RECIPIENT());
-    coin.approve(SPENDER(), SPEND_AMOUNT);
-    assert(coin.allowance(RECIPIENT(), SPENDER()) == SPEND_AMOUNT, 'bad allowance');
+fn test_transfer() {
+    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    tester::impersonate(OWNER());
+    sys.cash.faucet(OWNER());
+    assert_eq!(sys.cash.balance_of(OWNER()), FAUCET_AMOUNT, "balance_of (OWNER) == FAUCET_AMOUNT");
+    sys.cash.transfer(RECIPIENT(), SPEND_AMOUNT);
+    assert_eq!(sys.cash.balance_of(OWNER()), FAUCET_AMOUNT - SPEND_AMOUNT, "balance_of (OWNER)");
+    assert_eq!(sys.cash.balance_of(RECIPIENT()), SPEND_AMOUNT, "balance_of (RECIPIENT)");
+}
+
+#[test]
+#[should_panic(expected:('ERC20: insufficient balance', 'ENTRYPOINT_FAILED'))]
+fn test_transfer_no_balance() {
+    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    tester::impersonate(OWNER());
+    sys.cash.faucet(OWNER());
+    sys.cash.transfer(RECIPIENT(), FAUCET_AMOUNT + SPEND_AMOUNT);
+}
+
+#[test]
+fn test_approve_transfer_from() {
+    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    tester::impersonate(OWNER());
+    sys.cash.faucet(OWNER());
+    sys.cash.approve(SPENDER(), SPEND_AMOUNT);
+    assert_eq!(sys.cash.allowance(OWNER(), SPENDER()), SPEND_AMOUNT, "bad allowance");
 
     // utils::drop_event(world.contract_address);
-    // assert_only_event_approval(coin.contract_address, OWNER(), SPENDER(), TOKEN_ID_1);
+    // assert_only_event_approval(sys.cash.contract_address, OWNER(), SPENDER(), TOKEN_ID_1);
 
-    utils::impersonate(SPENDER());
-    coin.transfer_from(RECIPIENT(), SPENDER(), SPEND_AMOUNT);
-    assert(coin.allowance(RECIPIENT(), SPENDER()) == 0, 'bad spent');
-    assert(coin.balance_of(RECIPIENT()) == MINT_AMOUNT - SPEND_AMOUNT, 'balance_of (RECIPIENT)');
-    assert(coin.balance_of(SPENDER()) == SPEND_AMOUNT, 'balance_of (SPENDER)');
+    tester::impersonate(SPENDER());
+    sys.cash.transfer_from(OWNER(), RECIPIENT(), SPEND_AMOUNT);
+    assert_eq!(sys.cash.allowance(OWNER(), SPENDER()), 0, "bad spent");
+    assert_eq!(sys.cash.balance_of(OWNER()), FAUCET_AMOUNT - SPEND_AMOUNT, "balance_of (OWNER)");
+    assert_eq!(sys.cash.balance_of(RECIPIENT()), SPEND_AMOUNT, "balance_of (RECIPIENT)");
 }
 
 #[test]
-#[should_panic(expected: ('ERC20: insufficient allowance', 'ENTRYPOINT_FAILED'))]
+#[should_panic(expected:('ERC20: insufficient allowance', 'ENTRYPOINT_FAILED'))]
 fn test_approve_no_allowance() {
-    let (_world, mut coin) = setup(FAUCET_AMOUNT);
-    utils::impersonate(RECIPIENT());
-    coin.transfer_from(RECIPIENT(), SPENDER(), SPEND_AMOUNT);
-}
-
-#[test]
-fn test_transfer() {
-    let (_world, mut coin) = setup(FAUCET_AMOUNT);
-    utils::impersonate(RECIPIENT());
-    coin.approve(SPENDER(), SPEND_AMOUNT);
-    coin.transfer(SPENDER(), SPEND_AMOUNT);
-    assert(coin.balance_of(RECIPIENT()) == MINT_AMOUNT - SPEND_AMOUNT, 'balance_of (RECIPIENT)');
-    assert(coin.balance_of(SPENDER()) == SPEND_AMOUNT, 'balance_of (SPENDER)');
+    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    tester::impersonate(SPENDER());
+    sys.cash.transfer_from(OWNER(), RECIPIENT(), SPEND_AMOUNT);
 }

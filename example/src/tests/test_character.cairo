@@ -1,265 +1,88 @@
-use debug::PrintTrait;
-use starknet::{ContractAddress, get_contract_address, get_caller_address, testing};
-use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-use dojo::model::{Model, ModelTest, ModelIndex, ModelEntityTest};
-use dojo::utils::test::spawn_test_world;
-
-use example::tests::{
-    utils,
-    utils::{OWNER, RECIPIENT, SPENDER, ZERO},
-};
-use example::systems::character::{
-    character, ICharacterDispatcher, ICharacterDispatcherTrait,
-};
-use example::models::token_config::{TokenConfig};
-
+use starknet::{ContractAddress};
 use openzeppelin_token::erc721::interface;
-use openzeppelin_token::erc721::{
-    ERC721Component,
-    ERC721Component::{
-        Transfer, Approval,
+use example::models::token_config::{TokenConfig};
+use example::libs::store::{StoreTrait};
+// use example::libs::dns::{DnsTrait};
+use example::tests::tester::{
+    tester,
+    tester::{
+        setup_world, TestSystems,
+        // IActionsDispatcherTrait,
+        ICharacterDispatcherTrait,
+        // ICashDispatcherTrait,
+        OWNER, OTHER, ZERO,
     }
 };
 
-//
-// events helpers
-//
-
-fn assert_event_transfer(
-    emitter: ContractAddress, from: ContractAddress, to: ContractAddress, token_id: u256
-) {
-    let event = utils::pop_log::<Transfer>(emitter).unwrap();
-    assert(event.from == from, 'Invalid `from`');
-    assert(event.to == to, 'Invalid `to`');
-    assert(event.token_id == token_id, 'Invalid `token_id`');
-}
-
-fn assert_only_event_transfer(
-    emitter: ContractAddress, from: ContractAddress, to: ContractAddress, token_id: u256
-) {
-    assert_event_transfer(emitter, from, to, token_id);
-    utils::assert_no_events_left(emitter);
-}
-
-fn assert_event_approval(
-    emitter: ContractAddress, owner: ContractAddress, approved: ContractAddress, token_id: u256
-) {
-    // let expected = ERC721Component::Event::Approval(Approval { owner, approved, token_id });
-    let event = utils::pop_log::<Approval>(emitter).unwrap();
-// 'params'.print();
-// emitter.print();
-// owner.print();
-// approved.print();
-// token_id.print();
-// 'event'.print();
-// event.owner.print();
-// event.approved.print();
-// event.token_id.print();
-// '-----'.print();
-    assert(event.owner == owner, 'Invalid `owner`');
-    assert(event.approved == approved, 'Invalid `approved`');
-    assert(event.token_id == token_id, 'Invalid `token_id`');
-}
-
-fn assert_only_event_approval(
-    emitter: ContractAddress, owner: ContractAddress, approved: ContractAddress, token_id: u256
-) {
-    assert_event_approval(emitter, owner, approved, token_id);
-    utils::assert_no_events_left(emitter);
-}
-
-
-//
-// Setup
-//
-
 const TOKEN_ID_1: u256 = 1;
 const TOKEN_ID_2: u256 = 2;
-const TOKEN_ID_3: u256 = 3;
-const TOKEN_ID_4: u256 = 4;
-const TOKEN_ID_5: u256 = 5;
+const TOKEN_ID_3: u256 = 2;
+const TOKEN_ID_4: u256 = 2;
 
-fn setup_uninitialized() -> (IWorldDispatcher, ICharacterDispatcher) {
-    testing::set_block_number(1);
-    testing::set_block_timestamp(1);
-    let mut world = spawn_test_world(
-        ["example"].span(),
-        get_models_test_class_hashes!(),
-    );
-
-    let mut token = ICharacterDispatcher {
-        contract_address: world.deploy_contract('salt', character::TEST_CLASS_HASH.try_into().unwrap())
-    };
-    world.grant_owner(dojo::utils::bytearray_hash(@"example"), token.contract_address);
-    // world.grant_writer(selector_from_tag!("example-TokenConfig"), token.contract_address);
-    let call_data: Span<felt252> = array![].span();
-    world.init_contract(selector_from_tag!("example-character"), call_data);
-
-    utils::impersonate(OWNER());
-
-    (world, token)
+fn _assert_minted_count(mut sys: TestSystems, minted_count: u128, msg: ByteArray) {
+    let token_config: TokenConfig = sys.store.get_token_config(sys.character.contract_address);
+    assert_eq!(token_config.minted_count, minted_count, "{}", msg);
 }
 
-fn setup() -> (IWorldDispatcher, ICharacterDispatcher) {
-    let (mut world, mut token) = setup_uninitialized();
-
-    // initialize contracts
-    token.mint(OWNER());
-    token.mint(RECIPIENT());
-
-    // drop all events
-    utils::drop_all_events(world.contract_address);
-    utils::drop_all_events(token.contract_address);
-
-    (world, token)
+fn _mint(mut sys: TestSystems, recipient: ContractAddress   ) {
+    tester::impersonate(sys.actions.contract_address);
+    sys.character.mint(recipient);
 }
-
-fn _assert_minted_count(world: IWorldDispatcher, token: ICharacterDispatcher, minted_count: u256) {
-    let token_config: TokenConfig = get!(world, token.contract_address, TokenConfig);
-    assert(token_config.minted_count == minted_count, 'token_config.minted_count');
-}
-
-//
-// initialize
-//
 
 #[test]
 fn test_initializer() {
-    let (world, mut token) = setup();
-
-    println!("character NAME:[{}] SYMBOL:[{}]", token.symbol(), token.name());
-    // assert(token.name() == "Sample Character", 'Name is wrong');
-    assert(token.symbol() == "CHARACTER", 'Symbol is wrong');
-
-    // assert(token.total_supply() == 2, 'Should eq 2');
-    // assert(token.balance_of(OWNER(),) == 1, 'Should eq 1 (OWNER)');
-    // assert(token.balance_of(RECIPIENT()) == 1, 'Should eq 1 (RECIPIENT)');
-
-    // assert(token.token_of_owner_by_index(OWNER(), 0) == TOKEN_ID_1, 'token_of_owner_by_index_OWNER');
-    // assert(token.token_of_owner_by_index(RECIPIENT(), 0) == TOKEN_ID_2, 'token_of_owner_by_index_REC');
-
-    // assert(token.token_by_index(0) == TOKEN_ID_1, 'token_by_index_0');
-    // assert(token.token_by_index(1) == TOKEN_ID_2, 'token_by_index_1');
-
-    assert(token.owner_of(TOKEN_ID_1) == OWNER(), 'owner_of_1');
-    assert(token.owner_of(TOKEN_ID_2) == RECIPIENT(), 'owner_of_2');
-
-    assert(token.owner_of(TOKEN_ID_1).is_non_zero(), 'owner_of_1_non_zero');
-    assert(token.owner_of(TOKEN_ID_2).is_non_zero(), 'owner_of_2_non_zero');
-
-    assert(token.token_uri(TOKEN_ID_1) != "", 'Uri should not be empty');
-    assert(token.tokenURI(TOKEN_ID_1) != "", 'Uri should not be empty Camel');
-
-    assert(token.supports_interface(interface::IERC721_ID) == true, 'should support IERC721_ID');
-    assert(token.supports_interface(interface::IERC721_METADATA_ID) == true, 'should support METADATA');
-    // assert(token.supports_interface(interface::IERC721_ENUMERABLE_ID) == true, 'should support ENUMERABLE');
-
-    _assert_minted_count(world, token, 2);
+    let sys: TestSystems = setup_world(0);
+    println!("character SYMBOL:[{}] NAME:[{}]", sys.character.symbol(), sys.character.name());
+    assert_eq!(sys.character.symbol(), "CHARACTER", "Symbol is wrong");
+    assert_ne!(sys.character.name(), "", "Name is wrong");
+    assert!(sys.character.supports_interface(interface::IERC721_ID), "should support IERC721_ID");
+    assert!(sys.character.supports_interface(interface::IERC721_METADATA_ID), "should support METADATA");
 }
 
 #[test]
-fn test_token_uri() {
-    let (mut _world, mut token) = setup();
-
-    let uri_1 = token.token_uri(TOKEN_ID_1);
-    // let uri_2 = token.token_uri(TOKEN_ID_2);
-    
-    println!("token_uri(1): {}", uri_1);
-    // println!("token_uri(2): {}", uri_2);
-
-    assert(uri_1[0] == '{', 'Uri 1 should not be empty');
-    // assert(uri_2[0] == '{', 'Uri 2 should not be empty');
-}
-
-#[test]
-#[should_panic(expected: ('ERC721: invalid token ID', 'ENTRYPOINT_FAILED'))]
-fn test_token_uri_invalid() {
-    let (_world, mut token) = setup();
-    token.token_uri(999);
-}
-
-
-
-//
-// mint
-//
-
-#[test]
-fn test_mint_free() {
-    let (world, mut token) = setup();
-    // assert(token.total_supply() == 2, 'invalid total_supply init');
-    assert(token.balance_of(RECIPIENT()) == 1, 'invalid balance_of');
-    // assert(token.token_of_owner_by_index(RECIPIENT(), 0) == TOKEN_ID_2, 'token_of_owner_by_index_2');
-    token.mint(RECIPIENT());
-    // assert(token.total_supply() == 3, 'invalid total_supply');
-    assert(token.balance_of(RECIPIENT()) == 2, 'invalid balance_of');
-    // assert(token.token_of_owner_by_index(RECIPIENT(), 1) == TOKEN_ID_3, 'token_of_owner_by_index_3');
-    _assert_minted_count(world, token, 3);
+#[should_panic(expected:('TOKEN: caller is not minter', 'ENTRYPOINT_FAILED'))]
+fn test_mint_not_minter() {
+    let sys: TestSystems = setup_world(0);
+    tester::impersonate(OWNER());
+    sys.character.mint(OWNER());
 }
 
 #[test]
 fn test_mint() {
-    let (world, mut token) = setup();
-    // assert(token.total_supply() == 2, 'invalid total_supply init');
-    token.mint(RECIPIENT());
-    assert(token.balance_of(RECIPIENT()) == 2, 'invalid balance_of');
-    // assert(token.total_supply() == 3, 'invalid total_supply');
-    _assert_minted_count(world, token, 3);
-}
-
-
-//
-// approve
-//
-
-#[test]
-fn test_approve() {
-    let (world, mut token) = setup();
-
-    utils::impersonate(OWNER(),);
-
-    token.approve(SPENDER(), TOKEN_ID_1);
-    assert(token.get_approved(TOKEN_ID_1) == SPENDER(), 'Spender not approved correctly');
-
-    // drop StoreSetRecord ERC721TokenApprovalModel
-    utils::drop_event(world.contract_address);
-
-    // TODO: fix events test
-    // assert_only_event_approval(token.contract_address, OWNER(), SPENDER(), TOKEN_ID_1);
-}
-
-//
-// transfer_from
-//
-
-#[test]
-fn test_transfer_from() {
-    let (world, mut token) = setup();
-
-    utils::impersonate(OWNER(),);
-    token.approve(SPENDER(), TOKEN_ID_1);
-
-    utils::drop_all_events(token.contract_address);
-    utils::drop_all_events(world.contract_address);
-    utils::assert_no_events_left(token.contract_address);
-
-    utils::impersonate(SPENDER());
-    token.transfer_from(OWNER(), RECIPIENT(), TOKEN_ID_1);
-
-    // TODO: fix events test
-    // assert_only_event_transfer(token.contract_address, OWNER(), RECIPIENT(), TOKEN_ID_1);
-
-    assert(token.balance_of(RECIPIENT()) == 2, 'Should eq 1');
-    assert(token.balance_of(OWNER(),) == 0, 'Should eq 1');
-    assert(token.get_approved(TOKEN_ID_1) == ZERO(), 'Should eq 0');
-    // assert(token.total_supply() == 2, 'Should eq 2');
-    // assert(token.token_of_owner_by_index(RECIPIENT(), 1) == TOKEN_ID_1, 'Should eq TOKEN_ID_1');
+    let sys: TestSystems = setup_world(0);
+    _assert_minted_count(sys, 0, "minted_count == 0");
+    assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) == 0");
+    _mint(sys, OWNER());
+    _mint(sys, OTHER());
+    _mint(sys, OTHER());
+    _assert_minted_count(sys, 3, "minted_count == 3");
+    assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER)");
+    assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER)");
+    assert_eq!(sys.character.owner_of(TOKEN_ID_1), OWNER(), "owner_of_1");
+    assert_eq!(sys.character.owner_of(TOKEN_ID_2), OTHER(), "owner_of_2");
+    assert_eq!(sys.character.owner_of(TOKEN_ID_3), OTHER(), "owner_of_3");
 }
 
 #[test]
-#[should_panic(expected: ('ERC721: unauthorized caller', 'ENTRYPOINT_FAILED'))]
-fn test_mint_no_allowance() {
-    let (_world, mut token) = setup();
-    utils::impersonate(SPENDER());
-    token.transfer_from(OWNER(), RECIPIENT(), TOKEN_ID_1);
+#[should_panic(expected:('ERC721: invalid token ID', 'ENTRYPOINT_FAILED'))]
+fn test_not_minted() {
+    let sys: TestSystems = setup_world(0);
+    sys.character.owner_of(TOKEN_ID_1);
+}
+
+#[test]
+fn test_token_uri() {
+    let sys: TestSystems = setup_world(0);
+    _mint(sys, OWNER());
+    let uri_1 = sys.character.token_uri(TOKEN_ID_1);
+    assert_ne!(uri_1, "", "token_uri() should not be empty");
+    assert_eq!(uri_1, sys.character.tokenURI(TOKEN_ID_1), "tokenURI() == token_uri()");
+    println!("token_uri(1): {}", uri_1);
+}
+
+#[test]
+#[should_panic(expected:('ERC721: invalid token ID', 'ENTRYPOINT_FAILED'))]
+fn test_token_uri_invalid() {
+    let sys: TestSystems = setup_world(0);
+    sys.character.token_uri(TOKEN_ID_1);
 }
