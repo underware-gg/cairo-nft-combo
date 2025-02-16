@@ -3,6 +3,7 @@ pub mod ERC721ComboComponent {
     use starknet::{ContractAddress};
     use openzeppelin_token::erc721::interface;
     use openzeppelin_token::erc721::{ERC721Component};
+    use openzeppelin_token::erc721::ERC721Component::{InternalImpl as ERC721InternalImpl};
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_introspection::src5::SRC5Component::SRC5Impl;
 
@@ -13,8 +14,25 @@ pub mod ERC721ComboComponent {
     #[derive(Drop, PartialEq, starknet::Event)]
     pub enum Event {}
 
-    // based on ERC721Component::ERC721Mixin
+
+    //-----------------------------------------
+    // Combo Hooks
+    //
+    // (your contract MUST implement this trait)
+    //
+    pub trait ERC721ComboHooksTrait<TContractState> {
+        fn render_token_uri(
+            self: @ComponentState<TContractState>,
+            token_id: u256,
+        ) -> ByteArray {""} // an empty string will fallback to ERC721Metadata
+    }
+
+
+    //-----------------------------------------
+    // ERC721ABI mixin
+    // cloned from ERC721Component::ERC721Mixin
     // https://github.com/OpenZeppelin/cairo-contracts/blob/v0.20.0/packages/token/src/erc721/erc721.cairo#L342
+    //
     #[embeddable_as(ERC721ComboMixinImpl)]
     pub impl ERC721ComboMixin<
         TContractState,
@@ -22,6 +40,7 @@ pub mod ERC721ComboComponent {
         +ERC721Component::ERC721HooksTrait<TContractState>,
         impl SRC5: SRC5Component::HasComponent<TContractState>,
         impl ERC721: ERC721Component::HasComponent<TContractState>,
+        impl Hooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
     > of interface::ERC721ABI<ComponentState<TContractState>> {
         // ISRC5
@@ -103,7 +122,13 @@ pub mod ERC721ComboComponent {
 
         fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> ByteArray {
             let erc721 = get_dep_component!(ref self, ERC721);
-            erc721.token_uri(token_id)
+            erc721._require_owned(token_id);
+            let custom_uri = Hooks::render_token_uri(self, token_id);
+            if (custom_uri.len() > 0) {
+                (custom_uri)
+            } else {
+                erc721.token_uri(token_id)
+            }
         }
 
         // IERC721CamelOnly

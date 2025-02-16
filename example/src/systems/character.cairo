@@ -34,13 +34,13 @@ pub trait ICharacter<TState> {
 
     // ICharacterPublic
     fn mint(ref self: TState, recipient: ContractAddress);
-    fn render_uri(self: @TState, token_id: u256) -> ByteArray;
+    fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
 #[starknet::interface]
 pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
-    fn render_uri(self: @TState, token_id: u256) -> ByteArray;
+    fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
 #[dojo::contract]
@@ -137,8 +137,18 @@ pub mod character {
             self.token.mint(recipient);
         }
 
-        fn render_uri(self: @ContractState, token_id: u256) -> ByteArray {
-            format!("{{\"name\":\"{}\"}}", self.erc721.name())
+        fn render_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
+            format!("{{\"name\":\"{} #{}\"}}", self.erc721.name(), token_id)
+        }
+    }
+
+    //-----------------------------------
+    // ERC721HooksTrait
+    //
+    pub impl ERC721HooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
+        fn render_token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> ByteArray {
+            // ("") // an empty string will fallback to ERC721Metadata
+            (self.get_contract().render_token_uri(token_id))
         }
     }
 

@@ -74,10 +74,14 @@ fn test_not_minted() {
 fn test_token_uri() {
     let sys: TestSystems = setup_world(0);
     _mint(sys, OWNER());
-    let uri_1 = sys.character.token_uri(TOKEN_ID_1);
-    assert_ne!(uri_1, "", "token_uri() should not be empty");
-    assert_eq!(uri_1, sys.character.tokenURI(TOKEN_ID_1), "tokenURI() == token_uri()");
+    let uri_1: ByteArray = sys.character.token_uri(TOKEN_ID_1);
     println!("token_uri(1): {}", uri_1);
+    assert_ne!(uri_1, "", "token_uri() should not be empty");
+    let first_char: felt252 = uri_1[0].into();
+    assert_ne!(first_char, '{', "token_uri() should be a json string");
+    // camelCase must exist and return the same result
+    let uri_1_camel = sys.character.tokenURI(TOKEN_ID_1);
+    assert_eq!(uri_1, uri_1_camel, "tokenURI() == token_uri()");
 }
 
 #[test]
