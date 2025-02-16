@@ -10,7 +10,7 @@ use example::tests::tester::{
         // IActionsDispatcherTrait,
         ICharacterDispatcherTrait,
         // ICashDispatcherTrait,
-        OWNER, OTHER, ZERO,
+        OWNER, OTHER,
     }
 };
 

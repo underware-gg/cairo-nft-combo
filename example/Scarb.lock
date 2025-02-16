@@ -28,6 +28,15 @@ version = "0.1.0"
 dependencies = [
  "dojo",
  "dojo_cairo_test",
+ "nft_combo",
+ "openzeppelin_introspection",
+ "openzeppelin_token",
+]
+
+[[package]]
+name = "nft_combo"
+version = "0.1.0"
+dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_token",
 ]

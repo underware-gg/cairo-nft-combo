@@ -32,19 +32,19 @@ pub trait ICharacter<TState> {
     // IERC721MetadataCamelOnly
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
 
-    // ITokenPublic
+    // ICharacterPublic
     fn mint(ref self: TState, recipient: ContractAddress);
     fn render_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
 #[starknet::interface]
-pub trait ITokenPublic<TState> {
+pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
     fn render_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
 #[dojo::contract]
-pub mod character {    
+pub mod character {
     use starknet::{ContractAddress};
     use dojo::world::{WorldStorage};
 
@@ -54,20 +54,26 @@ pub mod character {
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::{ERC721Component};
     use openzeppelin_token::erc721::ERC721HooksEmptyImpl;
+    use nft_combo::erc721::erc721_combo::{ERC721ComboComponent};
     use example::systems::components::token_component::{TokenComponent};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
+    component!(path: ERC721ComboComponent, storage: erc721_combo, event: ERC721ComboEvent);
     component!(path: TokenComponent, storage: token, event: TokenEvent);
+    // #[abi(embed_v0)]
+    // impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     #[abi(embed_v0)]
-    impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
+    impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
     impl TokenInternalImpl = TokenComponent::InternalImpl<ContractState>;
     #[storage]
     struct Storage {
         #[substorage(v0)]
+        src5: SRC5Component::Storage,
+        #[substorage(v0)]
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
-        src5: SRC5Component::Storage,
+        erc721_combo: ERC721ComboComponent::Storage,
         #[substorage(v0)]
         token: TokenComponent::Storage,
     }
@@ -78,6 +84,8 @@ pub mod character {
         SRC5Event: SRC5Component::Event,
         #[flat]
         ERC721Event: ERC721Component::Event,
+        #[flat]
+        ERC721ComboEvent: ERC721ComboComponent::Event,
         #[flat]
         TokenEvent: TokenComponent::Event,
     }
@@ -122,9 +130,9 @@ pub mod character {
     //-----------------------------------
     // Public
     //
-    use super::{ITokenPublic};
+    use super::{ICharacterPublic};
     #[abi(embed_v0)]
-    impl TokenComponentPublicImpl of ITokenPublic<ContractState> {
+    impl CharacterPublicImpl of ICharacterPublic<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress) {
             self.token.mint(recipient);
         }

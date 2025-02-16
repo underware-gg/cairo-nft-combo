@@ -22,13 +22,13 @@ pub trait ICash<TState> {
     fn balanceOf(self: @TState, account: ContractAddress) -> u256;
     fn transferFrom(ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
     
-    // ICoinPublic
+    // ICashPublic
     fn mint(ref self: TState, recipient: ContractAddress, amount: u256);
     fn faucet(ref self: TState, recipient: ContractAddress);
 }
 
 #[starknet::interface]
-pub trait ICoinPublic<TState> {
+pub trait ICashPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress, amount: u256);
     fn faucet(ref self: TState, recipient: ContractAddress);
 }
@@ -106,9 +106,9 @@ pub mod cash {
     //-----------------------------------
     // Public
     //
-    use super::{ICoinPublic};
+    use super::{ICashPublic};
     #[abi(embed_v0)]
-    impl CoinComponentPublicImpl of ICoinPublic<ContractState> {
+    impl CashPublicImpl of ICashPublic<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress, amount: u256) {
             self.coin.mint(recipient, amount);
         }
