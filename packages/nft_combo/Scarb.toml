@@ -1,0 +1,13 @@
+[package]
+name = "nft_combo"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
+openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
+
+[lib]
+
+# [[target.starknet-contract]]
+# build-external-contracts = ["dojo::world::world_contract::world"]
