@@ -1,0 +1,108 @@
+#!/bin/bash
+set -e # enable exit on error
+source scripts/setup.sh
+
+if [[
+  -z "$PROJECT_NAME" ||
+  -z "$PROFILE" ||
+  -z "$MANIFEST_FILE_PATH" ||
+  "$WORLD_ADDRESS" != "0x"* ||
+  "$RPC_URL" != "http"*
+]]; then
+  echo "! Missing data 👎"
+  exit 1
+fi
+
+# export CLIENT_MANIFEST_PATH="../client/src/manifests"
+# export CLIENT_GENERATED_PATH="../client/src/generated"
+
+#-----------------
+# build
+#
+echo "------------------------------------------------------------------------------"
+sozo --version
+echo "------------------------------------------------------------------------------"
+echo ">>> Cleaning..."
+execute_command "sozo -P $PROFILE $ARG_OFFLINE clean"
+echo ">>> Building..."
+if [[ "$PROFILE" == "dev" ]]; then
+  execute_command "sozo -P $PROFILE $ARG_OFFLINE build $ARG_BINDINGS"
+else
+  execute_command "sozo -P $PROFILE $ARG_OFFLINE build"
+fi
+echo "👍"
+
+#-----------------
+# migrate
+#
+echo "------------------------------------------------------------------------------"
+echo ">>> Inspect migrations..."
+execute_command "sozo -P $PROFILE $ARG_OFFLINE inspect --world $WORLD_ADDRESS"
+
+if [[ -n "$ARG_INSPECT" ]]; then # if is set
+  echo "--- INSPECTED! 👍"
+  exit 0
+fi
+
+echo ">>> Do migrations..."
+# execute_command "sozo -P $PROFILE $ARG_OFFLINE migrate -vvv --world $WORLD_ADDRESS"
+execute_command "sozo -P $PROFILE $ARG_OFFLINE migrate --world $WORLD_ADDRESS"
+echo "👍"
+
+# echo ">>> Inspect again..."
+# execute_command "sozo -P $PROFILE $ARG_OFFLINE inspect --world $WORLD_ADDRESS"
+
+#-----------------
+# auth write
+#
+# scripts/default_auth.sh $PROFILE
+
+#------------------------
+# copy manifest to client
+#
+echo "------------------------------------------------------------------------------"
+echo ">>> Copying manifest [$MANIFEST_FILE_PATH] to [$CLIENT_MANIFEST_PATH/]"
+if [[ -n "$CLIENT_MANIFEST_PATH" ]]; then # if is set
+  mkdir -p $CLIENT_MANIFEST_PATH
+  cp $MANIFEST_FILE_PATH $CLIENT_MANIFEST_PATH/
+  echo "👍"
+else
+  echo "❌ CLIENT_MANIFEST_PATH is not set!"
+fi
+
+#
+# create torii config
+export CASH_ADDRESS=$(get_contract_address "example-cash")
+export CHARACTER_ADDRESS=$(get_contract_address "example-character")
+echo "------------------------------------------------------------------------------"
+echo ">>> Create torii config [$TORII_CONFIG_PATH]..."
+cp $TORII_CONFIG_TEMPLATE_PATH $TORII_CONFIG_PATH
+sed -i '' -e "s|\$profile|$PROFILE|g" $TORII_CONFIG_PATH
+sed -i '' -e "s|\$world_address|$WORLD_ADDRESS|g" $TORII_CONFIG_PATH
+sed -i '' -e "s|\$rpc_url|$RPC_URL|g" $TORII_CONFIG_PATH
+sed -i '' -e "s|\$cash_address|$CASH_ADDRESS|g" $TORII_CONFIG_PATH
+sed -i '' -e "s|\$character_address|$CHARACTER_ADDRESS|g" $TORII_CONFIG_PATH
+cat $TORII_CONFIG_PATH
+echo "👍"
+
+#------------------------
+# typescript bindings
+#
+if [[ "$PROFILE" == "dev" ]]; then
+  #
+  # copy typescript bindings
+  if [[ -n "$ARG_BINDINGS" ]]; then # if is set
+    if [[ -n "$CLIENT_MANIFEST_PATH" ]]; then # if is set
+      cp -R ./bindings/typescript/* $CLIENT_GENERATED_PATH
+      # list copied files
+      echo "------------------------------------------------------------------------------"
+      ls -ld $CLIENT_GENERATED_PATH/* | grep -E 'ts|json'
+      echo "👍"
+    else
+      echo "❌ CLIENT_GENERATED_PATH is not set!"
+    fi
+  fi
+fi
+
+#------------------
+echo "--- DONE! 👍"

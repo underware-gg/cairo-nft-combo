@@ -1,0 +1,17 @@
+#
+# torii config for profile [$profile]
+#
+world_address = "$world_address"
+rpc = "$rpc_url"
+
+[events]
+raw = true
+historical = []
+
+[indexing]
+index_pending = true
+index_transactions = false
+contracts = [
+  "erc20:$cash_address", # cash_address
+  "erc721:$character_address", # character_address
+]

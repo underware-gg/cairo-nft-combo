@@ -1,10 +1,5 @@
 #!/bin/bash
-set -euo pipefail
-pushd $(dirname "$0")/..
+set -e
+source scripts/setup.sh
 
-export RPC_URL="http://localhost:5050";
-
-export WORLD_ADDRESS=$(cat ./manifests/dev/deployment/manifest.json | jq -r '.world.address')
-
-# sozo execute --world <WORLD_ADDRESS> <CONTRACT> <ENTRYPOINT>
-sozo execute --world $WORLD_ADDRESS example-cash faucet --calldata 0x111 --wait --receipt
+sozo execute --world $WORLD_ADDRESS example-actions cash_faucet --wait --receipt

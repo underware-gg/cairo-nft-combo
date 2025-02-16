@@ -1,3 +1,8 @@
-export WORLD_ADDRESS=$(cat ./manifests/dev/deployment/manifest.json | jq -r '.world.address')
+#!/bin/bash
+set -e
+source scripts/setup.sh
 
-torii --allowed-origins "*" --world $WORLD_ADDRESS --config torii.toml
+torii --version
+torii \
+  --config $TORII_CONFIG_PATH \
+  --http.cors_origins "*"

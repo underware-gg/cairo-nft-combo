@@ -12,41 +12,39 @@ discord = "https://discord.gg/FB2wR6uF"
 github = "https://github.com/dojoengine/dojo-starter"
 telegram = "https://t.me/dojoengine"
 
-[namespace]
-default = "example"
-
 [env]
 rpc_url = "http://localhost:5050/"
 # Default account for katana with seed = 0
-account_address = "0xb3ff441a68610b30fd5e2abbf3a1548eb6ba6f3559f2862bf2dc757e5828ca"
-private_key = "0x2bbf4f9fd0bbb2e60b0316c1fe0b76cf7a4d0198bd493ced9b8df2a3a24d68a"
-world_address = "0x13b08a38159ca43e35c4931251339ca889c0e9012be3f5a3274239717bf560a"
+account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+world_address = "0x286576cec4727d930d2155917bc086acec3370ee88663a26ac0f15a24df23b3"
 
 
 #--------------------------
-# ownership
+# namespace config
 #
+[namespace]
+default = "example"
+
+#
+# ownership
 [owners]
 "example" = [
   "example-actions",
 ]
 
-#--------------------------
-# writers
 #
+# writers
 [writers]
-# ERC-20
 "example-CoinConfig" = [
   "example-cash",
 ]
-# ERC-721
 "example-TokenConfig" = [
   "example-character",
 ]
 
-#--------------------------
-# init_calldata (dojo_init)
 #
+# init_calldata (dojo_init)
 [init_call_args]
 "example-cash" = [
   "1000000000000000000000", # faucet_amount: 1,000 CASH

@@ -1,64 +1,42 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/mark-dark.svg">
-  <img alt="Dojo logo" align="right" width="120" src=".github/mark-light.svg">
-</picture>
+# Dojo OpenZeppelin Token contract example
 
-<a href="https://twitter.com/dojostarknet">
-<img src="https://img.shields.io/twitter/follow/dojostarknet?style=social"/>
-</a>
-<a href="https://github.com/dojoengine/dojo">
-<img src="https://img.shields.io/github/stars/dojoengine/dojo?style=social"/>
-</a>
+Example project with ERC-20 and ERC-721 tokens.
 
-[![discord](https://img.shields.io/badge/join-dojo-green?logo=discord&logoColor=white)](https://discord.gg/PwDa2mKhR4)
-[![Telegram Chat][tg-badge]][tg-url]
 
-[tg-badge]: https://img.shields.io/endpoint?color=neon&logo=telegram&label=chat&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fdojoengine
-[tg-url]: https://t.me/dojoengine
+## Running locally
 
-# Dojo Starter: Official Guide
-
-The official Dojo Starter guide, the quickest and most streamlined way to get your Dojo provable game up and running. This guide will assist you with the initial setup, from cloning the repository to deploying your world.
-
-Read the full tutorial [here](https://book.dojoengine.org/tutorial/dojo-starter).
-
-## Running Locally
-
-#### Terminal one (Make sure this is running)
+### Terminal 1: Katana
 
 ```bash
-# Run Katana
-katana --disable-fee --allowed-origins "*"
+# or...
+./run_katana
 ```
 
-#### Terminal two
+### Terminal 2: Migration
+
+Migration will publish your contracts to Katana, Slot or Starknet
 
 ```bash
-# Build the example
-sozo build
+# you can use the migrate script...
+usage: ./migrate <PROFILE> [--offline] [--inspect] [--bindings]
 
-# Migrate the example
-sozo migrate apply
+# pass a profile...
+./migrate dev
+./migrate sepolia
 
-# Start Torii
-torii --world 0x5d475a9221f6cbf1a016b12400a01b9a89935069aecd57e9876fcb2a7bb29da --allowed-origins "*"
+# inspect only (will not migrate)
+./migrate dev --inspect
+
+# generate typescript bindings while building
+./migrate dev --bindings
+
 ```
 
----
+#### Terminal 3: Torii
 
-## Contribution
+The migrate script will create the torii config file to the profiel: `torii_PROFILE.toml`
 
-This starter project is a constant work in progress and contributions are greatly appreciated!
-
-1. **Report a Bug**
-
-    - If you think you have encountered a bug, and we should know about it, feel free to report it [here](https://github.com/dojoengine/dojo-starter/issues) and we will take care of it.
-
-2. **Request a Feature**
-
-    - You can also request for a feature [here](https://github.com/dojoengine/dojo-starter/issues), and if it's viable, it will be picked for development.
-
-3. **Create a Pull Request**
-    - It can't get better then this, your pull request will be appreciated by the community.
-
-Happy coding!
+```bash
+# use the run_torii to start torii for a specific profile
+./run_torii dev
+```
