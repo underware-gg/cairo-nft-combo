@@ -1,0 +1,17 @@
+#
+# torii config for profile [dev]
+#
+world_address = "0x286576cec4727d930d2155917bc086acec3370ee88663a26ac0f15a24df23b3"
+rpc = "http://localhost:5050/"
+
+[events]
+raw = true
+historical = []
+
+[indexing]
+index_pending = true
+index_transactions = false
+contracts = [
+  "erc20:0x325f7eb189d7f5e3289296483fc28162c711bc479a0adfc3292d20107981da", # cash_address
+  "erc721:0x7606aed2d51b87ab0139d9cd8bb842b0ed0b083bcb28fa0ba9914e60f9b3c02", # character_address
+]
