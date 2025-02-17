@@ -32,14 +32,28 @@ pub trait ICharacter<TState> {
     // IERC721MetadataCamelOnly
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
 
+    //-----------------------------------
+    // ITokenComponentPublic
+    //
+    fn minted_count(self: @TState) -> u128;
+    fn can_mint(self: @TState, recipient: ContractAddress) -> bool;
+    fn exists(self: @TState, token_id: u128) -> bool;
+    fn is_owner_of(self: @TState, address: ContractAddress, token_id: u128) -> bool;
+
     // ICharacterPublic
     fn mint(ref self: TState, recipient: ContractAddress);
     fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
+// Exposed to Cartridge Controller
 #[starknet::interface]
 pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
+}
+
+// Exposed to world only
+#[starknet::interface]
+pub trait ICharacterProtected<TState> {
     fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
 }
 
@@ -65,6 +79,8 @@ pub mod character {
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
+    #[abi(embed_v0)]
+    impl TokenComponentPublicImpl = TokenComponent::TokenComponentPublicImpl<ContractState>;
     impl TokenInternalImpl = TokenComponent::InternalImpl<ContractState>;
     #[storage]
     struct Storage {
@@ -130,13 +146,18 @@ pub mod character {
     //-----------------------------------
     // Public
     //
-    use super::{ICharacterPublic};
     #[abi(embed_v0)]
-    impl CharacterPublicImpl of ICharacterPublic<ContractState> {
+    impl CharacterPublicImpl of super::ICharacterPublic<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress) {
             self.token.mint(recipient);
         }
+    }
 
+    //-----------------------------------
+    // Protected
+    //
+    #[abi(embed_v0)]
+    impl CharacterProtectedImpl of super::ICharacterProtected<ContractState> {
         fn render_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             format!("{{\"name\":\"{} #{}\"}}", self.erc721.name(), token_id)
         }

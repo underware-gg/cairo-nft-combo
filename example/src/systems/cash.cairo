@@ -27,10 +27,16 @@ pub trait ICash<TState> {
     fn faucet(ref self: TState, recipient: ContractAddress);
 }
 
+// Exposed to clients
 #[starknet::interface]
 pub trait ICashPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress, amount: u256);
     fn faucet(ref self: TState, recipient: ContractAddress);
+}
+
+// Exposed to world
+#[starknet::interface]
+pub trait ICashProtected<TState> {
 }
 
 #[dojo::contract]
@@ -106,9 +112,8 @@ pub mod cash {
     //-----------------------------------
     // Public
     //
-    use super::{ICashPublic};
     #[abi(embed_v0)]
-    impl CashPublicImpl of ICashPublic<ContractState> {
+    impl CashPublicImpl of super::ICashPublic<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress, amount: u256) {
             self.coin.mint(recipient, amount);
         }

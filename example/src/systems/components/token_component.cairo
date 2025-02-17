@@ -2,6 +2,7 @@ use starknet::{ContractAddress};
 
 #[starknet::interface]
 pub trait ITokenComponentPublic<TState> {
+    fn minted_count(self: @TState) -> u128;
     fn can_mint(self: @TState, recipient: ContractAddress) -> bool;
     fn exists(self: @TState, token_id: u128) -> bool;
     fn is_owner_of(self: @TState, address: ContractAddress, token_id: u128) -> bool;
@@ -55,7 +56,6 @@ pub mod TokenComponent {
     //-----------------------------------------
     // Public
     //
-    use super::{ITokenComponentPublic};
     #[embeddable_as(TokenComponentPublicImpl)]
     pub impl TokenComponentPublic<
         TContractState,
@@ -65,7 +65,14 @@ pub mod TokenComponent {
         +ERC721Component::ERC721HooksTrait<TContractState>,
         impl ERC721: ERC721Component::HasComponent<TContractState>,
         +Drop<TContractState>,
-    > of ITokenComponentPublic<ComponentState<TContractState>> {
+    > of super::ITokenComponentPublic<ComponentState<TContractState>> {
+
+        fn minted_count(self: @ComponentState<TContractState>) -> u128 {
+            let mut world = DnsTrait::storage(self.get_contract().world_dispatcher(), @"example");
+            let mut store: Store = StoreTrait::new(world);
+            let token_config: TokenConfigValue = store.get_token_config_value(starknet::get_contract_address());
+            (token_config.minted_count)
+        }
 
         fn can_mint(self: @ComponentState<TContractState>,
             recipient: ContractAddress,
@@ -97,7 +104,6 @@ pub mod TokenComponent {
     //-----------------------------------------
     // Internal
     //
-    use super::{ITokenComponentInternal};
     #[embeddable_as(TokenComponentInternalImpl)]
     pub impl InternalImpl<
         TContractState,
@@ -107,7 +113,7 @@ pub mod TokenComponent {
         +ERC721Component::ERC721HooksTrait<TContractState>,
         impl ERC721: ERC721Component::HasComponent<TContractState>,
         +Drop<TContractState>,
-    > of ITokenComponentInternal<ComponentState<TContractState>> {
+    > of super::ITokenComponentInternal<ComponentState<TContractState>> {
         fn initialize(ref self: ComponentState<TContractState>,
             minter_address: ContractAddress,
         ) {

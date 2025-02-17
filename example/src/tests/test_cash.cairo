@@ -17,7 +17,7 @@ const SPEND_AMOUNT: u256 = 200 * ETH_TO_WEI;
 #[test]
 fn test_initializer() {
     let sys: TestSystems = setup_world(0);
-    println!("cash SYMBOL:[{}] NAME:[{}]", sys.cash.symbol(), sys.cash.name());
+    println!("--- cash SYMBOL:[{}] NAME:[{}]", sys.cash.symbol(), sys.cash.name());
     assert_eq!(sys.cash.symbol(), "CA$H", "Symbol is wrong");
     assert_ne!(sys.cash.name(), "", "Name is wrong");
 }
