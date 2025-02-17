@@ -2,6 +2,7 @@
 pub mod tester {
     use starknet::{ContractAddress, testing};
     use dojo::world::{WorldStorage};
+    use dojo::model::{ModelStorageTest};
     use dojo_cairo_test::{
         spawn_test_world, NamespaceDef, TestResource, ContractDefTrait, ContractDef,
         WorldStorageTestTrait,
@@ -15,6 +16,7 @@ pub mod tester {
     use example::models::{
         coin_config::{m_CoinConfig},
         token_config::{m_TokenConfig},
+        tester::{m_Tester, Tester},
     };
     use example::libs::store::{Store, StoreTrait};
     use example::libs::dns::{DnsTrait};
@@ -133,6 +135,7 @@ pub mod tester {
                 // example models
                 TestResource::Model(m_CoinConfig::TEST_CLASS_HASH),
                 TestResource::Model(m_TokenConfig::TEST_CLASS_HASH),
+                TestResource::Model(m_Tester::TEST_CLASS_HASH),
                 // events
                 // TestResource::Event(e_CoinConfig::TEST_CLASS_HASH),
                 // TestResource::Event(e_TokenConfig::TEST_CLASS_HASH),
@@ -175,6 +178,12 @@ pub mod tester {
     // execute calls
     //
 
+    pub fn set_skip_uri_hooks(ref sys: TestSystems, skip_uri_hooks: bool) {
+        let mut model: Tester = sys.store.get_tester();
+        model.skip_uri_hooks = skip_uri_hooks;
+        sys.world.write_model_test(@model);
+    }
+    
     // ::actions
     pub fn execute_mint_character(system: @IActionsDispatcher, sender: ContractAddress) {
         impersonate(sender);

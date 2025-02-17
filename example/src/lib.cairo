@@ -11,6 +11,7 @@ mod systems {
 mod models {
     pub mod coin_config;
     pub mod token_config;
+    pub mod tester;
 }
 
 mod libs {

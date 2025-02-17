@@ -9,7 +9,7 @@ A component that extends the Cairo OpenZeppelin token implementations with addit
 
 The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) provides a `token_uri()` that concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Implement the `token_uri()` hook to return a JSON string containing the token metadata.
 
-Example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
+Toke metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
 
 ```json
 {
@@ -27,9 +27,11 @@ Example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/meta
 
 ### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata via `contractURI()`
 
+* Store a default uri at initalization to be returned by `contract_uri()`.
 * Implement the `contract_uri()` hook to return a JSON string containing the contract metadata.
+* Call the `contract_uri_updated()` to emit an `ContractURIUpdated` and trigger indexers to refresh contract metadata.
 
-Example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-contracturi)):
+Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-contracturi)):
 
 ```json
 {
@@ -44,15 +46,11 @@ Example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-
 }
 ```
 
-* Call the `contract_uri_updated()` to emit an `ContractURIUpdated` event when indexers need to refresh contract metadata.
-
-
 
 ### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
 
-* Call the `metadata_update()` to emit an `MetadataUpdate` event when indexers need to refresh one token's metadata.
-* Call the `batch_metadata_update()` to emit a `BatchMetadataUpdate` event when indexers need to refresh a range of token's metadata.
-
+* Call the `metadata_update()` to emit an `MetadataUpdate` and trigger indexers to refresh one token's metadata.
+* Call the `batch_metadata_update()` to emit a `BatchMetadataUpdate` and trigger indexers to refresh a range of tokens' metadata.
 
 
 ## `ERC721ComboComponent`

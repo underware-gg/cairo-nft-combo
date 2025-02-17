@@ -6,6 +6,7 @@ use dojo::model::{ModelStorage, ModelValueStorage};
 pub use example::models::{
     token_config::{TokenConfig, TokenConfigValue},
     coin_config::{CoinConfig, CoinConfigValue},
+    tester::{Tester},
 };
 
 #[derive(Copy, Drop)]
@@ -42,6 +43,11 @@ pub impl StoreImpl of StoreTrait {
         (self.world.read_value(contract_address))
     }
 
+    #[inline(always)]
+    fn get_tester(ref self: Store) -> Tester {
+        (self.world.read_model(1))
+    }
+
     //
     // Setters
     //
@@ -53,6 +59,11 @@ pub impl StoreImpl of StoreTrait {
 
     #[inline(always)]
     fn set_coin_config(ref self: Store, model: @CoinConfig) {
+        self.world.write_model(model);
+    }
+
+    #[inline(always)]
+    fn set_tester(ref self: Store, model: @Tester) {
         self.world.write_model(model);
     }
 }

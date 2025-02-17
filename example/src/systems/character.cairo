@@ -56,8 +56,9 @@ pub trait ICharacter<TState> {
     // ICharacterPublic
     //
     fn mint(ref self: TState, recipient: ContractAddress);
-    fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
-    fn render_contract_uri(self: @TState) -> ByteArray;
+    // ICharacterProtected
+    fn render_token_uri(self: @TState, token_id: u256) -> Option<ByteArray>;
+    fn render_contract_uri(self: @TState) -> Option<ByteArray>;
 }
 
 // Exposed to Cartridge Controller
@@ -69,8 +70,8 @@ pub trait ICharacterPublic<TState> {
 // Exposed to world only
 #[starknet::interface]
 pub trait ICharacterProtected<TState> {
-    fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
-    fn render_contract_uri(self: @TState) -> ByteArray;
+    fn render_token_uri(self: @TState, token_id: u256) -> Option<ByteArray>;
+    fn render_contract_uri(self: @TState) -> Option<ByteArray>;
 }
 
 #[dojo::contract]
@@ -126,12 +127,15 @@ pub mod character {
     //-----------------------------------
 
     use example::libs::dns::{DnsTrait};
+    use example::libs::store::{Store, StoreTrait};
+    use example::models::tester::{Tester};
 
 
     //*******************************
     fn TOKEN_NAME() -> ByteArray {("Sample Character")}
     fn TOKEN_SYMBOL() -> ByteArray {("CHARACTER")}
-    fn BASE_URI() -> ByteArray {("https://underware.gg/")}
+    fn BASE_URI() -> ByteArray {("https://underware.gg/token/")}
+    fn CONTRACT_URI() -> ByteArray {("https://underware.gg/contract.json")}
     //*******************************
 
     fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
@@ -144,6 +148,7 @@ pub mod character {
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
             BASE_URI(),
+            CONTRACT_URI(),
         );
         self.token.initialize(
             world.actions_address(),
@@ -174,11 +179,21 @@ pub mod character {
     //
     #[abi(embed_v0)]
     impl CharacterProtectedImpl of super::ICharacterProtected<ContractState> {
-        fn render_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
-            format!("{{\"name\":\"{} #{}\"}}", self.name(), token_id)
+        fn render_token_uri(self: @ContractState, token_id: u256) -> Option<ByteArray> {
+            let mut store: Store = StoreTrait::new(self.world_default());
+            let tester: Tester = store.get_tester();
+            (match tester.skip_uri_hooks {
+                true => { Option::None },
+                false => { Option::Some(format!("{{\"name\":\"{} #{}\"}}", self.name(), token_id)) },
+            })
         }
-        fn render_contract_uri(self: @ContractState) -> ByteArray {
-            format!("{{\"name\":\"{} ERC-721 token\"}}", self.name())
+        fn render_contract_uri(self: @ContractState) -> Option<ByteArray> {
+            let mut store: Store = StoreTrait::new(self.world_default());
+            let tester: Tester = store.get_tester();
+            (match tester.skip_uri_hooks {
+                true => { Option::None },
+                false => { Option::Some(format!("{{\"name\":\"{} ERC-721 token\"}}", self.name())) },
+            })
         }
     }
 
@@ -188,12 +203,10 @@ pub mod character {
     //
     pub impl ERC721HooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
         fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {
-            // ("") // an empty string will fallback to ERC721Metadata
-            (Option::Some(self.get_contract().render_token_uri(token_id)))
+            (self.get_contract().render_token_uri(token_id))
         }
         fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState> ) -> Option<ByteArray> {
-            // ("") // an empty string will not provide contract metadata
-            (Option::Some(self.get_contract().render_contract_uri()))
+            (self.get_contract().render_contract_uri())
         }
     }
 

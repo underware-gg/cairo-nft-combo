@@ -1,7 +1,7 @@
 #[starknet::component]
 pub mod ERC721ComboComponent {
     use starknet::{ContractAddress};
-    // use openzeppelin_token::erc721::interface;
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use openzeppelin_token::erc721::{ERC721Component};
     use openzeppelin_token::erc721::ERC721Component::{
         InternalImpl as ERC721InternalImpl,
@@ -14,7 +14,9 @@ pub mod ERC721ComboComponent {
     use crate::erc721::interface;
 
     #[storage]
-    pub struct Storage {}
+    pub struct Storage {
+        pub ERC7572_contract_uri: ByteArray,
+    }
 
     #[event]
     #[derive(Drop, PartialEq, starknet::Event)]
@@ -82,12 +84,23 @@ pub mod ERC721ComboComponent {
             name: ByteArray,
             symbol: ByteArray,
             base_uri: ByteArray,
+            contract_uri: ByteArray,
         ) {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             erc721.initializer(name, symbol, base_uri);
+            self._set_contract_uri(contract_uri);
             let mut src5_component = get_dep_component_mut!(ref self, SRC5);
             src5_component.register_interface(interface::IERC7572_ID);
             src5_component.register_interface(interface::IERC4906_ID);
+        }
+
+        /// Sets the base URI.
+        fn _set_contract_uri(ref self: ComponentState<TContractState>, contract_uri: ByteArray) {
+            self.ERC7572_contract_uri.write(contract_uri);
+        }
+
+        fn _contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
+            (self.ERC7572_contract_uri.read())
         }
     }
 
@@ -239,7 +252,7 @@ pub mod ERC721ComboComponent {
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (match Hooks::contract_uri(self) {
                 Option::Some(custom_uri) => { (custom_uri) },
-                Option::None => { ("") },
+                Option::None => { (self._contract_uri()) },
             })
         }
         #[inline(always)]

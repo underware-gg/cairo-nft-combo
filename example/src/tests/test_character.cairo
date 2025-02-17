@@ -73,17 +73,30 @@ fn test_not_minted() {
 //
 
 #[test]
+fn test_token_uri_default() {
+    let mut sys: TestSystems = setup_world(0);
+    tester::set_skip_uri_hooks(ref sys, true);
+    _mint(sys, OWNER());
+    let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
+    let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
+    println!("--- token_uri(1): {}", uri);
+    assert_ne!(uri, "", "token_uri() should not be empty");
+    assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
+    let first_char: felt252 = uri[0].into();
+    assert_eq!(first_char, 'h', "token_uri() should start with http");
+}
+
+#[test]
 fn test_token_uri() {
     let sys: TestSystems = setup_world(0);
     _mint(sys, OWNER());
     let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
+    let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
     println!("--- token_uri(1): {}", uri);
     assert_ne!(uri, "", "token_uri() should not be empty");
+    assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
     let first_char: felt252 = uri[0].into();
     assert_eq!(first_char, '{', "token_uri() should be a json string");
-    // camelCase must exist and return the same result
-    let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
-    assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
 }
 
 #[test]
@@ -140,16 +153,28 @@ fn test_token_is_owner_of() {
 //
 
 #[test]
+fn test_contract_uri_default() {
+    let mut sys: TestSystems = setup_world(0);
+    tester::set_skip_uri_hooks(ref sys, true);
+    let uri: ByteArray = sys.character.contract_uri();
+    let uri_camel = sys.character.contractURI();
+    println!("--- contract_uri(1): {}", uri);
+    assert_ne!(uri, "", "contract_uri() should not be empty");
+    assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
+    let first_char: felt252 = uri[0].into();
+    assert_eq!(first_char, 'h', "contract_uri() should start with http");
+}
+
+#[test]
 fn test_contract_uri() {
     let sys: TestSystems = setup_world(0);
     let uri: ByteArray = sys.character.contract_uri();
+    let uri_camel = sys.character.contractURI();
     println!("--- contract_uri(1): {}", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
+    assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     let first_char: felt252 = uri[0].into();
     assert_eq!(first_char, '{', "contract_uri() should be a json string");
-    // camelCase must exist and return the same result
-    let uri_camel = sys.character.contractURI();
-    assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
 }
 
 #[test]
