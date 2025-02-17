@@ -33,15 +33,18 @@ pub trait ICharacter<TState> {
     fn token_uri(self: @TState, token_id: u256) -> ByteArray;
     // (IERC721MetadataCamelOnly)
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
+    // (IERC721Info)
+    fn total_supply(self: @TState) -> u256;
+    fn last_token_id(self: @TState) -> u256;
+    //-----------------------------------
+    // IERC4906MetadataUpdate
+    fn metadata_update(ref self: TState, token_id: u256);
+    fn batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
     //-----------------------------------
     // IERC7572ContractMetadata
     fn contract_uri(self: @TState) -> ByteArray;
     fn contractURI(self: @TState) -> ByteArray;
     fn contract_uri_updated(ref self: TState);
-    //-----------------------------------
-    // IERC4906MetadataUpdate
-    fn metadata_update(ref self: TState, token_id: u256);
-    fn batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 
 
     //-----------------------------------
@@ -56,6 +59,7 @@ pub trait ICharacter<TState> {
     // ICharacterPublic
     //
     fn mint(ref self: TState, recipient: ContractAddress);
+    fn burn(ref self: TState, token_id: u128);
     // ICharacterProtected
     fn render_token_uri(self: @TState, token_id: u256) -> Option<ByteArray>;
     fn render_contract_uri(self: @TState) -> Option<ByteArray>;
@@ -65,6 +69,7 @@ pub trait ICharacter<TState> {
 #[starknet::interface]
 pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
+    fn burn(ref self: TState, token_id: u128);
 }
 
 // Exposed to world only
@@ -84,8 +89,7 @@ pub mod character {
     //
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::{ERC721Component};
-    use openzeppelin_token::erc721::ERC721HooksEmptyImpl;
-    use nft_combo::erc721::erc721_combo::{ERC721ComboComponent};
+    use nft_combo::erc721::erc721_combo::{ERC721ComboComponent, ERC721ComboComponent::ERC721HooksImpl};
     use example::systems::components::token_component::{TokenComponent};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
@@ -172,6 +176,9 @@ pub mod character {
         fn mint(ref self: ContractState, recipient: ContractAddress) {
             self.token.mint(recipient);
         }
+        fn burn(ref self: ContractState, token_id: u128) {
+            self.token.burn(token_id);
+        }
     }
 
     //-----------------------------------
@@ -201,13 +208,17 @@ pub mod character {
     //-----------------------------------
     // ERC721HooksTrait
     //
-    pub impl ERC721HooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
+    pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
         fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {
             (self.get_contract().render_token_uri(token_id))
         }
         fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState> ) -> Option<ByteArray> {
             (self.get_contract().render_contract_uri())
         }
+
+        // optional hooks from ERC721Component::ERC721HooksTrait
+        // fn before_update(ref self: ERC721ComboComponent::ComponentState<ContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
+        // fn after_update(ref self: ERC721ComboComponent::ComponentState<ContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
     }
 
 }

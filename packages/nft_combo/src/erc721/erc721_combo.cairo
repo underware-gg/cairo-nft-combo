@@ -1,5 +1,6 @@
 #[starknet::component]
 pub mod ERC721ComboComponent {
+    use core::num::traits::Zero;
     use starknet::{ContractAddress};
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use openzeppelin_token::erc721::{ERC721Component};
@@ -15,6 +16,8 @@ pub mod ERC721ComboComponent {
 
     #[storage]
     pub struct Storage {
+        pub ERC721_last_token_id: u256,
+        pub ERC721_total_supply: u256,
         pub ERC7572_contract_uri: ByteArray,
     }
 
@@ -46,14 +49,14 @@ pub mod ERC721ComboComponent {
     //-----------------------------------------
     // Combo Hooks
     //
-    // (your contract MUST implement this trait)
+    // your contract must implement this trait, or import ERC721ComboHooksEmptyImpl
+    // see character.cairo for example
     //
     pub trait ERC721ComboHooksTrait<TContractState> {
         //
         // ERC-721 Metadata
         // Custom renderer for `token_uri()`
         // for fully on-chain metadata
-        //
         fn token_uri(
             self: @ComponentState<TContractState>,
             token_id: u256,
@@ -62,19 +65,57 @@ pub mod ERC721ComboComponent {
         //
         // ERC-7572
         // Contract-level metadata
-        //
         fn contract_uri(
             self: @ComponentState<TContractState>,
         ) -> Option<ByteArray> { (Option::None)  }
+
+        //
+        // ERC721Component::ERC721HooksTrait
+        fn before_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
+        fn after_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
     }
 
+    //
+    // ERC721Component::ERC721HooksTrait
+    // (must be imported by contracts)
+    //
+    pub impl ERC721HooksImpl<
+        TContractState,
+        +HasComponent<TContractState>,
+        impl SRC5: SRC5Component::HasComponent<TContractState>,
+        impl ERC721: ERC721Component::HasComponent<TContractState>,
+        impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
+        +Drop<TContractState>,
+    > of ERC721Component::ERC721HooksTrait<TContractState> {
+        fn before_update(ref self: ERC721Component::ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {
+            let mut contract = self.get_contract_mut();
+            let mut comp = HasComponent::get_component_mut(ref contract);
+            let mut erc721 = ERC721Component::HasComponent::get_component_mut(ref contract);
+            if (erc721._owner_of(token_id).is_zero()) {
+                InternalImpl::_handle_mint(ref comp, token_id);
+            } else if (to.is_zero()) {
+                InternalImpl::_handle_burn(ref comp);
+            }
+            ComboHooks::before_update(ref comp, to, token_id, auth);
+        }
+        fn after_update(ref self: ERC721Component::ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {
+            let mut contract = self.get_contract_mut();
+            let mut comp = HasComponent::get_component_mut(ref contract);
+            ComboHooks::after_update(ref comp, to, token_id, auth);
+        }
+    }
+
+
+    //-----------------------------------------
+    // Internal
+    //
     #[generate_trait]
     pub impl InternalImpl<
         TContractState,
         +HasComponent<TContractState>,
         impl SRC5: SRC5Component::HasComponent<TContractState>,
         impl ERC721: ERC721Component::HasComponent<TContractState>,
-        impl Hooks: ERC721Component::ERC721HooksTrait<TContractState>,
+        impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
     > of InternalTrait<TContractState> {
         /// Initializes the contract by setting the token name, symbol, and base URI.
@@ -90,17 +131,26 @@ pub mod ERC721ComboComponent {
             erc721.initializer(name, symbol, base_uri);
             self._set_contract_uri(contract_uri);
             let mut src5_component = get_dep_component_mut!(ref self, SRC5);
-            src5_component.register_interface(interface::IERC7572_ID);
             src5_component.register_interface(interface::IERC4906_ID);
+            src5_component.register_interface(interface::IERC7572_ID);
         }
 
         /// Sets the base URI.
         fn _set_contract_uri(ref self: ComponentState<TContractState>, contract_uri: ByteArray) {
             self.ERC7572_contract_uri.write(contract_uri);
         }
-
         fn _contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (self.ERC7572_contract_uri.read())
+        }
+
+        fn _handle_mint(ref self: ComponentState<TContractState>, token_id: u256) {
+            let supply = ERC721Info::total_supply(@self);
+            self.ERC721_total_supply.write(supply + 1);
+            self.ERC721_last_token_id.write(token_id);
+        }
+        fn _handle_burn(ref self: ComponentState<TContractState>) {
+            let supply = ERC721Info::total_supply(@self);
+            self.ERC721_total_supply.write(supply - 1);
         }
     }
 
@@ -113,10 +163,9 @@ pub mod ERC721ComboComponent {
     pub impl ERC721ComboMixin<
         TContractState,
         +HasComponent<TContractState>,
-        +ERC721Component::ERC721HooksTrait<TContractState>,
         impl SRC5: SRC5Component::HasComponent<TContractState>,
         impl ERC721: ERC721Component::HasComponent<TContractState>,
-        impl Hooks: ERC721ComboHooksTrait<TContractState>,
+        impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
     // > of interface::ERC721ABI<ComponentState<TContractState>> {
     > of interface::IERC721ComboABI<ComponentState<TContractState>> {
@@ -172,7 +221,7 @@ pub mod ERC721ComboComponent {
         fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> ByteArray {
             let erc721 = get_dep_component!(ref self, ERC721);
             erc721._require_owned(token_id);
-            (match Hooks::token_uri(self, token_id) {
+            (match ComboHooks::token_uri(self, token_id) {
                 Option::Some(custom_uri) => { (custom_uri) },
                 Option::None => { (erc721.token_uri(token_id)) },
             })
@@ -214,6 +263,26 @@ pub mod ERC721ComboComponent {
             (Self::token_uri(self, tokenId))
         }
 
+        // IERC721Info
+        #[inline(always)]
+        fn total_supply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Info::total_supply(self))
+        }
+        #[inline(always)]
+        fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Info::last_token_id(self))
+        }
+
+        // IERC4906MetadataUpdate
+        #[inline(always)]
+        fn metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
+            ERC4906MetadataUpdate::metadata_update(ref self, token_id);
+        }
+        #[inline(always)]
+        fn batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
+            ERC4906MetadataUpdate::batch_metadata_update(ref self, from_token_id, to_token_id);
+        }
+
         // IERC7572ContractMetadata
         #[inline(always)]
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
@@ -227,40 +296,19 @@ pub mod ERC721ComboComponent {
         fn contract_uri_updated(ref self: ComponentState<TContractState>) {
             ERC7572ContractMetadata::contract_uri_updated(ref self);
         }
-
-        // IERC4906MetadataUpdate
-        #[inline(always)]
-        fn metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
-            ERC4906MetadataUpdate::metadata_update(ref self, token_id);
-        }
-        #[inline(always)]
-        fn batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
-            ERC4906MetadataUpdate::batch_metadata_update(ref self, from_token_id, to_token_id);
-        }
     }
 
-    #[embeddable_as(ERC7572ContractMetadataImpl)]
-    impl ERC7572ContractMetadata<
+    #[embeddable_as(ERC721InfoImpl)]
+    impl ERC721Info<
         TContractState,
         +HasComponent<TContractState>,
-        +ERC721Component::ERC721HooksTrait<TContractState>,
-        impl SRC5: SRC5Component::HasComponent<TContractState>,
-        impl ERC721: ERC721Component::HasComponent<TContractState>,
-        impl Hooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
-    > of interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
-        fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
-            (match Hooks::contract_uri(self) {
-                Option::Some(custom_uri) => { (custom_uri) },
-                Option::None => { (self._contract_uri()) },
-            })
+    > of interface::IERC721Info<ComponentState<TContractState>> {
+        fn total_supply(self: @ComponentState<TContractState>) -> u256 {
+            self.ERC721_total_supply.read()
         }
-        #[inline(always)]
-        fn contractURI(self: @ComponentState<TContractState>) -> ByteArray {
-            (Self::contract_uri(self))
-        }
-        fn contract_uri_updated(ref self: ComponentState<TContractState>) {
-            self.emit(ContractURIUpdated {});
+        fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
+            self.ERC721_last_token_id.read()
         }
     }
 
@@ -268,10 +316,6 @@ pub mod ERC721ComboComponent {
     impl ERC4906MetadataUpdate<
         TContractState,
         +HasComponent<TContractState>,
-        +ERC721Component::ERC721HooksTrait<TContractState>,
-        impl SRC5: SRC5Component::HasComponent<TContractState>,
-        impl ERC721: ERC721Component::HasComponent<TContractState>,
-        impl Hooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
     > of interface::IERC4906MetadataUpdate<ComponentState<TContractState>> {
         fn metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
@@ -287,4 +331,34 @@ pub mod ERC721ComboComponent {
         }
     }
 
+    #[embeddable_as(ERC7572ContractMetadataImpl)]
+    impl ERC7572ContractMetadata<
+        TContractState,
+        +HasComponent<TContractState>,
+        impl SRC5: SRC5Component::HasComponent<TContractState>,
+        impl ERC721: ERC721Component::HasComponent<TContractState>,
+        impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
+        +Drop<TContractState>,
+    > of interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
+        fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
+            (match ComboHooks::contract_uri(self) {
+                Option::Some(custom_uri) => { (custom_uri) },
+                Option::None => { (self._contract_uri()) },
+            })
+        }
+        #[inline(always)]
+        fn contractURI(self: @ComponentState<TContractState>) -> ByteArray {
+            (Self::contract_uri(self))
+        }
+        fn contract_uri_updated(ref self: ComponentState<TContractState>) {
+            self.emit(ContractURIUpdated {});
+        }
+    }
+
 }
+
+
+/// An empty implementation of the ERC721ComboHooksTrait
+pub impl ERC721ComboHooksEmptyImpl<
+    TContractState,
+> of ERC721ComboComponent::ERC721ComboHooksTrait<TContractState> {}

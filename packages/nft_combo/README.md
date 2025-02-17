@@ -5,11 +5,13 @@ A component that extends the Cairo OpenZeppelin token implementations with addit
 
 ## Features
 
-### Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721): Custom `token_uri()`
+### Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721)
 
-The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) provides a `token_uri()` that concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Implement the `token_uri()` hook to return a JSON string containing the token metadata.
+* Additional function: `last_token_id()`: Returns the last minted token id, useful to mint sequentially.
+* Additional function: `total_supply()`: Returns the total number of existing tokens (minted minus burned).
+* Custom `token_uri()` hook: The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) provides a `token_uri()` that concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Implement the `token_uri()` hook to return a JSON string containing the token metadata.
 
-Toke metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
+Token metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
 
 ```json
 {
@@ -24,6 +26,13 @@ Toke metadata example (based on [OpenSea metadata standards](https://docs.opense
   ]
 }
 ```
+
+
+### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
+
+* Call the `metadata_update()` to emit an `MetadataUpdate` and trigger indexers to refresh one token's metadata.
+* Call the `batch_metadata_update()` to emit a `BatchMetadataUpdate` and trigger indexers to refresh a range of tokens' metadata.
+
 
 ### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata via `contractURI()`
 
@@ -46,11 +55,6 @@ Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/ei
 }
 ```
 
-
-### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
-
-* Call the `metadata_update()` to emit an `MetadataUpdate` and trigger indexers to refresh one token's metadata.
-* Call the `batch_metadata_update()` to emit a `BatchMetadataUpdate` and trigger indexers to refresh a range of tokens' metadata.
 
 
 ## `ERC721ComboComponent`
@@ -86,4 +90,7 @@ pub trait ERC721ComboHooksTrait<TContractState> {
 * replace `ERC721MixinImpl` with `ERC721ComboMixinImpl`
 * replace `ERC721InternalImpl` with `ERC721ComboInternalImpl`
 * replace `erc721.initializer()` with `erc721_combo.initializer()`
+* implement `ERC721ComboHooksTrait` (optional)
+* import `ERC721ComboComponent::ERC721HooksImpl`
+* remove `ERC721HooksEmptyImpl` or move your `ERC721HooksTrait` calls to `ERC721ComboHooksTrait`
 

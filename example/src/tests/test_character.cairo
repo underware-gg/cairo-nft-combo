@@ -15,8 +15,8 @@ use example::tests::tester::{
 
 const TOKEN_ID_1: u256 = 1;
 const TOKEN_ID_2: u256 = 2;
-const TOKEN_ID_3: u256 = 2;
-const TOKEN_ID_4: u256 = 2;
+const TOKEN_ID_3: u256 = 3;
+const TOKEN_ID_4: u256 = 4;
 
 fn _mint(mut sys: TestSystems, recipient: ContractAddress   ) {
     tester::impersonate(sys.actions.contract_address);
@@ -36,8 +36,95 @@ fn test_initializer() {
 }
 
 //
-// mint
+// token_component
 //
+
+#[test]
+fn test_token_mint_count() {
+    let sys: TestSystems = setup_world(0);
+    assert_eq!(sys.character.minted_count(), 0, "minted_count == 0");
+    _mint(sys, OWNER());
+    assert_eq!(sys.character.minted_count(), 1, "minted_count == 1");
+    _mint(sys, OTHER());
+    _mint(sys, OTHER());
+    assert_eq!(sys.character.minted_count(), 3, "minted_count == 3");
+}
+
+#[test]
+fn test_token_can_mint() {
+    let sys: TestSystems = setup_world(0);
+    assert!(!sys.character.can_mint(OWNER()), "can_mint(OWNER)");
+    assert!(sys.character.can_mint(sys.actions.contract_address), "can_mint(actions)");
+}
+
+#[test]
+fn test_token_exists() {
+    let sys: TestSystems = setup_world(0);
+    assert!(!sys.character.exists(TOKEN_ID_1.low), "exists false");
+    _mint(sys, OWNER());
+    assert!(sys.character.exists(TOKEN_ID_1.low), "exists true");
+}
+
+#[test]
+fn test_token_is_owner_of() {
+    let sys: TestSystems = setup_world(0);
+    _mint(sys, OWNER());
+    _mint(sys, OTHER());
+    assert!(sys.character.is_owner_of(OWNER(), TOKEN_ID_1.low), "is_owner_of(OWNER, TOKEN_ID_1)");
+    assert!(!sys.character.is_owner_of(OTHER(), TOKEN_ID_1.low), "is_owner_of(OTHER, TOKEN_ID_1)");
+    assert!(!sys.character.is_owner_of(OWNER(), TOKEN_ID_2.low), "is_owner_of(OWNER, TOKEN_ID_2)");
+    assert!(sys.character.is_owner_of(OTHER(), TOKEN_ID_2.low), "is_owner_of(OTHER, TOKEN_ID_2)");
+}
+
+
+//
+// mint / burn / supply
+//
+
+#[test]
+fn test_mint_burn_supply() {
+    let sys: TestSystems = setup_world(0);
+    assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) : 0");
+    assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) : 0");
+    assert_eq!(sys.character.total_supply(), 0, "total_supply : 0");
+    assert_eq!(sys.character.last_token_id(), 0, "last_token_id : 0");
+    // mint TOKEN_ID_1
+    _mint(sys, OWNER());
+    assert_eq!(sys.character.owner_of(TOKEN_ID_1), OWNER(), "owner_of_1");
+    assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) +1");
+    assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) +0");
+    assert_eq!(sys.character.total_supply(), 1, "total_supply +1");
+    assert_eq!(sys.character.last_token_id(), 1, "last_token_id +1");
+    // mint TOKEN_ID_2
+    _mint(sys, OTHER());
+    assert_eq!(sys.character.owner_of(TOKEN_ID_2), OTHER(), "owner_of_2");
+    assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) =1");
+    assert_eq!(sys.character.balance_of(OTHER()), 1, "balance_of (OTHER) +1");
+    assert_eq!(sys.character.total_supply(), 2, "total_supply +2");
+    assert_eq!(sys.character.last_token_id(), 2, "last_token_id +2");
+    // mint TOKEN_ID_3
+    _mint(sys, OTHER());
+    assert_eq!(sys.character.owner_of(TOKEN_ID_3), OTHER(), "owner_of_3");
+    assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) ==1");
+    assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +2");
+    assert_eq!(sys.character.total_supply(), 3, "total_supply +3");
+    assert_eq!(sys.character.last_token_id(), 3, "last_token_id +3");
+    // mint TOKEN_ID_1
+    tester::impersonate(OWNER());
+    sys.character.burn(TOKEN_ID_1.low);
+    assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) -1=0");
+    assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +1=2");
+    assert_eq!(sys.character.total_supply(), 2, "total_supply -1=2");
+    assert_eq!(sys.character.last_token_id(), 3, "last_token_id =3");
+    // mint TOKEN_ID_2, TOKEN_ID_3
+    tester::impersonate(OTHER());
+    sys.character.burn(TOKEN_ID_2.low);
+    sys.character.burn(TOKEN_ID_3.low);
+    assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) << 0");
+    assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) << 0");
+    assert_eq!(sys.character.total_supply(), 0, "total_supply << 0");
+    assert_eq!(sys.character.last_token_id(), 3, "last_token_id ==3");
+}
 
 #[test]
 #[should_panic(expected:('TOKEN: caller is not minter', 'ENTRYPOINT_FAILED'))]
@@ -48,17 +135,12 @@ fn test_mint_not_minter() {
 }
 
 #[test]
-fn test_mint() {
+#[should_panic(expected:('TOKEN: caller is not owner', 'ENTRYPOINT_FAILED'))]
+fn test_burn_not_owner() {
     let sys: TestSystems = setup_world(0);
-    assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) == 0");
     _mint(sys, OWNER());
-    _mint(sys, OTHER());
-    _mint(sys, OTHER());
-    assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER)");
-    assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER)");
-    assert_eq!(sys.character.owner_of(TOKEN_ID_1), OWNER(), "owner_of_1");
-    assert_eq!(sys.character.owner_of(TOKEN_ID_2), OTHER(), "owner_of_2");
-    assert_eq!(sys.character.owner_of(TOKEN_ID_3), OTHER(), "owner_of_3");
+    tester::impersonate(OTHER());
+    sys.character.burn(TOKEN_ID_1.low);
 }
 
 #[test]
@@ -105,48 +187,6 @@ fn test_token_uri_invalid() {
     let sys: TestSystems = setup_world(0);
     sys.character.token_uri(TOKEN_ID_1);
 }
-
-//
-// token_component
-//
-
-#[test]
-fn test_token_mint_count() {
-    let sys: TestSystems = setup_world(0);
-    assert_eq!(sys.character.minted_count(), 0, "minted_count == 0");
-    _mint(sys, OWNER());
-    assert_eq!(sys.character.minted_count(), 1, "minted_count == 1");
-    _mint(sys, OTHER());
-    _mint(sys, OTHER());
-    assert_eq!(sys.character.minted_count(), 3, "minted_count == 3");
-}
-
-#[test]
-fn test_token_can_mint() {
-    let sys: TestSystems = setup_world(0);
-    assert!(!sys.character.can_mint(OWNER()), "can_mint(OWNER)");
-    assert!(sys.character.can_mint(sys.actions.contract_address), "can_mint(actions)");
-}
-
-#[test]
-fn test_token_exists() {
-    let sys: TestSystems = setup_world(0);
-    assert!(!sys.character.exists(TOKEN_ID_1.low), "exists false");
-    _mint(sys, OWNER());
-    assert!(sys.character.exists(TOKEN_ID_1.low), "exists true");
-}
-
-#[test]
-fn test_token_is_owner_of() {
-    let sys: TestSystems = setup_world(0);
-    _mint(sys, OWNER());
-    _mint(sys, OTHER());
-    assert!(sys.character.is_owner_of(OWNER(), TOKEN_ID_1.low), "is_owner_of(OWNER, TOKEN_ID_1)");
-    assert!(!sys.character.is_owner_of(OTHER(), TOKEN_ID_1.low), "is_owner_of(OTHER, TOKEN_ID_1)");
-    assert!(!sys.character.is_owner_of(OWNER(), TOKEN_ID_2.low), "is_owner_of(OWNER, TOKEN_ID_2)");
-    assert!(sys.character.is_owner_of(OTHER(), TOKEN_ID_2.low), "is_owner_of(OTHER, TOKEN_ID_2)");
-}
-
 
 //
 // contract_uri

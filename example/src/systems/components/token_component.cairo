@@ -161,7 +161,7 @@ pub mod TokenComponent {
         fn burn(ref self: ComponentState<TContractState>,
             token_id: u128,
         ) {
-            assert(self.can_mint(starknet::get_caller_address()), Errors::CALLER_IS_NOT_MINTER);
+            self.assert_is_owner_of(starknet::get_caller_address(), token_id);
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             erc721.burn(token_id.into());
         }
