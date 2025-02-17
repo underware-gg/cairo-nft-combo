@@ -187,13 +187,13 @@ pub mod character {
     // ERC721HooksTrait
     //
     pub impl ERC721HooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
-        fn render_token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> ByteArray {
+        fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {
             // ("") // an empty string will fallback to ERC721Metadata
-            (self.get_contract().render_token_uri(token_id))
+            (Option::Some(self.get_contract().render_token_uri(token_id)))
         }
-        fn render_contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState> ) -> ByteArray {
+        fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState> ) -> Option<ByteArray> {
             // ("") // an empty string will not provide contract metadata
-            (self.get_contract().render_contract_uri())
+            (Option::Some(self.get_contract().render_contract_uri()))
         }
     }
 

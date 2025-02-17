@@ -52,18 +52,18 @@ pub mod ERC721ComboComponent {
         // Custom renderer for `token_uri()`
         // for fully on-chain metadata
         //
-        fn render_token_uri(
+        fn token_uri(
             self: @ComponentState<TContractState>,
             token_id: u256,
-        ) -> ByteArray {""} // empty string fallback to ERC721Metadata
+        ) -> Option<ByteArray> { (Option::None) }
 
         //
         // ERC-7572
         // Contract-level metadata
         //
-        fn render_contract_uri(
+        fn contract_uri(
             self: @ComponentState<TContractState>,
-        ) -> ByteArray {""}
+        ) -> Option<ByteArray> { (Option::None)  }
     }
 
     #[generate_trait]
@@ -159,48 +159,46 @@ pub mod ERC721ComboComponent {
         fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> ByteArray {
             let erc721 = get_dep_component!(ref self, ERC721);
             erc721._require_owned(token_id);
-            let custom_uri = Hooks::render_token_uri(self, token_id);
-            if (custom_uri.len() > 0) {
-                (custom_uri)
-            } else {
-                erc721.token_uri(token_id)
-            }
+            (match Hooks::token_uri(self, token_id) {
+                Option::Some(custom_uri) => { (custom_uri) },
+                Option::None => { (erc721.token_uri(token_id)) },
+            })
         }
 
         // IERC721CamelOnly
         #[inline(always)]
         fn balanceOf(self: @ComponentState<TContractState>, account: ContractAddress) -> u256 {
-            (self.balance_of(account))
+            (Self::balance_of(self, account))
         }
         #[inline(always)]
         fn ownerOf(self: @ComponentState<TContractState>, tokenId: u256) -> ContractAddress {
-            (self.owner_of(tokenId))
+            (Self::owner_of(self, tokenId))
         }
         #[inline(always)]
         fn safeTransferFrom(ref self: ComponentState<TContractState>, from: ContractAddress, to: ContractAddress, tokenId: u256, data: Span<felt252>) {
-            self.safe_transfer_from(from, to, tokenId, data);
+            Self::safe_transfer_from(ref self, from, to, tokenId, data);
         }
         #[inline(always)]
         fn transferFrom(ref self: ComponentState<TContractState>, from: ContractAddress, to: ContractAddress, tokenId: u256) {
-            self.transfer_from(from, to, tokenId);
+            Self::transfer_from(ref self, from, to, tokenId);
         }
         #[inline(always)]
         fn setApprovalForAll(ref self: ComponentState<TContractState>, operator: ContractAddress, approved: bool,) {
-            self.set_approval_for_all(operator, approved);
+            Self::set_approval_for_all(ref self, operator, approved);
         }
         #[inline(always)]
         fn getApproved(self: @ComponentState<TContractState>, tokenId: u256) -> ContractAddress {
-            (self.get_approved(tokenId))
+            (Self::get_approved(self, tokenId))
         }
         #[inline(always)]
         fn isApprovedForAll( self: @ComponentState<TContractState>, owner: ContractAddress, operator: ContractAddress) -> bool {
-            (self.is_approved_for_all(owner, operator))
+            (Self::is_approved_for_all(self, owner, operator))
         }
 
         // IERC721MetadataCamelOnly
         #[inline(always)]
         fn tokenURI(self: @ComponentState<TContractState>, tokenId: u256) -> ByteArray {
-            (self.token_uri(tokenId))
+            (Self::token_uri(self, tokenId))
         }
 
         // IERC7572ContractMetadata
@@ -239,7 +237,10 @@ pub mod ERC721ComboComponent {
         +Drop<TContractState>,
     > of interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
-            (Hooks::render_contract_uri(self))
+            (match Hooks::contract_uri(self) {
+                Option::Some(custom_uri) => { (custom_uri) },
+                Option::None => { ("") },
+            })
         }
         #[inline(always)]
         fn contractURI(self: @ComponentState<TContractState>) -> ByteArray {

@@ -1,14 +1,13 @@
 # nft_combo
 
-A component for Cairo OpenZeppelin tokens including many useful NFT standards.
+A component that extends the Cairo OpenZeppelin token implementations with additional features.
 
 
 ## Features
 
-### [ERC-721](https://eips.ethereum.org/EIPS/eip-721): Custom `token_uri()`
+### Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721): Custom `token_uri()`
 
-The OpenZeppelin ERC721 implementation provides a `tokenURI()` that concatenates `base_uri()` and `token_id`, unsuitable for fully on-chain metadata.
-Implement the `render_token_uri()` hook to return a JSON string containing the token metadata.
+The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) provides a `token_uri()` that concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Implement the `token_uri()` hook to return a JSON string containing the token metadata.
 
 Example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
 
@@ -26,9 +25,9 @@ Example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/meta
 }
 ```
 
-### [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata via `contractURI()`
+### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata via `contractURI()`
 
-* Implement the `render_contract_uri()` hook to return a JSON string containing the contract metadata.
+* Implement the `contract_uri()` hook to return a JSON string containing the contract metadata.
 
 Example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-contracturi)):
 
@@ -49,7 +48,7 @@ Example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-
 
 
 
-### [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
+### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
 
 * Call the `metadata_update()` to emit an `MetadataUpdate` event when indexers need to refresh one token's metadata.
 * Call the `batch_metadata_update()` to emit a `BatchMetadataUpdate` event when indexers need to refresh a range of token's metadata.
@@ -67,18 +66,18 @@ pub trait ERC721ComboHooksTrait<TContractState> {
     // Custom renderer for `token_uri()`
     // for fully on-chain metadata
     //
-    fn render_token_uri(
+    fn token_uri(
         self: @ComponentState<TContractState>,
         token_id: u256,
-    ) -> ByteArray {""} // empty string fallback to ERC721Metadata
+    ) -> Option<ByteArray> { (Option::None) }
 
     //
     // ERC-7572
     // Contract-level metadata
     //
-    fn render_contract_uri(
+    fn contract_uri(
         self: @ComponentState<TContractState>,
-    ) -> ByteArray {""}
+    ) -> Option<ByteArray> { (Option::None)  }
 }
 ```
 
