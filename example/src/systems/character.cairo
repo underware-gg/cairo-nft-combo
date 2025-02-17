@@ -38,6 +38,10 @@ pub trait ICharacter<TState> {
     fn contract_uri(self: @TState) -> ByteArray;
     fn contractURI(self: @TState) -> ByteArray;
     fn contract_uri_updated(ref self: TState);
+    //-----------------------------------
+    // IERC4906MetadataUpdate
+    fn metadata_update(ref self: TState, token_id: u256);
+    fn batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 
 
     //-----------------------------------

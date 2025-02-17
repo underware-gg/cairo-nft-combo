@@ -20,10 +20,26 @@ pub mod ERC721ComboComponent {
     #[derive(Drop, PartialEq, starknet::Event)]
     pub enum Event {
         ContractURIUpdated: ContractURIUpdated,
+        MetadataUpdate: MetadataUpdate,
+        BatchMetadataUpdate: BatchMetadataUpdate,
     }
 
     #[derive(Drop, PartialEq, starknet::Event)]
     pub struct ContractURIUpdated {}
+
+    #[derive(Drop, PartialEq, starknet::Event)]
+    pub struct MetadataUpdate {
+        #[key]
+        pub token_id: u256,
+    }
+
+    #[derive(Drop, PartialEq, starknet::Event)]
+    pub struct BatchMetadataUpdate {
+        #[key]
+        pub from_token_id: u256,
+        #[key]
+        pub to_token_id: u256,
+    }
 
     //-----------------------------------------
     // Combo Hooks
@@ -71,6 +87,7 @@ pub mod ERC721ComboComponent {
             erc721.initializer(name, symbol, base_uri);
             let mut src5_component = get_dep_component_mut!(ref self, SRC5);
             src5_component.register_interface(interface::IERC7572_ID);
+            src5_component.register_interface(interface::IERC4906_ID);
         }
     }
 
@@ -199,6 +216,16 @@ pub mod ERC721ComboComponent {
         fn contract_uri_updated(ref self: ComponentState<TContractState>) {
             ERC7572ContractMetadata::contract_uri_updated(ref self);
         }
+
+        // IERC4906MetadataUpdate
+        #[inline(always)]
+        fn metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
+            ERC4906MetadataUpdate::metadata_update(ref self, token_id);
+        }
+        #[inline(always)]
+        fn batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
+            ERC4906MetadataUpdate::batch_metadata_update(ref self, from_token_id, to_token_id);
+        }
     }
 
     #[embeddable_as(ERC7572ContractMetadataImpl)]
@@ -218,11 +245,31 @@ pub mod ERC721ComboComponent {
         fn contractURI(self: @ComponentState<TContractState>) -> ByteArray {
             (Self::contract_uri(self))
         }
-
-        // emit `ContractURIUpdated`
         fn contract_uri_updated(ref self: ComponentState<TContractState>) {
-println!("--- ContractURIUpdated!");
             self.emit(ContractURIUpdated {});
+        }
+    }
+
+    #[embeddable_as(ERC4906MetadataUpdateImpl)]
+    impl ERC4906MetadataUpdate<
+        TContractState,
+        +HasComponent<TContractState>,
+        +ERC721Component::ERC721HooksTrait<TContractState>,
+        impl SRC5: SRC5Component::HasComponent<TContractState>,
+        impl ERC721: ERC721Component::HasComponent<TContractState>,
+        impl Hooks: ERC721ComboHooksTrait<TContractState>,
+        +Drop<TContractState>,
+    > of interface::IERC4906MetadataUpdate<ComponentState<TContractState>> {
+        fn metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
+            self.emit(MetadataUpdate {
+                token_id,
+            });
+        }
+        fn batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
+            self.emit(BatchMetadataUpdate {
+                from_token_id,
+                to_token_id,
+            });
         }
     }
 

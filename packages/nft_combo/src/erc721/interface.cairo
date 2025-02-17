@@ -4,6 +4,7 @@ use starknet::{ContractAddress};
 // TODO: compute the correct ids
 // https://docs.openzeppelin.com/contracts-cairo/0.20.0/introspection#computing_the_interface_id
 pub const IERC7572_ID: felt252 = selector!("IERC7572_ID");
+pub const IERC4906_ID: felt252 = selector!("IERC4906_ID");
 
 //
 // cloned from ERC721ABI:
@@ -43,6 +44,10 @@ pub trait IERC721ComboABI<TState> {
     fn contract_uri(self: @TState) -> ByteArray;
     fn contractURI(self: @TState) -> ByteArray;
     fn contract_uri_updated(ref self: TState);
+    //-----------------------------------
+    // IERC4906MetadataUpdate
+    fn metadata_update(ref self: TState, token_id: u256);
+    fn batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 }
 
 //
@@ -55,5 +60,16 @@ pub trait IERC7572ContractMetadata<TState> {
     fn contractURI(self: @TState) -> ByteArray;
     // protected
     fn contract_uri_updated(ref self: TState);
+}
+
+//
+// ERC-4906: Metadata Update Extension
+// https://eips.ethereum.org/EIPS/eip-4906
+//
+#[starknet::interface]
+pub trait IERC4906MetadataUpdate<TState> {
+    // protected
+    fn metadata_update(ref self: TState, token_id: u256);
+    fn batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 }
 

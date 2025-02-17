@@ -32,6 +32,7 @@ fn test_initializer() {
     assert!(sys.character.supports_interface(erc721_interface::IERC721_ID), "should support IERC721_ID");
     assert!(sys.character.supports_interface(erc721_interface::IERC721_METADATA_ID), "should support METADATA");
     assert!(sys.character.supports_interface(combo_interface::IERC7572_ID), "should support IERC7572_ID");
+    assert!(sys.character.supports_interface(combo_interface::IERC4906_ID), "should support IERC4906_ID");
 }
 
 //
@@ -157,5 +158,29 @@ fn test_contract_uri_updated() {
     tester::drop_all_events(sys.character.contract_address);
     sys.character.contract_uri_updated();
     let _event = tester::pop_log::<combo::ContractURIUpdated>(sys.character.contract_address, selector!("ContractURIUpdated")).unwrap();
+}
+
+
+//
+// metadata_update
+//
+
+#[test]
+fn test_metadata_update() {
+    let sys: TestSystems = setup_world(0);
+    tester::drop_all_events(sys.character.contract_address);
+    sys.character.metadata_update(TOKEN_ID_3);
+    let event = tester::pop_log::<combo::MetadataUpdate>(sys.character.contract_address, selector!("MetadataUpdate")).unwrap();
+    assert_eq!(event.token_id, TOKEN_ID_3, "event.token_id");
+}
+
+#[test]
+fn test_batch_metadata_update() {
+    let sys: TestSystems = setup_world(0);
+    tester::drop_all_events(sys.character.contract_address);
+    sys.character.batch_metadata_update(TOKEN_ID_2, TOKEN_ID_4);
+    let event = tester::pop_log::<combo::BatchMetadataUpdate>(sys.character.contract_address, selector!("BatchMetadataUpdate")).unwrap();
+    assert_eq!(event.from_token_id, TOKEN_ID_2, "event.from_token_id");
+    assert_eq!(event.to_token_id, TOKEN_ID_4, "event.to_token_id");
 }
 

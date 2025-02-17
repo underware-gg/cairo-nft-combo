@@ -48,6 +48,14 @@ Example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-
 * Call the `contract_uri_updated()` to emit an `ContractURIUpdated` event when indexers need to refresh contract metadata.
 
 
+
+### [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
+
+* Call the `metadata_update()` to emit an `MetadataUpdate` event when indexers need to refresh one token's metadata.
+* Call the `batch_metadata_update()` to emit a `BatchMetadataUpdate` event when indexers need to refresh a range of token's metadata.
+
+
+
 ## `ERC721ComboComponent`
 
 This component implements the `ERC721ComboHooksTrait` to customize `token_uri()` and `contract_uri()`:
