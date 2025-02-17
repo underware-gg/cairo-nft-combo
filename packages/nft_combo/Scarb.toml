@@ -7,6 +7,9 @@ edition.workspace = true
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
 
+[dev-dependencies]
+cairo_test = "=2.9.2"
+
 [lib]
 
 # [[target.starknet-contract]]

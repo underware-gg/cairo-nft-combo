@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "packages/nft_combo",
+  "example",
 ]
 description = "Dojo erc721 combo library"
 homepage = "https://github.com/rsodre/dojo-oz-token"

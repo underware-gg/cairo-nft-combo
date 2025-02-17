@@ -6,9 +6,11 @@ pub trait ICharacter<TState> {
     // IWorldProvider
     fn world(self: @TState,) -> IWorldDispatcher;
 
-    // ISRC5
+    //-----------------------------------
+    // IERC721ComboABI
+    // (ISRC5)
     fn supports_interface(self: @TState, interface_id: felt252) -> bool;
-    // IERC721
+    // (IERC721)
     fn balance_of(self: @TState, account: ContractAddress) -> u256;
     fn owner_of(self: @TState, token_id: u256) -> ContractAddress;
     fn safe_transfer_from(ref self: TState, from: ContractAddress, to: ContractAddress, token_id: u256, data: Span<felt252>);
@@ -17,7 +19,7 @@ pub trait ICharacter<TState> {
     fn set_approval_for_all(ref self: TState, operator: ContractAddress, approved: bool);
     fn get_approved(self: @TState, token_id: u256) -> ContractAddress;
     fn is_approved_for_all(self: @TState, owner: ContractAddress, operator: ContractAddress) -> bool;
-    // IERC721CamelOnly
+    // (IERC721CamelOnly)
     fn balanceOf(self: @TState, account: ContractAddress) -> u256;
     fn ownerOf(self: @TState, tokenId: u256) -> ContractAddress;
     fn safeTransferFrom(ref self: TState, from: ContractAddress, to: ContractAddress, tokenId: u256, data: Span<felt252>);
@@ -25,12 +27,18 @@ pub trait ICharacter<TState> {
     fn setApprovalForAll(ref self: TState, operator: ContractAddress, approved: bool);
     fn getApproved(self: @TState, tokenId: u256) -> ContractAddress;
     fn isApprovedForAll(self: @TState, owner: ContractAddress, operator: ContractAddress) -> bool;
-    // IERC721Metadata
+    // (IERC721Metadata)
     fn name(self: @TState) -> ByteArray;
     fn symbol(self: @TState) -> ByteArray;
     fn token_uri(self: @TState, token_id: u256) -> ByteArray;
-    // IERC721MetadataCamelOnly
+    // (IERC721MetadataCamelOnly)
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
+    //-----------------------------------
+    // IERC7572ContractMetadata
+    fn contract_uri(self: @TState) -> ByteArray;
+    fn contractURI(self: @TState) -> ByteArray;
+    fn contract_uri_updated(ref self: TState);
+
 
     //-----------------------------------
     // ITokenComponentPublic
@@ -40,9 +48,12 @@ pub trait ICharacter<TState> {
     fn exists(self: @TState, token_id: u128) -> bool;
     fn is_owner_of(self: @TState, address: ContractAddress, token_id: u128) -> bool;
 
+    //-----------------------------------
     // ICharacterPublic
+    //
     fn mint(ref self: TState, recipient: ContractAddress);
     fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
+    fn render_contract_uri(self: @TState) -> ByteArray;
 }
 
 // Exposed to Cartridge Controller
@@ -55,6 +66,7 @@ pub trait ICharacterPublic<TState> {
 #[starknet::interface]
 pub trait ICharacterProtected<TState> {
     fn render_token_uri(self: @TState, token_id: u256) -> ByteArray;
+    fn render_contract_uri(self: @TState) -> ByteArray;
 }
 
 #[dojo::contract]
@@ -159,9 +171,13 @@ pub mod character {
     #[abi(embed_v0)]
     impl CharacterProtectedImpl of super::ICharacterProtected<ContractState> {
         fn render_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
-            format!("{{\"name\":\"{} #{}\"}}", self.erc721.name(), token_id)
+            format!("{{\"name\":\"{} #{}\"}}", self.name(), token_id)
+        }
+        fn render_contract_uri(self: @ContractState) -> ByteArray {
+            format!("{{\"name\":\"{} ERC-721 token\"}}", self.name())
         }
     }
+
 
     //-----------------------------------
     // ERC721HooksTrait
@@ -170,6 +186,10 @@ pub mod character {
         fn render_token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> ByteArray {
             // ("") // an empty string will fallback to ERC721Metadata
             (self.get_contract().render_token_uri(token_id))
+        }
+        fn render_contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState> ) -> ByteArray {
+            // ("") // an empty string will not provide contract metadata
+            (self.get_contract().render_contract_uri())
         }
     }
 

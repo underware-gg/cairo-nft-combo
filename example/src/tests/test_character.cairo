@@ -1,5 +1,6 @@
 use starknet::{ContractAddress};
 use openzeppelin_token::erc721::interface;
+use nft_combo::erc721::erc721_combo::{ERC721ComboComponent as combo};
 use example::tests::tester::{
     tester,
     tester::{
@@ -128,5 +129,31 @@ fn test_token_is_owner_of() {
     assert!(!sys.character.is_owner_of(OTHER(), TOKEN_ID_1.low), "is_owner_of(OTHER, TOKEN_ID_1)");
     assert!(!sys.character.is_owner_of(OWNER(), TOKEN_ID_2.low), "is_owner_of(OWNER, TOKEN_ID_2)");
     assert!(sys.character.is_owner_of(OTHER(), TOKEN_ID_2.low), "is_owner_of(OTHER, TOKEN_ID_2)");
+}
+
+
+//
+// contract_uri
+//
+
+#[test]
+fn test_contract_uri() {
+    let sys: TestSystems = setup_world(0);
+    let uri: ByteArray = sys.character.contract_uri();
+    println!("--- contract_uri(1): {}", uri);
+    assert_ne!(uri, "", "contract_uri() should not be empty");
+    let first_char: felt252 = uri[0].into();
+    assert_eq!(first_char, '{', "contract_uri() should be a json string");
+    // camelCase must exist and return the same result
+    let uri_camel = sys.character.contractURI();
+    assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
+}
+
+#[test]
+fn test_contract_uri_updated() {
+    let sys: TestSystems = setup_world(0);
+    tester::drop_all_events(sys.character.contract_address);
+    sys.character.contract_uri_updated();
+    let _event = tester::pop_log::<combo::ContractURIUpdated>(sys.character.contract_address, selector!("ContractURIUpdated")).unwrap();
 }
 

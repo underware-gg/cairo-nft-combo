@@ -66,6 +66,37 @@ pub mod tester {
         (new_block_number, new_timestamp)
     }
 
+    // event helpers
+    // examples...
+    // https://docs.swmansion.com/scarb/corelib/core-starknet-testing-pop_log.html
+    // https://github.com/cartridge-gg/arcade/blob/7e3a878192708563082eaf2adfd57f4eec0807fb/packages/achievement/src/tests/test_achievable.cairo#L77-L92
+    pub fn pop_log<T, +Drop<T>, +starknet::Event<T>>(address: ContractAddress, event_selector: felt252) -> Option<T> {
+        let (mut keys, mut data) = testing::pop_log_raw(address)?;
+        let id = keys.pop_front().unwrap(); // Remove the event ID from the keys
+        assert_eq!(id, @event_selector, "Wrong event!");
+        let ret = starknet::Event::deserialize(ref keys, ref data);
+        assert!(data.is_empty(), "Event has extra data (wrong event?)");
+        assert!(keys.is_empty(), "Event has extra keys (wrong event?)");
+        (ret)
+    }
+    pub fn assert_no_events_left(address: ContractAddress) {
+        assert!(testing::pop_log_raw(address).is_none(), "Events remaining on queue");
+    }
+    pub fn drop_event(address: ContractAddress) {
+        match testing::pop_log_raw(address) {
+            core::option::Option::Some(_) => {},
+            core::option::Option::None => {},
+        };
+    }
+    pub fn drop_all_events(address: ContractAddress) {
+        loop {
+            match testing::pop_log_raw(address) {
+                core::option::Option::Some(_) => {},
+                core::option::Option::None => { break; },
+            };
+        }
+    }
+
 
     //-------------------------------
     // Deploy test world
