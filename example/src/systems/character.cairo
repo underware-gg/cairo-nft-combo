@@ -90,7 +90,7 @@ pub mod character {
     // impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
-    impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
+    impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
     #[abi(embed_v0)]
     impl TokenComponentPublicImpl = TokenComponent::TokenComponentPublicImpl<ContractState>;
     impl TokenInternalImpl = TokenComponent::InternalImpl<ContractState>;
@@ -136,7 +136,7 @@ pub mod character {
         ref self: ContractState,
     ) {
         let mut world = self.world_default();
-        self.erc721.initializer(
+        self.erc721_combo.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
             BASE_URI(),

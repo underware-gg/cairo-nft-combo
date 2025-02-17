@@ -10,10 +10,8 @@ pub mod ERC721ComboComponent {
     };
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_introspection::src5::SRC5Component::SRC5Impl;
-    use crate::erc721::interface::{
-        IERC721ComboABI,
-        IERC7572ContractMetadata,
-    };
+    use openzeppelin_introspection::src5::SRC5Component::InternalTrait as SRC5InternalTrait;
+    use crate::erc721::interface;
 
     #[storage]
     pub struct Storage {}
@@ -52,6 +50,29 @@ pub mod ERC721ComboComponent {
         ) -> ByteArray {""}
     }
 
+    #[generate_trait]
+    pub impl InternalImpl<
+        TContractState,
+        +HasComponent<TContractState>,
+        impl SRC5: SRC5Component::HasComponent<TContractState>,
+        impl ERC721: ERC721Component::HasComponent<TContractState>,
+        impl Hooks: ERC721Component::ERC721HooksTrait<TContractState>,
+        +Drop<TContractState>,
+    > of InternalTrait<TContractState> {
+        /// Initializes the contract by setting the token name, symbol, and base URI.
+        /// This should only be used inside the contract's constructor.
+        fn initializer(
+            ref self: ComponentState<TContractState>,
+            name: ByteArray,
+            symbol: ByteArray,
+            base_uri: ByteArray,
+        ) {
+            let mut erc721 = get_dep_component_mut!(ref self, ERC721);
+            erc721.initializer(name, symbol, base_uri);
+            let mut src5_component = get_dep_component_mut!(ref self, SRC5);
+            src5_component.register_interface(interface::IERC7572_ID);
+        }
+    }
 
     //-----------------------------------------
     // ERC721ABI mixin
@@ -68,7 +89,7 @@ pub mod ERC721ComboComponent {
         impl Hooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
     // > of interface::ERC721ABI<ComponentState<TContractState>> {
-    > of IERC721ComboABI<ComponentState<TContractState>> {
+    > of interface::IERC721ComboABI<ComponentState<TContractState>> {
         // ISRC5
         fn supports_interface(self: @ComponentState<TContractState>, interface_id: felt252) -> bool {
             let src5 = get_dep_component!(self, SRC5);
@@ -178,7 +199,6 @@ pub mod ERC721ComboComponent {
         fn contract_uri_updated(ref self: ComponentState<TContractState>) {
             ERC7572ContractMetadata::contract_uri_updated(ref self);
         }
-
     }
 
     #[embeddable_as(ERC7572ContractMetadataImpl)]
@@ -190,7 +210,7 @@ pub mod ERC721ComboComponent {
         impl ERC721: ERC721Component::HasComponent<TContractState>,
         impl Hooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
-    > of IERC7572ContractMetadata<ComponentState<TContractState>> {
+    > of interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (Hooks::render_contract_uri(self))
         }

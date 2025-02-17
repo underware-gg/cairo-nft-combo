@@ -1,6 +1,7 @@
 use starknet::{ContractAddress};
-use openzeppelin_token::erc721::interface;
+use openzeppelin_token::erc721::interface as erc721_interface;
 use nft_combo::erc721::erc721_combo::{ERC721ComboComponent as combo};
+use nft_combo::erc721::interface as combo_interface;
 use example::tests::tester::{
     tester,
     tester::{
@@ -28,8 +29,9 @@ fn test_initializer() {
     println!("--- character SYMBOL:[{}] NAME:[{}]", sys.character.symbol(), sys.character.name());
     assert_eq!(sys.character.symbol(), "CHARACTER", "Symbol is wrong");
     assert_ne!(sys.character.name(), "", "Name is wrong");
-    assert!(sys.character.supports_interface(interface::IERC721_ID), "should support IERC721_ID");
-    assert!(sys.character.supports_interface(interface::IERC721_METADATA_ID), "should support METADATA");
+    assert!(sys.character.supports_interface(erc721_interface::IERC721_ID), "should support IERC721_ID");
+    assert!(sys.character.supports_interface(erc721_interface::IERC721_METADATA_ID), "should support METADATA");
+    assert!(sys.character.supports_interface(combo_interface::IERC7572_ID), "should support IERC7572_ID");
 }
 
 //

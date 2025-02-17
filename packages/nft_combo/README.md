@@ -73,3 +73,12 @@ pub trait ERC721ComboHooksTrait<TContractState> {
     ) -> ByteArray {""}
 }
 ```
+
+### Setup instructions:
+
+> WIP!!!
+
+* replace `ERC721MixinImpl` with `ERC721ComboMixinImpl`
+* replace `ERC721InternalImpl` with `ERC721ComboInternalImpl`
+* replace `erc721.initializer()` with `erc721_combo.initializer()`
+

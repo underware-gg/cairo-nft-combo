@@ -1,6 +1,10 @@
 
 use starknet::{ContractAddress};
 
+// TODO: compute the correct ids
+// https://docs.openzeppelin.com/contracts-cairo/0.20.0/introspection#computing_the_interface_id
+pub const IERC7572_ID: felt252 = selector!("IERC7572_ID");
+
 //
 // cloned from ERC721ABI:
 // https://github.com/OpenZeppelin/cairo-contracts/blob/v0.20.0/packages/token/src/erc721/interface.cairo
