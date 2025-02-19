@@ -31,11 +31,13 @@ pub trait IERC721Minter<TState> {
         max_supply: u256,
     );
     // mints the next token sequnetially, based on supply
-    fn mint_next(ref self: TState, recipient: ContractAddress) -> u256;
+    fn _mint_next(ref self: TState, recipient: ContractAddress) -> u256;
     // sets the maximum number of tokens that can be minted
     fn _set_max_supply(ref self: TState, max_supply: u256);
     // pauses/unpauses minting
     fn _set_minting_paused(ref self: TState, paused: bool);
+    // panics if caller is not owner of the token
+    fn _require_owner_of(self: @ComponentState<TContractState>, caller: ContractAddress, token_id: u256) -> ContractAddress;
 }
 ```
 
@@ -122,14 +124,17 @@ pub trait ERC721ComboHooksTrait<TContractState> {
     // ERC-721 Metadata
     // Custom renderer for `token_uri()`
     // for fully on-chain metadata
-    //
-    fn token_uri(self: @TState, token_id: u256) -> Option<ByteArray> { (Option::None) }
+    fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> Option<ByteArray> { (Option::None) }
 
     //
     // ERC-7572
     // Contract-level metadata
+    fn contract_uri(self: @ComponentState<TContractState>) -> Option<ByteArray> { (Option::None)  }
+
     //
-    fn contract_uri(self: @TState) -> Option<ByteArray> { (Option::None)  }
+    // ERC721Component::ERC721HooksTrait
+    fn before_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
+    fn after_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
 }
 ```
 

@@ -128,9 +128,9 @@ pub mod character {
     use example::libs::store::{Store, StoreTrait};
     use example::models::tester::{Tester};
 
-    pub mod Errors {
-        pub const CALLER_IS_NOT_OWNER: felt252 = 'CHARACTER: caller is not owner';
-    }
+    // pub mod Errors {
+    //     pub const CALLER_IS_NOT_OWNER: felt252 = 'CHARACTER: caller is not owner';
+    // }
 
 
     //*******************************
@@ -172,11 +172,11 @@ pub mod character {
     #[abi(embed_v0)]
     impl CharacterPublicImpl of super::ICharacterPublic<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress) {
-            let _token_id = self.erc721_combo.mint_next(recipient);
+            let _token_id = self.erc721_combo._mint_next(recipient);
         }
         fn burn(ref self: ContractState, token_id: u128) {
             // only owner is supposed to burn
-            assert(self.erc721_combo.owner_of(token_id.into()) == starknet::get_caller_address(), Errors::CALLER_IS_NOT_OWNER);
+            self.erc721_combo._require_owner_of(starknet::get_caller_address(), token_id.into());
             self.erc721.burn(token_id.into());
         }
         fn pause(ref self: ContractState, paused: bool) {

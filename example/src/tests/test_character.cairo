@@ -117,7 +117,7 @@ fn test_mint_paused() {
 }
 
 #[test]
-#[should_panic(expected:('CHARACTER: caller is not owner', 'ENTRYPOINT_FAILED'))]
+#[should_panic(expected:('ERC721Combo: not owner', 'ENTRYPOINT_FAILED'))]
 fn test_burn_not_owner() {
     let sys: TestSystems = setup_world(0);
     _mint(sys, OWNER());

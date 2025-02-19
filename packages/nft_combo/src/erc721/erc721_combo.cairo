@@ -51,6 +51,7 @@ pub mod ERC721ComboComponent {
     pub mod Errors {
         pub const REACHED_MAX_SUPPLY: felt252 = 'ERC721Combo: reached max supply';
         pub const MINTING_IS_PAUSED: felt252 = 'ERC721Combo: minting is paused';
+        pub const NOT_OWNER: felt252 = 'ERC721Combo: not owner';
     }
 
     //-----------------------------------------
@@ -156,7 +157,7 @@ pub mod ERC721ComboComponent {
         }
 
         /// IERC721Minter
-        fn mint_next(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
+        fn _mint_next(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             let token_id = ERC721Minter::last_token_id(@self) + 1;
             erc721.mint(recipient, token_id);
@@ -167,6 +168,12 @@ pub mod ERC721ComboComponent {
         }
         fn _set_minting_paused(ref self: ComponentState<TContractState>, paused: bool) {
             self.ERC721_minting_paused.write(paused);
+        }
+        fn _require_owner_of(self: @ComponentState<TContractState>, caller: ContractAddress, token_id: u256) -> ContractAddress {
+            let mut erc721 = get_dep_component!(self, ERC721);
+            let owner = erc721._owner_of(token_id);
+            assert(!owner.is_zero() && owner == caller, Errors::NOT_OWNER);
+            (owner)
         }
 
         /// IERC7572ContractMetadata
