@@ -95,6 +95,9 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) +0");
     assert_eq!(sys.character.total_supply(), 1, "total_supply +1");
     assert_eq!(sys.character.last_token_id(), 1, "last_token_id +1");
+    // validate CamelOnly
+    assert_eq!(sys.character.totalSupply(), 1, "totalSupply +1");
+    assert_eq!(sys.character.lastTokenId(), 1, "lastTokenId +1");
     // mint TOKEN_ID_2
     _mint(sys, OTHER());
     assert_eq!(sys.character.owner_of(TOKEN_ID_2), OTHER(), "owner_of_2");
@@ -221,7 +224,7 @@ fn test_contract_uri() {
 fn test_contract_uri_updated() {
     let sys: TestSystems = setup_world(0);
     tester::drop_all_events(sys.character.contract_address);
-    sys.character.contract_uri_updated();
+    sys.character.emit_contract_uri_updated();
     let _event = tester::pop_log::<combo::ContractURIUpdated>(sys.character.contract_address, selector!("ContractURIUpdated")).unwrap();
 }
 
@@ -234,7 +237,7 @@ fn test_contract_uri_updated() {
 fn test_metadata_update() {
     let sys: TestSystems = setup_world(0);
     tester::drop_all_events(sys.character.contract_address);
-    sys.character.metadata_update(TOKEN_ID_3);
+    sys.character.emit_metadata_update(TOKEN_ID_3);
     let event = tester::pop_log::<combo::MetadataUpdate>(sys.character.contract_address, selector!("MetadataUpdate")).unwrap();
     assert_eq!(event.token_id, TOKEN_ID_3, "event.token_id");
 }
@@ -243,7 +246,7 @@ fn test_metadata_update() {
 fn test_batch_metadata_update() {
     let sys: TestSystems = setup_world(0);
     tester::drop_all_events(sys.character.contract_address);
-    sys.character.batch_metadata_update(TOKEN_ID_2, TOKEN_ID_4);
+    sys.character.emit_batch_metadata_update(TOKEN_ID_2, TOKEN_ID_4);
     let event = tester::pop_log::<combo::BatchMetadataUpdate>(sys.character.contract_address, selector!("BatchMetadataUpdate")).unwrap();
     assert_eq!(event.from_token_id, TOKEN_ID_2, "event.from_token_id");
     assert_eq!(event.to_token_id, TOKEN_ID_4, "event.to_token_id");

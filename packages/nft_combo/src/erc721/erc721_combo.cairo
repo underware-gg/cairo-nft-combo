@@ -273,14 +273,24 @@ pub mod ERC721ComboComponent {
             (ERC721Info::last_token_id(self))
         }
 
-        // IERC4906MetadataUpdate
+        // IERC721InfoCamelOnly
         #[inline(always)]
-        fn metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
-            ERC4906MetadataUpdate::metadata_update(ref self, token_id);
+        fn totalSupply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Info::total_supply(self))
         }
         #[inline(always)]
-        fn batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
-            ERC4906MetadataUpdate::batch_metadata_update(ref self, from_token_id, to_token_id);
+        fn lastTokenId(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Info::last_token_id(self))
+        }
+
+        // IERC4906MetadataUpdate
+        #[inline(always)]
+        fn emit_metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
+            ERC4906MetadataUpdate::emit_metadata_update(ref self, token_id);
+        }
+        #[inline(always)]
+        fn emit_batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
+            ERC4906MetadataUpdate::emit_batch_metadata_update(ref self, from_token_id, to_token_id);
         }
 
         // IERC7572ContractMetadata
@@ -293,8 +303,8 @@ pub mod ERC721ComboComponent {
             (ERC7572ContractMetadata::contract_uri(self))
         }
         #[inline(always)]
-        fn contract_uri_updated(ref self: ComponentState<TContractState>) {
-            ERC7572ContractMetadata::contract_uri_updated(ref self);
+        fn emit_contract_uri_updated(ref self: ComponentState<TContractState>) {
+            ERC7572ContractMetadata::emit_contract_uri_updated(ref self);
         }
     }
 
@@ -318,12 +328,12 @@ pub mod ERC721ComboComponent {
         +HasComponent<TContractState>,
         +Drop<TContractState>,
     > of interface::IERC4906MetadataUpdate<ComponentState<TContractState>> {
-        fn metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
+        fn emit_metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
             self.emit(MetadataUpdate {
                 token_id,
             });
         }
-        fn batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
+        fn emit_batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
             self.emit(BatchMetadataUpdate {
                 from_token_id,
                 to_token_id,
@@ -346,11 +356,7 @@ pub mod ERC721ComboComponent {
                 Option::None => { (self._contract_uri()) },
             })
         }
-        #[inline(always)]
-        fn contractURI(self: @ComponentState<TContractState>) -> ByteArray {
-            (Self::contract_uri(self))
-        }
-        fn contract_uri_updated(ref self: ComponentState<TContractState>) {
+        fn emit_contract_uri_updated(ref self: ComponentState<TContractState>) {
             self.emit(ContractURIUpdated {});
         }
     }

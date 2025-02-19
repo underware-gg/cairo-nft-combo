@@ -39,18 +39,23 @@ pub trait IERC721ComboABI<TState> {
     fn token_uri(self: @TState, token_id: u256) -> ByteArray;
     // (IERC721MetadataCamelOnly)
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
-    // (IERC721Info)
+    //-----------------------------------
+    // IERC721Info
     fn total_supply(self: @TState) -> u256;
     fn last_token_id(self: @TState) -> u256;
+    // (IERC721InfoCamelOnly)
+    fn totalSupply(self: @TState) -> u256;
+    fn lastTokenId(self: @TState) -> u256;
     //-----------------------------------
     // IERC4906MetadataUpdate
-    fn metadata_update(ref self: TState, token_id: u256);
-    fn batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
+    fn emit_metadata_update(ref self: TState, token_id: u256);
+    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
     //-----------------------------------
     // IERC7572ContractMetadata
     fn contract_uri(self: @TState) -> ByteArray;
+    fn emit_contract_uri_updated(ref self: TState);
+    // (IERC7572ContractMetadataCamelOnly)
     fn contractURI(self: @TState) -> ByteArray;
-    fn contract_uri_updated(ref self: TState);
 }
 
 //
@@ -69,8 +74,8 @@ pub trait IERC721Info<TState> {
 #[starknet::interface]
 pub trait IERC4906MetadataUpdate<TState> {
     // protected
-    fn metadata_update(ref self: TState, token_id: u256);
-    fn batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
+    fn emit_metadata_update(ref self: TState, token_id: u256);
+    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 }
 
 //
@@ -80,8 +85,7 @@ pub trait IERC4906MetadataUpdate<TState> {
 #[starknet::interface]
 pub trait IERC7572ContractMetadata<TState> {
     fn contract_uri(self: @TState) -> ByteArray;
-    fn contractURI(self: @TState) -> ByteArray;
     // protected
-    fn contract_uri_updated(ref self: TState);
+    fn emit_contract_uri_updated(ref self: TState);
 }
 
