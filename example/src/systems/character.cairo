@@ -34,12 +34,16 @@ pub trait ICharacter<TState> {
     // (IERC721MetadataCamelOnly)
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
     //-----------------------------------
-    // IERC721Info
+    // IERC721Minter
+    fn max_supply(self: @TState) -> u256;
     fn total_supply(self: @TState) -> u256;
     fn last_token_id(self: @TState) -> u256;
-    // (IERC721InfoCamelOnly)
+    fn is_minting_paused(self: @TState) -> bool;
+    // (IERC721MinterCamelOnly)
+    fn maxSupply(self: @TState) -> u256;
     fn totalSupply(self: @TState) -> u256;
     fn lastTokenId(self: @TState) -> u256;
+    fn isMintingPaused(self: @TState) -> bool;
     //-----------------------------------
     // IERC4906MetadataUpdate
     fn emit_metadata_update(ref self: TState, token_id: u256);
@@ -65,6 +69,7 @@ pub trait ICharacter<TState> {
     //
     fn mint(ref self: TState, recipient: ContractAddress);
     fn burn(ref self: TState, token_id: u128);
+    fn pause(ref self: TState, paused: bool);
     // ICharacterProtected
     fn render_token_uri(self: @TState, token_id: u256) -> Option<ByteArray>;
     fn render_contract_uri(self: @TState) -> Option<ByteArray>;
@@ -75,6 +80,7 @@ pub trait ICharacter<TState> {
 pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
     fn burn(ref self: TState, token_id: u128);
+    fn pause(ref self: TState, paused: bool);
 }
 
 // Exposed to world only
@@ -145,6 +151,7 @@ pub mod character {
     fn TOKEN_SYMBOL() -> ByteArray {("CHARACTER")}
     fn BASE_URI() -> ByteArray {("https://underware.gg/token/")}
     fn CONTRACT_URI() -> ByteArray {("https://underware.gg/contract.json")}
+    fn MAX_SUPPLY() -> u256 {10}
     //*******************************
 
     fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
@@ -158,6 +165,7 @@ pub mod character {
             TOKEN_SYMBOL(),
             BASE_URI(),
             CONTRACT_URI(),
+            MAX_SUPPLY(),
         );
         self.token.initialize(
             world.actions_address(),
@@ -183,6 +191,10 @@ pub mod character {
         }
         fn burn(ref self: ContractState, token_id: u128) {
             self.token.burn(token_id);
+        }
+        fn pause(ref self: ContractState, paused: bool) {
+            // you should check if caller is owner here
+            self.erc721_combo._set_minting_paused(paused);
         }
     }
 

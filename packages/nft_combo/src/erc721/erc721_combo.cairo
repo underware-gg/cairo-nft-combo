@@ -16,8 +16,10 @@ pub mod ERC721ComboComponent {
 
     #[storage]
     pub struct Storage {
-        pub ERC721_last_token_id: u256,
+        pub ERC721_max_supply: u256,
         pub ERC721_total_supply: u256,
+        pub ERC721_last_token_id: u256,
+        pub ERC721_minting_paused: bool,
         pub ERC7572_contract_uri: ByteArray,
     }
 
@@ -44,6 +46,11 @@ pub mod ERC721ComboComponent {
         pub from_token_id: u256,
         #[key]
         pub to_token_id: u256,
+    }
+
+    pub mod Errors {
+        pub const REACHED_MAX_SUPPLY: felt252 = 'ERC721Combo: reached max supply';
+        pub const MINTING_IS_PAUSED: felt252 = 'ERC721Combo: minting is paused';
     }
 
     //-----------------------------------------
@@ -92,15 +99,24 @@ pub mod ERC721ComboComponent {
             let mut comp = HasComponent::get_component_mut(ref contract);
             let mut erc721 = ERC721Component::HasComponent::get_component_mut(ref contract);
             if (erc721._owner_of(token_id).is_zero()) {
-                InternalImpl::_handle_mint(ref comp, token_id);
+                // minting...
+                assert(token_id <= ERC721Minter::max_supply(@comp), Errors::REACHED_MAX_SUPPLY);
+                assert(!ERC721Minter::is_minting_paused(@comp), Errors::MINTING_IS_PAUSED);
+                let supply = ERC721Minter::total_supply(@comp);
+                comp.ERC721_total_supply.write(supply + 1);
+                comp.ERC721_last_token_id.write(token_id);
             } else if (to.is_zero()) {
-                InternalImpl::_handle_burn(ref comp);
+                // burning...
+                let supply = ERC721Minter::total_supply(@comp);
+                comp.ERC721_total_supply.write(supply - 1);
             }
+            // call user hook if implemented
             ComboHooks::before_update(ref comp, to, token_id, auth);
         }
         fn after_update(ref self: ERC721Component::ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {
             let mut contract = self.get_contract_mut();
             let mut comp = HasComponent::get_component_mut(ref contract);
+            // call user hook if implemented
             ComboHooks::after_update(ref comp, to, token_id, auth);
         }
     }
@@ -108,6 +124,8 @@ pub mod ERC721ComboComponent {
 
     //-----------------------------------------
     // Internal
+    //
+    // functions can be called by the contract but not by users
     //
     #[generate_trait]
     pub impl InternalImpl<
@@ -126,31 +144,32 @@ pub mod ERC721ComboComponent {
             symbol: ByteArray,
             base_uri: ByteArray,
             contract_uri: ByteArray,
+            max_supply: u256,
         ) {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             erc721.initializer(name, symbol, base_uri);
             self._set_contract_uri(contract_uri);
+            self._set_max_supply(max_supply);
             let mut src5_component = get_dep_component_mut!(ref self, SRC5);
             src5_component.register_interface(interface::IERC4906_ID);
             src5_component.register_interface(interface::IERC7572_ID);
         }
 
-        /// Sets the base URI.
+        /// IERC721Minter
+        fn _set_max_supply(ref self: ComponentState<TContractState>, max_supply: u256) {
+            self.ERC721_max_supply.write(max_supply);
+        }
+        fn _set_minting_paused(ref self: ComponentState<TContractState>, paused: bool) {
+            self.ERC721_minting_paused.write(paused);
+        }
+
+        /// IERC7572ContractMetadata
         fn _set_contract_uri(ref self: ComponentState<TContractState>, contract_uri: ByteArray) {
             self.ERC7572_contract_uri.write(contract_uri);
+            ERC7572ContractMetadata::emit_contract_uri_updated(ref self);
         }
         fn _contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (self.ERC7572_contract_uri.read())
-        }
-
-        fn _handle_mint(ref self: ComponentState<TContractState>, token_id: u256) {
-            let supply = ERC721Info::total_supply(@self);
-            self.ERC721_total_supply.write(supply + 1);
-            self.ERC721_last_token_id.write(token_id);
-        }
-        fn _handle_burn(ref self: ComponentState<TContractState>) {
-            let supply = ERC721Info::total_supply(@self);
-            self.ERC721_total_supply.write(supply - 1);
         }
     }
 
@@ -263,24 +282,40 @@ pub mod ERC721ComboComponent {
             (Self::token_uri(self, tokenId))
         }
 
-        // IERC721Info
+        // IERC721Minter
+        #[inline(always)]
+        fn max_supply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::max_supply(self))
+        }
         #[inline(always)]
         fn total_supply(self: @ComponentState<TContractState>) -> u256 {
-            (ERC721Info::total_supply(self))
+            (ERC721Minter::total_supply(self))
         }
         #[inline(always)]
         fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
-            (ERC721Info::last_token_id(self))
+            (ERC721Minter::last_token_id(self))
+        }
+        #[inline(always)]
+        fn is_minting_paused(self: @ComponentState<TContractState>) -> bool {
+            (ERC721Minter::is_minting_paused(self))
         }
 
-        // IERC721InfoCamelOnly
+        // IERC721MinterCamelOnly
+        #[inline(always)]
+        fn maxSupply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::max_supply(self))
+        }
         #[inline(always)]
         fn totalSupply(self: @ComponentState<TContractState>) -> u256 {
-            (ERC721Info::total_supply(self))
+            (ERC721Minter::total_supply(self))
         }
         #[inline(always)]
         fn lastTokenId(self: @ComponentState<TContractState>) -> u256 {
-            (ERC721Info::last_token_id(self))
+            (ERC721Minter::last_token_id(self))
+        }
+        #[inline(always)]
+        fn isMintingPaused(self: @ComponentState<TContractState>) -> bool {
+            (ERC721Minter::is_minting_paused(self))
         }
 
         // IERC4906MetadataUpdate
@@ -308,17 +343,23 @@ pub mod ERC721ComboComponent {
         }
     }
 
-    #[embeddable_as(ERC721InfoImpl)]
-    impl ERC721Info<
+    #[embeddable_as(ERC721MinterImpl)]
+    impl ERC721Minter<
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
-    > of interface::IERC721Info<ComponentState<TContractState>> {
+    > of interface::IERC721Minter<ComponentState<TContractState>> {
+        fn max_supply(self: @ComponentState<TContractState>) -> u256 {
+            self.ERC721_max_supply.read()
+        }
         fn total_supply(self: @ComponentState<TContractState>) -> u256 {
             self.ERC721_total_supply.read()
         }
         fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
             self.ERC721_last_token_id.read()
+        }
+        fn is_minting_paused(self: @ComponentState<TContractState>) -> bool {
+            self.ERC721_minting_paused.read()
         }
     }
 

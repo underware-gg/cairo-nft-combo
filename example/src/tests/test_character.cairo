@@ -127,6 +127,34 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) << 0");
     assert_eq!(sys.character.total_supply(), 0, "total_supply << 0");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id ==3");
+    // mint all available tokens
+    let max_supply: u256 = sys.character.max_supply();
+    assert_eq!(max_supply, 10, "max_supply == 10");
+    while (sys.character.last_token_id() < max_supply) {
+        _mint(sys, OWNER());
+    }
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: reached max supply', 'ENTRYPOINT_FAILED'))]
+fn test_mint_max_supply() {
+    let sys: TestSystems = setup_world(0);
+    // mint all available tokens
+    let max_supply: u256 = sys.character.max_supply();
+    assert_eq!(max_supply, 10, "max_supply == 10");
+    while (sys.character.last_token_id() < max_supply) {
+        _mint(sys, OWNER());
+    };
+    // one more will panic
+    _mint(sys, OWNER());
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: minting is paused', 'ENTRYPOINT_FAILED'))]
+fn test_mint_paused() {
+    let sys: TestSystems = setup_world(0);
+    sys.character.pause(true);
+    _mint(sys, OWNER());
 }
 
 #[test]

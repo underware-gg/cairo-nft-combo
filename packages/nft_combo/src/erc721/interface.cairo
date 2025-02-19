@@ -40,12 +40,16 @@ pub trait IERC721ComboABI<TState> {
     // (IERC721MetadataCamelOnly)
     fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
     //-----------------------------------
-    // IERC721Info
+    // IERC721Minter
+    fn max_supply(self: @TState) -> u256;
     fn total_supply(self: @TState) -> u256;
     fn last_token_id(self: @TState) -> u256;
-    // (IERC721InfoCamelOnly)
+    fn is_minting_paused(self: @TState) -> bool;
+    // (IERC721MinterCamelOnly)
+    fn maxSupply(self: @TState) -> u256;
     fn totalSupply(self: @TState) -> u256;
     fn lastTokenId(self: @TState) -> u256;
+    fn isMintingPaused(self: @TState) -> bool;
     //-----------------------------------
     // IERC4906MetadataUpdate
     fn emit_metadata_update(ref self: TState, token_id: u256);
@@ -62,9 +66,15 @@ pub trait IERC721ComboABI<TState> {
 // ERC-721: Info extension
 //
 #[starknet::interface]
-pub trait IERC721Info<TState> {
+pub trait IERC721Minter<TState> {
+    // returns the maximum number of tokens that can be minted
+    fn max_supply(self: @TState) -> u256;
+    // returns the total number of existing tokens (minted minus burned)
     fn total_supply(self: @TState) -> u256;
+    // returns the last minted token id
     fn last_token_id(self: @TState) -> u256;
+    // returns true if minting is paused
+    fn is_minting_paused(self: @TState) -> bool;
 }
 
 //
@@ -73,8 +83,9 @@ pub trait IERC721Info<TState> {
 //
 #[starknet::interface]
 pub trait IERC4906MetadataUpdate<TState> {
-    // protected
+    // emits the `MetadataUpdate` event
     fn emit_metadata_update(ref self: TState, token_id: u256);
+    // emits the `BatchMetadataUpdate` event
     fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 }
 
@@ -84,8 +95,9 @@ pub trait IERC4906MetadataUpdate<TState> {
 //
 #[starknet::interface]
 pub trait IERC7572ContractMetadata<TState> {
+    // returns the contract metadata
     fn contract_uri(self: @TState) -> ByteArray;
-    // protected
+    // emits the `ContractURIUpdated` event
     fn emit_contract_uri_updated(ref self: TState);
 }
 

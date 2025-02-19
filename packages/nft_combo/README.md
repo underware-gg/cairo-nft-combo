@@ -1,14 +1,34 @@
 # nft_combo
 
-A component that extends the Cairo OpenZeppelin token implementations with additional features.
+A Cairo component that extends OpenZeppelin tokens with additional features.
 
 
 ## Features
 
-### Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721)
+### Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721): `IERC721Minter`
 
-* Additional function: `last_token_id()`: Returns the last minted token id, useful to mint sequentially.
-* Additional function: `total_supply()`: Returns the total number of existing tokens (minted minus burned).
+* Simple helpers for minting tokens.
+
+```rust
+#[starknet::interface]
+pub trait IERC721Minter<TState> {
+    // returns the maximum number of tokens that can be minted
+    fn max_supply(self: @TState) -> u256;
+    // returns the total number of existing tokens (minted minus burned)
+    fn total_supply(self: @TState) -> u256;
+    // returns the last minted token id
+    fn last_token_id(self: @TState) -> u256;
+    // returns true if minting is paused
+    fn is_minting_paused(self: @TState) -> bool;
+
+    /// internal
+    // sets the maximum number of tokens that can be minted
+    fn _set_max_supply(ref self: TState, max_supply: u256);
+    // pauses/unpauses minting
+    fn _set_minting_paused(ref self: TState, paused: bool);
+}
+```
+
 * Custom `token_uri()` hook: The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) provides a `token_uri()` that concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Implement the `token_uri()` hook to return a JSON string containing the token metadata.
 
 Token metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
@@ -30,15 +50,40 @@ Token metadata example (based on [OpenSea metadata standards](https://docs.opens
 
 ### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
 
-* Call the `metadata_update()` to emit an `MetadataUpdate` and trigger indexers to refresh one token's metadata.
-* Call the `batch_metadata_update()` to emit a `BatchMetadataUpdate` and trigger indexers to refresh a range of tokens' metadata.
+* Emit events that trigger indexers to refresh one tokens metadata.
+
+```rust
+#[starknet::interface]
+pub trait IERC4906MetadataUpdate<TState> {
+    // emits the `MetadataUpdate` event
+    fn emit_metadata_update(ref self: TState, token_id: u256);
+    // emits the `BatchMetadataUpdate` event
+    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
+}
+```
 
 
 ### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata via `contractURI()`
 
-* Store a default uri at initalization to be returned by `contract_uri()`.
-* Implement the `contract_uri()` hook to return a JSON string containing the contract metadata.
-* Call the `contract_uri_updated()` to emit an `ContractURIUpdated` and trigger indexers to refresh contract metadata.
+* A default uri can be set at `erc721_combo.initializer()` to be returned by `contract_uri()`.
+* `ERC721ComboHooksTrait::contract_uri()`: hook to provide dynamic, fully on-chain JSON contract metadata.
+* `emit_contract_uri_updated()`: Emits an `ContractURIUpdated` event to trigger indexers to refresh contract metadata.
+
+```rust
+#[starknet::interface]
+pub trait IERC7572ContractMetadata<TState> {
+    // returns the contract metadata (dynamic or stored)
+    fn contract_uri(self: @TState) -> ByteArray;
+    // emits the `ContractURIUpdated` event
+    fn emit_contract_uri_updated(ref self: TState);
+    
+    /// internal
+    // Sets the default stored contract URI.
+    fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
+    // Reads the default stored contract URI.
+    fn _contract_uri(self: @TState) -> ByteArray;
+}
+```
 
 Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-contracturi)):
 
@@ -94,3 +139,15 @@ pub trait ERC721ComboHooksTrait<TContractState> {
 * import `ERC721ComboComponent::ERC721HooksImpl`
 * remove `ERC721HooksEmptyImpl` or move your `ERC721HooksTrait` calls to `ERC721ComboHooksTrait`
 
+```rust
+fn dojo_init(ref self: ContractState) {
+    let mut world = self.world(@"example");
+    self.erc721_combo.initializer(
+        TOKEN_NAME(),
+        TOKEN_SYMBOL(),
+        BASE_URI(),
+        CONTRACT_URI(),
+        MAX_SUPPLY(),
+    );
+}
+```
