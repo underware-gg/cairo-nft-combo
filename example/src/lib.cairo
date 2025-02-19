@@ -4,13 +4,11 @@ mod systems {
     pub mod cash;
     pub mod components {
         pub mod coin_component;
-        pub mod token_component;
     }
 }
 
 mod models {
     pub mod coin_config;
-    pub mod token_config;
     pub mod tester;
 }
 

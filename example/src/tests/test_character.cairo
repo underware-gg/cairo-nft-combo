@@ -35,47 +35,6 @@ fn test_initializer() {
     assert!(sys.character.supports_interface(combo_interface::IERC4906_ID), "should support IERC4906_ID");
 }
 
-//
-// token_component
-//
-
-#[test]
-fn test_token_mint_count() {
-    let sys: TestSystems = setup_world(0);
-    assert_eq!(sys.character.minted_count(), 0, "minted_count == 0");
-    _mint(sys, OWNER());
-    assert_eq!(sys.character.minted_count(), 1, "minted_count == 1");
-    _mint(sys, OTHER());
-    _mint(sys, OTHER());
-    assert_eq!(sys.character.minted_count(), 3, "minted_count == 3");
-}
-
-#[test]
-fn test_token_can_mint() {
-    let sys: TestSystems = setup_world(0);
-    assert!(!sys.character.can_mint(OWNER()), "can_mint(OWNER)");
-    assert!(sys.character.can_mint(sys.actions.contract_address), "can_mint(actions)");
-}
-
-#[test]
-fn test_token_exists() {
-    let sys: TestSystems = setup_world(0);
-    assert!(!sys.character.exists(TOKEN_ID_1.low), "exists false");
-    _mint(sys, OWNER());
-    assert!(sys.character.exists(TOKEN_ID_1.low), "exists true");
-}
-
-#[test]
-fn test_token_is_owner_of() {
-    let sys: TestSystems = setup_world(0);
-    _mint(sys, OWNER());
-    _mint(sys, OTHER());
-    assert!(sys.character.is_owner_of(OWNER(), TOKEN_ID_1.low), "is_owner_of(OWNER, TOKEN_ID_1)");
-    assert!(!sys.character.is_owner_of(OTHER(), TOKEN_ID_1.low), "is_owner_of(OTHER, TOKEN_ID_1)");
-    assert!(!sys.character.is_owner_of(OWNER(), TOKEN_ID_2.low), "is_owner_of(OWNER, TOKEN_ID_2)");
-    assert!(sys.character.is_owner_of(OTHER(), TOKEN_ID_2.low), "is_owner_of(OTHER, TOKEN_ID_2)");
-}
-
 
 //
 // mint / burn / supply

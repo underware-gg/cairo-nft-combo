@@ -15,7 +15,6 @@ pub mod tester {
     };
     use example::models::{
         coin_config::{m_CoinConfig},
-        token_config::{m_TokenConfig},
         tester::{m_Tester, Tester},
     };
     use example::libs::store::{Store, StoreTrait};
@@ -134,11 +133,9 @@ pub mod tester {
             resources: [
                 // example models
                 TestResource::Model(m_CoinConfig::TEST_CLASS_HASH),
-                TestResource::Model(m_TokenConfig::TEST_CLASS_HASH),
                 TestResource::Model(m_Tester::TEST_CLASS_HASH),
                 // events
                 // TestResource::Event(e_CoinConfig::TEST_CLASS_HASH),
-                // TestResource::Event(e_TokenConfig::TEST_CLASS_HASH),
                 // contracts
                 TestResource::Contract(actions::TEST_CLASS_HASH),
                 TestResource::Contract(character::TEST_CLASS_HASH),
@@ -150,10 +147,9 @@ pub mod tester {
             ContractDefTrait::new(@"example", @"actions")
                 .with_writer_of([dojo::utils::bytearray_hash(@"example")].span()),
             ContractDefTrait::new(@"example", @"character")
-                // .with_writer_of([selector_from_tag!("example-CoinConfig")].span()),
                 .with_writer_of([dojo::utils::bytearray_hash(@"example")].span()),
             ContractDefTrait::new(@"example", @"cash")
-                // .with_writer_of([selector_from_tag!("example-TokenConfig")].span())
+                // .with_writer_of([selector_from_tag!("example-CoinConfig")].span()),
                 .with_writer_of([dojo::utils::bytearray_hash(@"example")].span())
                 .with_init_calldata([
                     // 1_000_000_000_000_000_000_000, // faucet_amount: 1,000 Cash

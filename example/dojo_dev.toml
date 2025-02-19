@@ -39,9 +39,6 @@ default = "example"
 "example-CoinConfig" = [
   "example-cash",
 ]
-"example-TokenConfig" = [
-  "example-character",
-]
 
 #
 # init_calldata (dojo_init)

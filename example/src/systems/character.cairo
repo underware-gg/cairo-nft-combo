@@ -55,15 +55,6 @@ pub trait ICharacter<TState> {
     // (IERC7572ContractMetadataCamelOnly)
     fn contractURI(self: @TState) -> ByteArray;
 
-
-    //-----------------------------------
-    // ITokenComponentPublic
-    //
-    fn minted_count(self: @TState) -> u128;
-    fn can_mint(self: @TState, recipient: ContractAddress) -> bool;
-    fn exists(self: @TState, token_id: u128) -> bool;
-    fn is_owner_of(self: @TState, address: ContractAddress, token_id: u128) -> bool;
-
     //-----------------------------------
     // ICharacterPublic
     //
@@ -101,20 +92,15 @@ pub mod character {
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::{ERC721Component};
     use nft_combo::erc721::erc721_combo::{ERC721ComboComponent, ERC721ComboComponent::ERC721HooksImpl};
-    use example::systems::components::token_component::{TokenComponent};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: ERC721ComboComponent, storage: erc721_combo, event: ERC721ComboEvent);
-    component!(path: TokenComponent, storage: token, event: TokenEvent);
     // #[abi(embed_v0)]
     // impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
     impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
-    #[abi(embed_v0)]
-    impl TokenComponentPublicImpl = TokenComponent::TokenComponentPublicImpl<ContractState>;
-    impl TokenInternalImpl = TokenComponent::InternalImpl<ContractState>;
     #[storage]
     struct Storage {
         #[substorage(v0)]
@@ -123,8 +109,6 @@ pub mod character {
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
         erc721_combo: ERC721ComboComponent::Storage,
-        #[substorage(v0)]
-        token: TokenComponent::Storage,
     }
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -135,14 +119,12 @@ pub mod character {
         ERC721Event: ERC721Component::Event,
         #[flat]
         ERC721ComboEvent: ERC721ComboComponent::Event,
-        #[flat]
-        TokenEvent: TokenComponent::Event,
     }
     //
     // OpenZeppelin end
     //-----------------------------------
 
-    use example::libs::dns::{DnsTrait};
+    // use example::libs::dns::{DnsTrait};
     use example::libs::store::{Store, StoreTrait};
     use example::models::tester::{Tester};
 
@@ -173,9 +155,6 @@ pub mod character {
         );
         // sometimes it's a good idea to deploy paused and unpause later
         // self.erc721_combo._set_minting_paused(false);
-        self.token.initialize(
-            world.actions_address(),
-        );
     }
 
     #[generate_trait]
