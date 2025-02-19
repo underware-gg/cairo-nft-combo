@@ -4,8 +4,6 @@ use starknet::{ContractAddress};
 pub trait ITokenComponentPublic<TState> {
     fn minted_count(self: @TState) -> u128;
     fn can_mint(self: @TState, recipient: ContractAddress) -> bool;
-    fn exists(self: @TState, token_id: u128) -> bool;
-    fn is_owner_of(self: @TState, address: ContractAddress, token_id: u128) -> bool;
 }
 
 #[starknet::interface]
@@ -16,8 +14,6 @@ pub trait ITokenComponentInternal<TState> {
     fn mint(ref self: TState, recipient: ContractAddress) -> u128;
     fn mint_multiple(ref self: TState, recipient: ContractAddress, amount: usize) -> Span<u128>;
     fn burn(ref self: TState, token_id: u128);
-    fn assert_exists(self: @TState, token_id: u128);
-    fn assert_is_owner_of(self: @TState, address: ContractAddress, token_id: u128);
 }
 
 #[starknet::component]
@@ -85,19 +81,6 @@ pub mod TokenComponent {
                 recipient == token_config.minter_address // caller is minter contract
             )
         }
-
-        fn exists(self: @ComponentState<TContractState>, token_id: u128) -> bool {
-            let erc721 = get_dep_component!(self, ERC721);
-            (erc721._owner_of(token_id.into()).is_non_zero())
-        }
-
-        fn is_owner_of(self: @ComponentState<TContractState>,
-            address: ContractAddress,
-            token_id: u128,
-        ) -> bool {
-            let erc721 = get_dep_component!(self, ERC721);
-            (erc721._owner_of(token_id.into()) == address)
-        }
     }
 
 
@@ -161,20 +144,9 @@ pub mod TokenComponent {
         fn burn(ref self: ComponentState<TContractState>,
             token_id: u128,
         ) {
-            self.assert_is_owner_of(starknet::get_caller_address(), token_id);
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             erc721.burn(token_id.into());
         }
 
-        fn assert_exists(self: @ComponentState<TContractState>, token_id: u128) {
-            assert(self.exists(token_id.into()), Errors::INVALID_TOKEN_ID);
-        }
-
-        fn assert_is_owner_of(self: @ComponentState<TContractState>,
-            address: ContractAddress,
-            token_id: u128,
-        ) {
-            assert(self.is_owner_of(address, token_id.into()), Errors::CALLER_IS_NOT_OWNER);
-        }
     }
 }

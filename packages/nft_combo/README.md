@@ -21,7 +21,17 @@ pub trait IERC721Minter<TState> {
     // returns true if minting is paused
     fn is_minting_paused(self: @TState) -> bool;
 
-    /// internal
+    /// internal (available to the contract only)
+    // token initializer (extends OZ ERC721 initializer)
+    fn initializer(ref self: TState,
+        name: ByteArray,
+        symbol: ByteArray,
+        base_uri: ByteArray,
+        contract_uri: ByteArray,
+        max_supply: u256,
+    );
+    // mints the next token sequnetially, based on supply
+    fn mint_next(ref self: TState, recipient: ContractAddress) -> u256;
     // sets the maximum number of tokens that can be minted
     fn _set_max_supply(ref self: TState, max_supply: u256);
     // pauses/unpauses minting
@@ -65,8 +75,8 @@ pub trait IERC4906MetadataUpdate<TState> {
 
 ### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata via `contractURI()`
 
-* A default uri can be set at `erc721_combo.initializer()` to be returned by `contract_uri()`.
-* `ERC721ComboHooksTrait::contract_uri()`: hook to provide dynamic, fully on-chain JSON contract metadata.
+* A default uri can be set at initialization or by `_set_contract_uri()`.
+* `ERC721ComboHooksTrait::contract_uri()`: hook to provide dynamic, fully on-chain JSON contract metadata, bypassing the default stored uri.
 * `emit_contract_uri_updated()`: Emits an `ContractURIUpdated` event to trigger indexers to refresh contract metadata.
 
 ```rust
@@ -77,7 +87,7 @@ pub trait IERC7572ContractMetadata<TState> {
     // emits the `ContractURIUpdated` event
     fn emit_contract_uri_updated(ref self: TState);
     
-    /// internal
+    /// internal (available to the contract only)
     // Sets the default stored contract URI.
     fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
     // Reads the default stored contract URI.
@@ -113,22 +123,17 @@ pub trait ERC721ComboHooksTrait<TContractState> {
     // Custom renderer for `token_uri()`
     // for fully on-chain metadata
     //
-    fn token_uri(
-        self: @ComponentState<TContractState>,
-        token_id: u256,
-    ) -> Option<ByteArray> { (Option::None) }
+    fn token_uri(self: @TState, token_id: u256) -> Option<ByteArray> { (Option::None) }
 
     //
     // ERC-7572
     // Contract-level metadata
     //
-    fn contract_uri(
-        self: @ComponentState<TContractState>,
-    ) -> Option<ByteArray> { (Option::None)  }
+    fn contract_uri(self: @TState) -> Option<ByteArray> { (Option::None)  }
 }
 ```
 
-### Setup instructions:
+## Setup instructions:
 
 > WIP!!!
 
@@ -138,6 +143,7 @@ pub trait ERC721ComboHooksTrait<TContractState> {
 * implement `ERC721ComboHooksTrait` (optional)
 * import `ERC721ComboComponent::ERC721HooksImpl`
 * remove `ERC721HooksEmptyImpl` or move your `ERC721HooksTrait` calls to `ERC721ComboHooksTrait`
+
 
 ```rust
 fn dojo_init(ref self: ContractState) {

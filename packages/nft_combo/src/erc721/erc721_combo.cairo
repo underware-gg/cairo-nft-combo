@@ -156,6 +156,12 @@ pub mod ERC721ComboComponent {
         }
 
         /// IERC721Minter
+        fn mint_next(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
+            let mut erc721 = get_dep_component_mut!(ref self, ERC721);
+            let token_id = ERC721Minter::last_token_id(@self) + 1;
+            erc721.mint(recipient, token_id);
+            (token_id)
+        }
         fn _set_max_supply(ref self: ComponentState<TContractState>, max_supply: u256) {
             self.ERC721_max_supply.write(max_supply);
         }

@@ -108,6 +108,7 @@ pub mod character {
     component!(path: TokenComponent, storage: token, event: TokenEvent);
     // #[abi(embed_v0)]
     // impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
+    impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
     impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
@@ -145,6 +146,10 @@ pub mod character {
     use example::libs::store::{Store, StoreTrait};
     use example::models::tester::{Tester};
 
+    pub mod Errors {
+        pub const CALLER_IS_NOT_OWNER: felt252 = 'CHARACTER: caller is not owner';
+    }
+
 
     //*******************************
     fn TOKEN_NAME() -> ByteArray {("Sample Character")}
@@ -159,7 +164,6 @@ pub mod character {
     fn dojo_init(
         ref self: ContractState,
     ) {
-        let mut world = self.world_default();
         self.erc721_combo.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
@@ -167,6 +171,8 @@ pub mod character {
             CONTRACT_URI(),
             MAX_SUPPLY(),
         );
+        // sometimes it's a good idea to deploy paused and unpause later
+        // self.erc721_combo._set_minting_paused(false);
         self.token.initialize(
             world.actions_address(),
         );
@@ -187,10 +193,12 @@ pub mod character {
     #[abi(embed_v0)]
     impl CharacterPublicImpl of super::ICharacterPublic<ContractState> {
         fn mint(ref self: ContractState, recipient: ContractAddress) {
-            self.token.mint(recipient);
+            let _token_id = self.erc721_combo.mint_next(recipient);
         }
         fn burn(ref self: ContractState, token_id: u128) {
-            self.token.burn(token_id);
+            // only owner is supposed to burn
+            assert(self.erc721_combo.owner_of(token_id.into()) == starknet::get_caller_address(), Errors::CALLER_IS_NOT_OWNER);
+            self.erc721.burn(token_id.into());
         }
         fn pause(ref self: ContractState, paused: bool) {
             // you should check if caller is owner here
