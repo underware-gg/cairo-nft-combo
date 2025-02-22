@@ -21,6 +21,7 @@ pub mod ERC721ComboComponent {
         pub ERC721_last_token_id: u256,
         pub ERC721_minting_paused: bool,
         pub ERC7572_contract_uri: ByteArray,
+        pub ERC2981_default_royalty_info: RoyaltyInfo,
     }
 
     #[event]
@@ -48,10 +49,20 @@ pub mod ERC721ComboComponent {
         pub to_token_id: u256,
     }
 
+    #[derive(Serde, Drop, starknet::Store)]
+    pub struct RoyaltyInfo {
+        pub receiver: ContractAddress,
+        pub royalty_fraction: u128,
+    }
+
+    pub const ROYALTY_FEE_DENOMINATOR: u128 = 10_000;
+
     pub mod Errors {
         pub const REACHED_MAX_SUPPLY: felt252 = 'ERC721Combo: reached max supply';
         pub const MINTING_IS_PAUSED: felt252 = 'ERC721Combo: minting is paused';
         pub const NOT_OWNER: felt252 = 'ERC721Combo: not owner';
+        pub const INVALID_ROYALTY: felt252 = 'ERC721Combo: invalid royalty';
+        pub const INVALID_ROYALTY_RECEIVER: felt252 = 'ERC721Combo: invalid receiver';
     }
 
     //-----------------------------------------
@@ -63,8 +74,7 @@ pub mod ERC721ComboComponent {
     pub trait ERC721ComboHooksTrait<TContractState> {
         //
         // ERC-721 Metadata
-        // Custom renderer for `token_uri()`
-        // for fully on-chain metadata
+        // Custom renderer for `token_uri()`, for fully on-chain metadata
         fn token_uri(
             self: @ComponentState<TContractState>,
             token_id: u256,
@@ -76,6 +86,17 @@ pub mod ERC721ComboComponent {
         fn contract_uri(
             self: @ComponentState<TContractState>,
         ) -> Option<ByteArray> { (Option::None)  }
+
+        //
+        // ERC-2981
+        // Default royalty info
+        fn default_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
+            (Option::None)
+        }
+        // Per-token royalty info
+        fn token_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
+            (Option::None)
+        }
 
         //
         // ERC721Component::ERC721HooksTrait
@@ -154,6 +175,7 @@ pub mod ERC721ComboComponent {
             let mut src5_component = get_dep_component_mut!(ref self, SRC5);
             src5_component.register_interface(interface::IERC4906_ID);
             src5_component.register_interface(interface::IERC7572_ID);
+            src5_component.register_interface(interface::IERC2981_ID);
         }
 
         /// IERC721Minter
@@ -183,6 +205,27 @@ pub mod ERC721ComboComponent {
         }
         fn _contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (self.ERC7572_contract_uri.read())
+        }
+
+        /// IERC2981RoyaltyInfo
+        fn _set_default_royalty(ref self: ComponentState<TContractState>, receiver: ContractAddress, fee_numerator: u128) {
+            assert(fee_numerator <= ROYALTY_FEE_DENOMINATOR, Errors::INVALID_ROYALTY);
+            assert(receiver.is_non_zero(), Errors::INVALID_ROYALTY_RECEIVER);
+            self.ERC2981_default_royalty_info.write(RoyaltyInfo { receiver, royalty_fraction: fee_numerator })
+        }
+        fn _delete_default_royalty(ref self: ComponentState<TContractState>) {
+            self.ERC2981_default_royalty_info.write(RoyaltyInfo { receiver: Zero::zero(), royalty_fraction: 0 })
+        }
+        fn _get_royalty_info(self: @ComponentState<TContractState>, token_id: u256) -> RoyaltyInfo {
+            (match ComboHooks::token_royalty(self, token_id) {
+                Option::Some(token_royalty_info) => { (token_royalty_info) }, // 1: Per-token royalty hook
+                Option::None => { 
+                    (match ComboHooks::default_royalty(self, token_id) {
+                        Option::Some(default_royalty_info) => { (default_royalty_info) }, // 2: Default royalty hook
+                        Option::None => { (self.ERC2981_default_royalty_info.read()) }, // 3: Default royalty set, or none
+                    })
+                 },
+            })
         }
     }
 
@@ -354,7 +397,33 @@ pub mod ERC721ComboComponent {
         fn emit_contract_uri_updated(ref self: ComponentState<TContractState>) {
             ERC7572ContractMetadata::emit_contract_uri_updated(ref self);
         }
+
+        // IERC2981RoyaltyInfo
+        #[inline(always)]
+        fn royalty_info(self: @ComponentState<TContractState>, token_id: u256, sale_price: u256) -> (ContractAddress, u256) {
+            (ERC2981RoyaltyInfo::royalty_info(self, token_id, sale_price))
+        }
+        fn royaltyInfo(self: @ComponentState<TContractState>, token_id: u256, sale_price: u256) -> (ContractAddress, u256) {
+            (ERC2981RoyaltyInfo::royalty_info(self, token_id, sale_price))
+        }
+        #[inline(always)]
+        fn token_royalty(self: @ComponentState<TContractState>, token_id: u256) -> (ContractAddress, u128, u128) {
+            (ERC2981RoyaltyInfo::token_royalty(self, token_id))
+        }
+        #[inline(always)]
+        fn tokenRoyalty(self: @ComponentState<TContractState>, token_id: u256) -> (ContractAddress, u128, u128) {
+            (ERC2981RoyaltyInfo::token_royalty(self, token_id))
+        }
+        #[inline(always)]
+        fn default_royalty(self: @ComponentState<TContractState>) -> (ContractAddress, u128, u128) {
+            (ERC2981RoyaltyInfo::default_royalty(self))
+        }
+        #[inline(always)]
+        fn defaultRoyalty(self: @ComponentState<TContractState>) -> (ContractAddress, u128, u128) {
+            (ERC2981RoyaltyInfo::default_royalty(self))
+        }
     }
+
 
     #[embeddable_as(ERC721MinterImpl)]
     impl ERC721Minter<
@@ -415,6 +484,31 @@ pub mod ERC721ComboComponent {
         }
     }
 
+    #[embeddable_as(ERC2981RoyaltyInfoImpl)]
+    impl ERC2981RoyaltyInfo<
+        TContractState,
+        +HasComponent<TContractState>,
+        impl SRC5: SRC5Component::HasComponent<TContractState>,
+        impl ERC721: ERC721Component::HasComponent<TContractState>,
+        impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
+        +Drop<TContractState>,
+    > of interface::IERC2981RoyaltyInfo<ComponentState<TContractState>> {
+        fn royalty_info(self: @ComponentState<TContractState>, token_id: u256, sale_price: u256) -> (ContractAddress, u256) {
+            let royalty_info: RoyaltyInfo = self._get_royalty_info(token_id);
+            let royalty_amount: u256 = sale_price
+                * royalty_info.royalty_fraction.into()
+                / ROYALTY_FEE_DENOMINATOR.into();
+            (royalty_info.receiver, royalty_amount)
+        }
+        fn default_royalty(self: @ComponentState<TContractState>) -> (ContractAddress, u128, u128) {
+            let royalty_info = self.ERC2981_default_royalty_info.read();
+            (royalty_info.receiver, royalty_info.royalty_fraction, ROYALTY_FEE_DENOMINATOR)
+        }
+        fn token_royalty(self: @ComponentState<TContractState>, token_id: u256) -> (ContractAddress, u128, u128) {
+            let royalty_info: RoyaltyInfo = self._get_royalty_info(token_id);
+            (royalty_info.receiver, royalty_info.royalty_fraction, ROYALTY_FEE_DENOMINATOR)
+        }
+    }
 }
 
 

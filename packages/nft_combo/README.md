@@ -21,7 +21,7 @@ pub trait IERC721Minter<TState> {
     // returns true if minting is paused
     fn is_minting_paused(self: @TState) -> bool;
 
-    /// internal (available to the contract only)
+    ///--- internal (available to the contract only)
     // token initializer (extends OZ ERC721 initializer)
     fn initializer(ref self: TState,
         name: ByteArray,
@@ -37,7 +37,7 @@ pub trait IERC721Minter<TState> {
     // pauses/unpauses minting
     fn _set_minting_paused(ref self: TState, paused: bool);
     // panics if caller is not owner of the token
-    fn _require_owner_of(self: @ComponentState<TContractState>, caller: ContractAddress, token_id: u256) -> ContractAddress;
+    fn _require_owner_of(self: @TState, caller: ContractAddress, token_id: u256) -> ContractAddress;
 }
 ```
 
@@ -89,7 +89,7 @@ pub trait IERC7572ContractMetadata<TState> {
     // emits the `ContractURIUpdated` event
     fn emit_contract_uri_updated(ref self: TState);
     
-    /// internal (available to the contract only)
+    ///--- internal (available to the contract only)
     // Sets the default stored contract URI.
     fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
     // Reads the default stored contract URI.
@@ -114,22 +114,81 @@ Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/ei
 
 
 
+### Implements [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981): NFT Royalty Standard
+
+* The OpenZeppelin [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/common/erc2981/interface.cairo) was used as reference, but not included to avoid additional dependencies, and for simplicity.
+* The fee **denominator** is constant `10_000` (same as the OZ implementations default). Meaning that for every `1%` fees, increase the **numerator** by `100`.
+* It is acceptable market practice to set royalty fees between `2.5%` (numerator `250`) and `5%` (numerator `500`).
+* The component will calculate royalties in this order...
+
+1. Per-token royalty implemented in the contract by the hook `ERC721ComboHooksTrait::token_royalty(token_id) -> Option<RoyaltyInfo>`.
+2. Default royalty implemented in the contract by the hook `ERC721ComboHooksTrait::default_royalty() -> Option<RoyaltyInfo>`.
+3. Defautl royalty set with `_set_default_royalty()`.
+4. If none is available, no royalties will be requested.
+
+> IMPORTANT: ERC-2981 only specifies a way to signal royalty information and does not enforce its payment. Marketplaces are [expected](https://eips.ethereum.org/EIPS/eip-2981#optional-royalty-payments) to voluntarily pay royalties together with sales.
+
+```rust
+#[starknet::interface]
+pub trait IERC2981RoyaltyInfo<TState> {
+    // Returns how much royalty is owed and to whom, based on a sale price that may be denominated
+    // in any unit of exchange. The royalty amount is denominated and should be paid in that same
+    // unit of exchange.
+    fn royalty_info(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
+    // Returns the royalty information that all ids in this contract will default to.
+    // The returned tuple contains:
+    // - `t.0`: The receiver of the royalty payment.
+    // - `t.1`: The numerator of the royalty fraction.
+    // - `t.2`: The denominator of the royalty fraction.
+    fn default_royalty(self: @TState) -> (ContractAddress, u128, u128);
+    // Returns the royalty information specific to a token.
+    // If no specific royalty information is set for the token, the default is returned.
+    // The returned tuple contains:
+    // - `t.0`: The receiver of the royalty payment.
+    // - `t.1`: The numerator of the royalty fraction.
+    // - `t.2`: The denominator of the royalty fraction.
+    fn token_royalty(self: @TState, token_id: u256) -> (ContractAddress, u128, u128);
+    
+    ///--- internal (available to the contract only)
+    // Sets the royalty information that all ids in this contract will default to.
+    // Requirements:
+    // - `receiver` cannot be the zero address.
+    // - `fee_numerator` cannot be greater than the fee denominator.
+    fn _set_default_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
+    // Sets the default royalty percentage and receiver to zero.
+    fn _delete_default_royalty(ref self: TState);
+}
+```
+
+
+
+
 ## `ERC721ComboComponent`
 
-This component implements the `ERC721ComboHooksTrait` to customize `token_uri()` and `contract_uri()`:
+Implements the `ERC721ComboHooksTrait` in your contract, including only the functions you need to customize:
 
 ```rust
 pub trait ERC721ComboHooksTrait<TContractState> {
     //
     // ERC-721 Metadata
-    // Custom renderer for `token_uri()`
-    // for fully on-chain metadata
+    // Custom renderer for `token_uri()`, for fully on-chain metadata
     fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> Option<ByteArray> { (Option::None) }
 
     //
     // ERC-7572
     // Contract-level metadata
     fn contract_uri(self: @ComponentState<TContractState>) -> Option<ByteArray> { (Option::None)  }
+
+    //
+    // ERC-2981
+    // Default royalty info
+    fn default_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
+        (Option::None)
+    }
+    // Per-token royalty info
+    fn token_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
+        (Option::None)
+    }
 
     //
     // ERC721Component::ERC721HooksTrait
