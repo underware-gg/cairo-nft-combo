@@ -1,6 +1,10 @@
 # nft_combo
 
-A Cairo component that extends OpenZeppelin tokens with additional features.
+A Cairo component that extends OpenZeppelin ERC-721 tokens with additional features.
+
+
+## Installation
+
 
 
 ## Features
@@ -198,8 +202,6 @@ pub trait ERC721ComboHooksTrait<TContractState> {
     fn after_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
 }
 ```
-
-## Setup instructions:
 
 > WIP!!!
 

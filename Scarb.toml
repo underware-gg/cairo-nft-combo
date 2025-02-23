@@ -4,7 +4,7 @@ members = [
   "example",
 ]
 description = "Dojo erc721 combo library"
-homepage = "https://github.com/rsodre/dojo-oz-token"
+homepage = "https://github.com/underware-gg/cairo-nft-combo"
 cairo-version = "2.9.2"
 
 [workspace.package]

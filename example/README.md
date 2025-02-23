@@ -1,6 +1,6 @@
 # Dojo OpenZeppelin Token contract example
 
-Example project with ERC-20 and ERC-721 tokens.
+A [Dojo](https://book.dojoengine.org/) project with ERC-721 and ERC-20 example tokens.
 
 
 ## Running locally
