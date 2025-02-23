@@ -240,15 +240,16 @@ pub mod character {
             let mut store: Store = StoreTrait::new(self.world_default());
             let tester: Tester = store.get_tester();
             (match tester.enable_uri_hooks {
-                true => { Option::Some(format!("{{\"name\":\"{} #{}\"}}", self.name(), token_id)) },
+                true => { Option::Some(format!("data:application/json,{{\"name\":\"{} ERC-721 token\"}}", self.name())) },
                 false => { Option::None },
             })
         }
-        fn render_contract_uri(self: @ContractState) -> Option<ByteArray> {
+        fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {
+            let self = self.get_contract(); // get the component's contract state
             let mut store: Store = StoreTrait::new(self.world_default());
             let tester: Tester = store.get_tester();
             (match tester.enable_uri_hooks {
-                true => { Option::Some(format!("{{\"name\":\"{} ERC-721 token\"}}", self.name())) },
+                true => { Option::Some(format!("data:application/json,{{\"name\":\"{} #{}\"}}", self.name(), token_id)) },
                 false => { Option::None },
             })
         }

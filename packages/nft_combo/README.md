@@ -171,12 +171,14 @@ Implements the `ERC721ComboHooksTrait` in your contract, including only the func
 pub trait ERC721ComboHooksTrait<TContractState> {
     //
     // ERC-721 Metadata
-    // Custom renderer for `token_uri()`, for fully on-chain metadata
+    // Custom token metadata, allows fully on-chain metadata
+    // the uri can be a url or a json string prefixed with `data:application/json,`
     fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> Option<ByteArray> { (Option::None) }
 
     //
     // ERC-7572
-    // Contract-level metadata
+    // Contract-level metadata, allows fully on-chain metadata
+    // the uri can be a url or a json string prefixed with `data:application/json,`
     fn contract_uri(self: @ComponentState<TContractState>) -> Option<ByteArray> { (Option::None)  }
 
     //

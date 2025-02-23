@@ -167,8 +167,7 @@ fn test_token_uri_default() {
     println!("> token_uri(1): {}", uri);
     assert_ne!(uri, "", "token_uri() should not be empty");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
-    let first_char: felt252 = uri[0].into();
-    assert_eq!(first_char, 'h', "token_uri() should start with http");
+    assert!(tester::starts_with(uri, "https:"), "token_uri() should start with https:");
 }
 
 #[test]
@@ -181,8 +180,7 @@ fn test_token_uri_hook() {
     println!("> token_uri(1): {}", uri);
     assert_ne!(uri, "", "token_uri() should not be empty");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
-    let first_char: felt252 = uri[0].into();
-    assert_eq!(first_char, '{', "token_uri() should be a json string");
+    assert!(tester::starts_with(uri, "data:"), "token_uri() should be a json string");
 }
 
 #[test]
@@ -204,8 +202,7 @@ fn test_contract_uri_default() {
     println!("> contract_uri(1): {}", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
-    let first_char: felt252 = uri[0].into();
-    assert_eq!(first_char, 'h', "contract_uri() should start with http");
+    assert!(tester::starts_with(uri, "https:"), "contract_uri() should start with https:");
 }
 
 #[test]
@@ -217,8 +214,7 @@ fn test_contract_uri() {
     println!("> contract_uri(1): {}", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
-    let first_char: felt252 = uri[0].into();
-    assert_eq!(first_char, '{', "contract_uri() should be a json string");
+    assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");
 }
 
 #[test]

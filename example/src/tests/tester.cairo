@@ -181,6 +181,28 @@ pub mod tester {
 
 
     //-------------------------------
+    // helpers
+    //
+
+    pub fn starts_with(input: ByteArray, prefix: ByteArray) -> bool {
+        (if (input.len() < prefix.len()) {
+            (false)
+        } else {
+            let mut result = true;
+            let mut i = 0;
+            while (i < prefix.len()) {
+                if (input[i] != prefix[i]) {
+                    result = false;
+                    break;
+                }
+                i += 1;
+            };
+            (result)
+        })
+    }
+
+
+    //-------------------------------
     // execute calls
     //
 
