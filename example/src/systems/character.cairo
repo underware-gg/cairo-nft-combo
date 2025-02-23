@@ -93,7 +93,7 @@ pub trait ICharacterProtected<TState> {
 #[dojo::contract]
 pub mod character {
     use starknet::{ContractAddress};
-    use dojo::world::{WorldStorage};
+    use dojo::world::{WorldStorage, IWorldDispatcherTrait};
 
     //-----------------------------------
     // OpenZeppelin start
@@ -137,18 +137,22 @@ pub mod character {
     use example::libs::store::{Store, StoreTrait};
     use example::models::tester::{Tester};
 
-    // pub mod Errors {
-    //     pub const CALLER_IS_NOT_OWNER: felt252 = 'CHARACTER: caller is not owner';
-    // }
+    pub mod Errors {
+        pub const CALLER_IS_NOT_OWNER: felt252 = 'CHARACTER: caller is not owner';
+    }
 
 
-    //*******************************
-    fn TOKEN_NAME() -> ByteArray {("Sample Character")}
-    fn TOKEN_SYMBOL() -> ByteArray {("CHARACTER")}
-    fn BASE_URI() -> ByteArray {("https://underware.gg/token/")}
-    fn CONTRACT_URI() -> ByteArray {("https://underware.gg/contract.json")}
-    fn MAX_SUPPLY() -> u256 {10}
-    //*******************************
+    //*************************************
+    // token defaults
+    //
+    pub fn TOKEN_NAME()     -> ByteArray {("Sample Character")}
+    pub fn TOKEN_SYMBOL()   -> ByteArray {("CHARACTER")}
+    pub fn BASE_URI()       -> ByteArray {("https://underware.gg/token/")}
+    pub fn CONTRACT_URI()   -> ByteArray {("https://underware.gg/contract.json")}
+    pub fn MAX_SUPPLY()     -> u256 {(10)}
+    pub fn TREASURY()       -> ContractAddress {(starknet::contract_address_const::<0x1234>())}
+    pub fn ROYALTY_FEE()    -> u128 {(500)}
+    //*************************************
 
     fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
 
@@ -162,18 +166,27 @@ pub mod character {
             CONTRACT_URI(),
             MAX_SUPPLY(),
         );
-        // sometimes it's a good idea to deploy paused and unpause later
-        // self.erc721_combo._set_minting_paused(false);
+        // set default royalty to 5%
+        self.erc721_combo._set_default_royalty(TREASURY(), ROYALTY_FEE());
+        // usually it's a good idea to deploy paused and unpause later
+        self.erc721_combo._set_minting_paused(true);
     }
 
     #[generate_trait]
-    impl WorldDefaultImpl of WorldDefaultTrait {
+    impl InternalImpl of InternalTrait {
         #[inline(always)]
         fn world_default(self: @ContractState) -> WorldStorage {
             (self.world(@"example"))
         }
+        #[inline(always)]
+        fn assert_caller_is_owner(self: @ContractState) {
+            let world: WorldStorage = self.world_default();
+            assert(world.dispatcher.is_owner(
+                selector_from_tag!("example-character"),
+                starknet::get_caller_address()
+            ), Errors::CALLER_IS_NOT_OWNER);
+        }
     }
-
 
     //-----------------------------------
     // Public
@@ -189,7 +202,8 @@ pub mod character {
             self.erc721.burn(token_id.into());
         }
         fn pause(ref self: ContractState, paused: bool) {
-            // you should check if caller is owner here
+            // assert caller is owner (contract deployer)
+            self.assert_caller_is_owner();
             self.erc721_combo._set_minting_paused(paused);
         }
     }
@@ -202,17 +216,17 @@ pub mod character {
         fn render_token_uri(self: @ContractState, token_id: u256) -> Option<ByteArray> {
             let mut store: Store = StoreTrait::new(self.world_default());
             let tester: Tester = store.get_tester();
-            (match tester.skip_uri_hooks {
-                true => { Option::None },
-                false => { Option::Some(format!("{{\"name\":\"{} #{}\"}}", self.name(), token_id)) },
+            (match tester.enable_uri_hooks {
+                true => { Option::Some(format!("{{\"name\":\"{} #{}\"}}", self.name(), token_id)) },
+                false => { Option::None },
             })
         }
         fn render_contract_uri(self: @ContractState) -> Option<ByteArray> {
             let mut store: Store = StoreTrait::new(self.world_default());
             let tester: Tester = store.get_tester();
-            (match tester.skip_uri_hooks {
-                true => { Option::None },
-                false => { Option::Some(format!("{{\"name\":\"{} ERC-721 token\"}}", self.name())) },
+            (match tester.enable_uri_hooks {
+                true => { Option::Some(format!("{{\"name\":\"{} ERC-721 token\"}}", self.name())) },
+                false => { Option::None },
             })
         }
     }

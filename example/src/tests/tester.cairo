@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub mod tester {
     use starknet::{ContractAddress, testing};
-    use dojo::world::{WorldStorage};
+    use dojo::world::{WorldStorage, IWorldDispatcherTrait};
     use dojo::model::{ModelStorageTest};
     use dojo_cairo_test::{
         spawn_test_world, NamespaceDef, TestResource, ContractDefTrait, ContractDef,
@@ -126,7 +126,7 @@ pub mod tester {
         }
     }
 
-    pub fn setup_world(faucet_amount: u256) -> TestSystems {
+    pub fn setup_world(unpause: bool, faucet_amount: u256) -> TestSystems {
 
         let namespace_def = NamespaceDef {
             namespace: "example",
@@ -164,8 +164,17 @@ pub mod tester {
         let mut world: WorldStorage = spawn_test_world([namespace_def].span());
         world.sync_perms_and_inits(contract_defs);
         
+        // set owner (deployer)
+        world.dispatcher.grant_owner(selector_from_tag!("example-actions"), OWNER());
+        world.dispatcher.grant_owner(selector_from_tag!("example-character"), OWNER());
+        world.dispatcher.grant_owner(selector_from_tag!("example-cash"), OWNER());
+
         impersonate(OWNER());
         
+        if unpause {
+            world.character_dispatcher().pause(false);
+        }
+
         (TestSystemsTrait::from_world(world))
     }
 
@@ -174,9 +183,9 @@ pub mod tester {
     // execute calls
     //
 
-    pub fn set_skip_uri_hooks(ref sys: TestSystems, skip_uri_hooks: bool) {
+    pub fn set_enable_uri_hooks(ref sys: TestSystems, value: bool) {
         let mut model: Tester = sys.store.get_tester();
-        model.skip_uri_hooks = skip_uri_hooks;
+        model.enable_uri_hooks = value;
         sys.world.write_model_test(@model);
     }
     

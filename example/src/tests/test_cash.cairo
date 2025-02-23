@@ -16,7 +16,7 @@ const SPEND_AMOUNT: u256 = 200 * ETH_TO_WEI;
 
 #[test]
 fn test_initializer() {
-    let sys: TestSystems = setup_world(0);
+    let sys: TestSystems = setup_world(true, 0);
     println!("--- cash SYMBOL:[{}] NAME:[{}]", sys.cash.symbol(), sys.cash.name());
     assert_eq!(sys.cash.symbol(), "CA$H", "Symbol is wrong");
     assert_ne!(sys.cash.name(), "", "Name is wrong");
@@ -29,14 +29,14 @@ fn test_initializer() {
 #[test]
 #[should_panic(expected:('COIN: caller is not minter', 'ENTRYPOINT_FAILED'))]
 fn test_mint_not_minter() {
-    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    let sys: TestSystems = setup_world(true, FAUCET_AMOUNT);
     tester::impersonate(RECIPIENT());
     sys.cash.mint(RECIPIENT(), FAUCET_AMOUNT);
 }
 
 #[test]
 fn test_faucet() {
-    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    let sys: TestSystems = setup_world(true, FAUCET_AMOUNT);
     assert_eq!(sys.cash.total_supply(), 0, "total_supply_INTI");
     tester::impersonate(OWNER());
     sys.cash.faucet(OWNER());
@@ -52,7 +52,7 @@ fn test_faucet() {
 #[test]
 #[should_panic(expected:('COIN: faucet unavailable', 'ENTRYPOINT_FAILED'))]
 fn test_faucet_to_zero_address() {
-    let sys: TestSystems = setup_world(0);
+    let sys: TestSystems = setup_world(true, 0);
     tester::impersonate(OWNER());
     sys.cash.faucet(ZERO());
 }
@@ -60,7 +60,7 @@ fn test_faucet_to_zero_address() {
 #[test]
 #[should_panic(expected:('COIN: faucet unavailable', 'ENTRYPOINT_FAILED'))]
 fn test_faucet_unavailable() {
-    let sys: TestSystems = setup_world(0);
+    let sys: TestSystems = setup_world(true, 0);
     tester::impersonate(OWNER());
     sys.cash.faucet(OWNER());
 }
@@ -71,7 +71,7 @@ fn test_faucet_unavailable() {
 
 #[test]
 fn test_transfer() {
-    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    let sys: TestSystems = setup_world(true, FAUCET_AMOUNT);
     tester::impersonate(OWNER());
     sys.cash.faucet(OWNER());
     assert_eq!(sys.cash.balance_of(OWNER()), FAUCET_AMOUNT, "balance_of (OWNER) == FAUCET_AMOUNT");
@@ -83,7 +83,7 @@ fn test_transfer() {
 #[test]
 #[should_panic(expected:('ERC20: insufficient balance', 'ENTRYPOINT_FAILED'))]
 fn test_transfer_no_balance() {
-    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    let sys: TestSystems = setup_world(true, FAUCET_AMOUNT);
     tester::impersonate(OWNER());
     sys.cash.faucet(OWNER());
     sys.cash.transfer(RECIPIENT(), FAUCET_AMOUNT + SPEND_AMOUNT);
@@ -91,7 +91,7 @@ fn test_transfer_no_balance() {
 
 #[test]
 fn test_approve_transfer_from() {
-    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    let sys: TestSystems = setup_world(true, FAUCET_AMOUNT);
     tester::impersonate(OWNER());
     sys.cash.faucet(OWNER());
     sys.cash.approve(SPENDER(), SPEND_AMOUNT);
@@ -110,7 +110,7 @@ fn test_approve_transfer_from() {
 #[test]
 #[should_panic(expected:('ERC20: insufficient allowance', 'ENTRYPOINT_FAILED'))]
 fn test_approve_no_allowance() {
-    let sys: TestSystems = setup_world(FAUCET_AMOUNT);
+    let sys: TestSystems = setup_world(true, FAUCET_AMOUNT);
     tester::impersonate(SPENDER());
     sys.cash.transfer_from(OWNER(), RECIPIENT(), SPEND_AMOUNT);
 }

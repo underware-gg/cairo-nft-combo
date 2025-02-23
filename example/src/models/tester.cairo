@@ -5,5 +5,5 @@ pub struct Tester {
     #[key]
     pub key: felt252, // always 1
     //------
-    pub skip_uri_hooks: bool,
+    pub enable_uri_hooks: bool,
 }
