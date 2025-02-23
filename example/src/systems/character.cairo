@@ -7,7 +7,8 @@ pub trait ICharacter<TState> {
     fn world(self: @TState,) -> IWorldDispatcher;
 
     //-----------------------------------
-    // IERC721ComboABI
+    // IERC721ComboABI start
+    //
     // (ISRC5)
     fn supports_interface(self: @TState, interface_id: felt252) -> bool;
     // (IERC721)
@@ -45,15 +46,15 @@ pub trait ICharacter<TState> {
     fn lastTokenId(self: @TState) -> u256;
     fn isMintingPaused(self: @TState) -> bool;
     //-----------------------------------
-    // IERC4906MetadataUpdate
-    fn emit_metadata_update(ref self: TState, token_id: u256);
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
-    //-----------------------------------
     // IERC7572ContractMetadata
     fn contract_uri(self: @TState) -> ByteArray;
     fn emit_contract_uri_updated(ref self: TState);
     // (CamelOnly)
     fn contractURI(self: @TState) -> ByteArray;
+    //-----------------------------------
+    // IERC4906MetadataUpdate
+    fn emit_metadata_update(ref self: TState, token_id: u256);
+    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
     //-----------------------------------
     // IERC2981RoyaltyInfo
     fn royalty_info(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
@@ -63,6 +64,8 @@ pub trait ICharacter<TState> {
     fn royaltyInfo(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
     fn defaultRoyalty(self: @TState) -> (ContractAddress, u128, u128);
     fn tokenRoyalty(self: @TState, token_id: u256) -> (ContractAddress, u128, u128);
+    // IERC721ComboABI end
+    //-----------------------------------
 
     //-----------------------------------
     // ICharacterPublic
@@ -96,20 +99,19 @@ pub mod character {
     use dojo::world::{WorldStorage, IWorldDispatcherTrait};
 
     //-----------------------------------
-    // OpenZeppelin start
+    // ERC721 start
     //
     use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_token::erc721::{ERC721Component};
-    use nft_combo::erc721::erc721_combo::{ERC721ComboComponent, ERC721ComboComponent::{ERC721HooksImpl, RoyaltyInfo}};
+    use openzeppelin_token::erc721::ERC721Component;
+    use nft_combo::erc721::erc721_combo::ERC721ComboComponent;
+    use nft_combo::erc721::erc721_combo::ERC721ComboComponent::{ERC721HooksImpl, RoyaltyInfo};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: ERC721ComboComponent, storage: erc721_combo, event: ERC721ComboEvent);
-    // #[abi(embed_v0)]
-    // impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
+    impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
     #[abi(embed_v0)]
     impl ERC721ComboMixinImpl = ERC721ComboComponent::ERC721ComboMixinImpl<ContractState>;
-    impl ERC721ComboInternalImpl = ERC721ComboComponent::InternalImpl<ContractState>;
     #[storage]
     struct Storage {
         #[substorage(v0)]
@@ -130,7 +132,7 @@ pub mod character {
         ERC721ComboEvent: ERC721ComboComponent::Event,
     }
     //
-    // OpenZeppelin end
+    // ERC721 end
     //-----------------------------------
 
     // use example::libs::dns::{DnsTrait};
@@ -161,9 +163,7 @@ pub mod character {
 
     fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
 
-    fn dojo_init(
-        ref self: ContractState,
-    ) {
+    fn dojo_init(ref self: ContractState) {
         self.erc721_combo.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
@@ -232,7 +232,7 @@ pub mod character {
 
 
     //-----------------------------------
-    // ERC721HooksTrait
+    // ERC721ComboHooksTrait
     //
     pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
         fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ByteArray> {

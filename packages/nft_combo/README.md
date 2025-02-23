@@ -5,6 +5,50 @@ A Cairo component that extends OpenZeppelin ERC-721 tokens with additional featu
 
 ## Installation
 
+* Add to your `Scarb.toml` dependencies:
+
+```toml
+[dependencies]
+openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
+openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
+nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v0.1.0"}
+```
+
+### Adding the OZ ERC-721 + `nft_combo` to a new contract:
+
+* Copy the `IERC721ComboABI` section from [`ierc721/nterface.cairo`](/packages/nft_combo/src/ierc721/nterface.cairo) to your contract's interface (see [character](/example/src/systems/character.cairo) example).
+
+* Copy the `ERC721` section from the [character](/example/src/systems/character.cairo) example to your contract's body.
+
+* Implement the `ERC721ComboHooksTrait` if you need it (see [character](/example/src/systems/character.cairo) example).
+
+* Call the combo initializers in your `constructor` or `dojo_init()`:
+
+```rust
+fn dojo_init(ref self: ContractState) {
+    self.erc721_combo.initializer(
+        TOKEN_NAME(),
+        TOKEN_SYMBOL(),
+        BASE_URI(),
+        CONTRACT_URI(),
+        MAX_SUPPLY(),
+    );
+    // set default royalty to 5%
+    self.erc721_combo._set_default_royalty(TREASURY(), ROYALTY_FEE());
+    // usually it's a good idea to deploy paused and unpause later
+    self.erc721_combo._set_minting_paused(true);
+}
+```
+
+### Adding `nft_combo` to existing ERC-721 contract:
+
+* replace `ERC721MixinImpl` with `ERC721ComboMixinImpl`.
+* replace `ERC721InternalImpl` with `ERC721ComboInternalImpl`.
+* replace `erc721.initializer()` with `erc721_combo.initializer()` (see above).
+* import `ERC721ComboComponent::ERC721HooksImpl`.
+* remove `ERC721HooksEmptyImpl`, if used.
+* or move your `ERC721HooksTrait` calls to `ERC721ComboHooksTrait`.
+
 
 
 ## Features
@@ -26,6 +70,7 @@ pub trait IERC721Minter<TState> {
     fn is_minting_paused(self: @TState) -> bool;
 
     ///--- internal (available to the contract only)
+    
     // token initializer (extends OZ ERC721 initializer)
     fn initializer(ref self: TState,
         name: ByteArray,
@@ -64,22 +109,7 @@ Token metadata example (based on [OpenSea metadata standards](https://docs.opens
 ```
 
 
-### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
-
-* Emit events that trigger indexers to refresh one tokens metadata.
-
-```rust
-#[starknet::interface]
-pub trait IERC4906MetadataUpdate<TState> {
-    // emits the `MetadataUpdate` event
-    fn emit_metadata_update(ref self: TState, token_id: u256);
-    // emits the `BatchMetadataUpdate` event
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
-}
-```
-
-
-### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata via `contractURI()`
+### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata
 
 * A default uri can be set at initialization or by `_set_contract_uri()`.
 * `ERC721ComboHooksTrait::contract_uri()`: hook to provide dynamic, fully on-chain JSON contract metadata, bypassing the default stored uri.
@@ -94,6 +124,7 @@ pub trait IERC7572ContractMetadata<TState> {
     fn emit_contract_uri_updated(ref self: TState);
     
     ///--- internal (available to the contract only)
+
     // Sets the default stored contract URI.
     fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
     // Reads the default stored contract URI.
@@ -116,6 +147,19 @@ Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/ei
 }
 ```
 
+### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
+
+* Emit events that trigger indexers to refresh one tokens metadata.
+
+```rust
+#[starknet::interface]
+pub trait IERC4906MetadataUpdate<TState> {
+    // emits the `MetadataUpdate` event
+    fn emit_metadata_update(ref self: TState, token_id: u256);
+    // emits the `BatchMetadataUpdate` event
+    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
+}
+```
 
 
 ### Implements [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981): NFT Royalty Standard
@@ -154,6 +198,7 @@ pub trait IERC2981RoyaltyInfo<TState> {
     fn token_royalty(self: @TState, token_id: u256) -> (ContractAddress, u128, u128);
     
     ///--- internal (available to the contract only)
+
     // Sets the royalty information that all ids in this contract will default to.
     // Requirements:
     // - `receiver` cannot be the zero address.
@@ -165,11 +210,9 @@ pub trait IERC2981RoyaltyInfo<TState> {
 ```
 
 
+## The hook: `ERC721ComboHooksTrait`
 
-
-## `ERC721ComboComponent`
-
-Implements the `ERC721ComboHooksTrait` in your contract, including only the functions you need to customize:
+Implement the `ERC721ComboHooksTrait` in your contract, including only the functions you need to customize:
 
 ```rust
 pub trait ERC721ComboHooksTrait<TContractState> {
@@ -200,28 +243,5 @@ pub trait ERC721ComboHooksTrait<TContractState> {
     // ERC721Component::ERC721HooksTrait
     fn before_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
     fn after_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
-}
-```
-
-> WIP!!!
-
-* replace `ERC721MixinImpl` with `ERC721ComboMixinImpl`
-* replace `ERC721InternalImpl` with `ERC721ComboInternalImpl`
-* replace `erc721.initializer()` with `erc721_combo.initializer()`
-* implement `ERC721ComboHooksTrait` (optional)
-* import `ERC721ComboComponent::ERC721HooksImpl`
-* remove `ERC721HooksEmptyImpl` or move your `ERC721HooksTrait` calls to `ERC721ComboHooksTrait`
-
-
-```rust
-fn dojo_init(ref self: ContractState) {
-    let mut world = self.world(@"example");
-    self.erc721_combo.initializer(
-        TOKEN_NAME(),
-        TOKEN_SYMBOL(),
-        BASE_URI(),
-        CONTRACT_URI(),
-        MAX_SUPPLY(),
-    );
 }
 ```

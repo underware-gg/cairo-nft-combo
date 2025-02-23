@@ -3,8 +3,9 @@ use starknet::{ContractAddress};
 
 // TODO: compute the correct ids
 // https://docs.openzeppelin.com/contracts-cairo/0.20.0/introspection#computing_the_interface_id
-pub const IERC4906_ID: felt252 = selector!("IERC4906_ID");
 pub const IERC7572_ID: felt252 = selector!("IERC7572_ID");
+pub const IERC4906_ID: felt252 = selector!("IERC4906_ID");
+// definitive IDs
 pub const IERC2981_ID: felt252 = 0x2d3414e45a8700c29f119a54b9f11dca0e29e06ddcb214018fc37340e165ed6;
 
 //
@@ -14,7 +15,8 @@ pub const IERC2981_ID: felt252 = 0x2d3414e45a8700c29f119a54b9f11dca0e29e06ddcb21
 #[starknet::interface]
 pub trait IERC721ComboABI<TState> {
     //-----------------------------------
-    // IERC721ComboABI
+    // IERC721ComboABI start
+    //
     // (ISRC5)
     fn supports_interface(self: @TState, interface_id: felt252) -> bool;
     // (IERC721)
@@ -52,15 +54,15 @@ pub trait IERC721ComboABI<TState> {
     fn lastTokenId(self: @TState) -> u256;
     fn isMintingPaused(self: @TState) -> bool;
     //-----------------------------------
-    // IERC4906MetadataUpdate
-    fn emit_metadata_update(ref self: TState, token_id: u256);
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
-    //-----------------------------------
     // IERC7572ContractMetadata
     fn contract_uri(self: @TState) -> ByteArray;
     fn emit_contract_uri_updated(ref self: TState);
     // (CamelOnly)
     fn contractURI(self: @TState) -> ByteArray;
+    //-----------------------------------
+    // IERC4906MetadataUpdate
+    fn emit_metadata_update(ref self: TState, token_id: u256);
+    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
     //-----------------------------------
     // IERC2981RoyaltyInfo
     fn royalty_info(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
@@ -70,6 +72,8 @@ pub trait IERC721ComboABI<TState> {
     fn royaltyInfo(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
     fn defaultRoyalty(self: @TState) -> (ContractAddress, u128, u128);
     fn tokenRoyalty(self: @TState, token_id: u256) -> (ContractAddress, u128, u128);
+    // IERC721ComboABI end
+    //-----------------------------------
 }
 
 //
@@ -88,18 +92,6 @@ pub trait IERC721Minter<TState> {
 }
 
 //
-// ERC-4906: Metadata Update Extension
-// https://eips.ethereum.org/EIPS/eip-4906
-//
-#[starknet::interface]
-pub trait IERC4906MetadataUpdate<TState> {
-    // emits the `MetadataUpdate` event
-    fn emit_metadata_update(ref self: TState, token_id: u256);
-    // emits the `BatchMetadataUpdate` event
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
-}
-
-//
 // ERC-7572: Contract-level metadata
 // https://eips.ethereum.org/EIPS/eip-7572
 //
@@ -109,6 +101,18 @@ pub trait IERC7572ContractMetadata<TState> {
     fn contract_uri(self: @TState) -> ByteArray;
     // emits the `ContractURIUpdated` event
     fn emit_contract_uri_updated(ref self: TState);
+}
+
+//
+// ERC-4906: Metadata Update Extension
+// https://eips.ethereum.org/EIPS/eip-4906
+//
+#[starknet::interface]
+pub trait IERC4906MetadataUpdate<TState> {
+    // emits the `MetadataUpdate` event
+    fn emit_metadata_update(ref self: TState, token_id: u256);
+    // emits the `BatchMetadataUpdate` event
+    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 }
 
 //

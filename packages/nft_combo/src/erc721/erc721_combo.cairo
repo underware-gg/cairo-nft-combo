@@ -175,8 +175,8 @@ pub mod ERC721ComboComponent {
             self._set_contract_uri(contract_uri);
             self._set_max_supply(max_supply);
             let mut src5_component = get_dep_component_mut!(ref self, SRC5);
-            src5_component.register_interface(interface::IERC4906_ID);
             src5_component.register_interface(interface::IERC7572_ID);
+            src5_component.register_interface(interface::IERC4906_ID);
             src5_component.register_interface(interface::IERC2981_ID);
         }
 
@@ -376,16 +376,6 @@ pub mod ERC721ComboComponent {
             (ERC721Minter::is_minting_paused(self))
         }
 
-        // IERC4906MetadataUpdate
-        #[inline(always)]
-        fn emit_metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
-            ERC4906MetadataUpdate::emit_metadata_update(ref self, token_id);
-        }
-        #[inline(always)]
-        fn emit_batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
-            ERC4906MetadataUpdate::emit_batch_metadata_update(ref self, from_token_id, to_token_id);
-        }
-
         // IERC7572ContractMetadata
         #[inline(always)]
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
@@ -398,6 +388,16 @@ pub mod ERC721ComboComponent {
         #[inline(always)]
         fn emit_contract_uri_updated(ref self: ComponentState<TContractState>) {
             ERC7572ContractMetadata::emit_contract_uri_updated(ref self);
+        }
+
+        // IERC4906MetadataUpdate
+        #[inline(always)]
+        fn emit_metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
+            ERC4906MetadataUpdate::emit_metadata_update(ref self, token_id);
+        }
+        #[inline(always)]
+        fn emit_batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
+            ERC4906MetadataUpdate::emit_batch_metadata_update(ref self, from_token_id, to_token_id);
         }
 
         // IERC2981RoyaltyInfo
@@ -447,25 +447,6 @@ pub mod ERC721ComboComponent {
         }
     }
 
-    #[embeddable_as(ERC4906MetadataUpdateImpl)]
-    impl ERC4906MetadataUpdate<
-        TContractState,
-        +HasComponent<TContractState>,
-        +Drop<TContractState>,
-    > of interface::IERC4906MetadataUpdate<ComponentState<TContractState>> {
-        fn emit_metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
-            self.emit(MetadataUpdate {
-                token_id,
-            });
-        }
-        fn emit_batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
-            self.emit(BatchMetadataUpdate {
-                from_token_id,
-                to_token_id,
-            });
-        }
-    }
-
     #[embeddable_as(ERC7572ContractMetadataImpl)]
     impl ERC7572ContractMetadata<
         TContractState,
@@ -483,6 +464,25 @@ pub mod ERC721ComboComponent {
         }
         fn emit_contract_uri_updated(ref self: ComponentState<TContractState>) {
             self.emit(ContractURIUpdated {});
+        }
+    }
+
+    #[embeddable_as(ERC4906MetadataUpdateImpl)]
+    impl ERC4906MetadataUpdate<
+        TContractState,
+        +HasComponent<TContractState>,
+        +Drop<TContractState>,
+    > of interface::IERC4906MetadataUpdate<ComponentState<TContractState>> {
+        fn emit_metadata_update(ref self: ComponentState<TContractState>, token_id: u256) {
+            self.emit(MetadataUpdate {
+                token_id,
+            });
+        }
+        fn emit_batch_metadata_update(ref self: ComponentState<TContractState>, from_token_id: u256, to_token_id: u256) {
+            self.emit(BatchMetadataUpdate {
+                from_token_id,
+                to_token_id,
+            });
         }
     }
 
