@@ -69,10 +69,10 @@ pub trait ICharacter<TState> {
     //
     fn mint(ref self: TState, recipient: ContractAddress);
     fn burn(ref self: TState, token_id: u128);
+    // admin (will check for ownership)
     fn pause(ref self: TState, paused: bool);
-    // ICharacterProtected
-    fn render_token_uri(self: @TState, token_id: u256) -> Option<ByteArray>;
-    fn render_contract_uri(self: @TState) -> Option<ByteArray>;
+    fn reset_royalty(ref self: TState);
+    fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
 }
 
 // Exposed to Cartridge Controller
@@ -81,13 +81,13 @@ pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
     fn burn(ref self: TState, token_id: u128);
     fn pause(ref self: TState, paused: bool);
+    fn reset_royalty(ref self: TState);
+    fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
 }
 
 // Exposed to world only
 #[starknet::interface]
 pub trait ICharacterProtected<TState> {
-    fn render_token_uri(self: @TState, token_id: u256) -> Option<ByteArray>;
-    fn render_contract_uri(self: @TState) -> Option<ByteArray>;
 }
 
 #[dojo::contract]
@@ -100,7 +100,7 @@ pub mod character {
     //
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_token::erc721::{ERC721Component};
-    use nft_combo::erc721::erc721_combo::{ERC721ComboComponent, ERC721ComboComponent::ERC721HooksImpl};
+    use nft_combo::erc721::erc721_combo::{ERC721ComboComponent, ERC721ComboComponent::{ERC721HooksImpl, RoyaltyInfo}};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: ERC721ComboComponent, storage: erc721_combo, event: ERC721ComboEvent);
@@ -154,6 +154,11 @@ pub mod character {
     pub fn ROYALTY_FEE()    -> u128 {(500)}
     //*************************************
 
+    pub fn RECEIVER_DEFAULT() -> ContractAddress {(starknet::contract_address_const::<0x1111>())}
+    pub fn RECEIVER_TOKEN() -> ContractAddress {(starknet::contract_address_const::<0x2222>())}
+    pub fn FEES_DEFAULT() -> u128 {(300)}
+    pub fn FEES_TOKEN() -> u128 {(100)}
+
     fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
 
     fn dojo_init(
@@ -202,9 +207,19 @@ pub mod character {
             self.erc721.burn(token_id.into());
         }
         fn pause(ref self: ContractState, paused: bool) {
-            // assert caller is owner (contract deployer)
+            // only owner (contract deployer) can execute this
             self.assert_caller_is_owner();
             self.erc721_combo._set_minting_paused(paused);
+        }
+        fn reset_royalty(ref self: ContractState) {
+            // only owner (contract deployer) can execute this
+            self.assert_caller_is_owner();
+            self.erc721_combo._delete_default_royalty();
+        }
+        fn set_royalty(ref self: ContractState, receiver: ContractAddress, fee_numerator: u128) {
+            // only owner (contract deployer) can execute this
+            self.assert_caller_is_owner();
+            self.erc721_combo._set_default_royalty(receiver, fee_numerator);
         }
     }
 
@@ -213,7 +228,15 @@ pub mod character {
     //
     #[abi(embed_v0)]
     impl CharacterProtectedImpl of super::ICharacterProtected<ContractState> {
-        fn render_token_uri(self: @ContractState, token_id: u256) -> Option<ByteArray> {
+    }
+
+
+    //-----------------------------------
+    // ERC721HooksTrait
+    //
+    pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
+        fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ByteArray> {
+            let self = self.get_contract(); // get the component's contract state
             let mut store: Store = StoreTrait::new(self.world_default());
             let tester: Tester = store.get_tester();
             (match tester.enable_uri_hooks {
@@ -229,18 +252,35 @@ pub mod character {
                 false => { Option::None },
             })
         }
-    }
 
-
-    //-----------------------------------
-    // ERC721HooksTrait
-    //
-    pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
-        fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {
-            (self.get_contract().render_token_uri(token_id))
+        fn default_royalty(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<RoyaltyInfo> {
+            let self = self.get_contract(); // get the component's contract state
+            let mut store: Store = StoreTrait::new(self.world_default());
+            let tester: Tester = store.get_tester();
+            (match tester.enable_default_royalty_hook {
+                true => {
+                    Option::Some(RoyaltyInfo {
+                        receiver: RECEIVER_DEFAULT(),
+                        royalty_fraction: FEES_DEFAULT(),
+                    })
+                },
+                false => { Option::None },
+            })
         }
-        fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState> ) -> Option<ByteArray> {
-            (self.get_contract().render_contract_uri())
+        // Per-token royalty info
+        fn token_royalty(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<RoyaltyInfo> {
+            let self = self.get_contract(); // get the component's contract state
+            let mut store: Store = StoreTrait::new(self.world_default());
+            let tester: Tester = store.get_tester();
+            (match tester.enable_token_royalty_hook {
+                true => {
+                    Option::Some(RoyaltyInfo {
+                        receiver: RECEIVER_TOKEN(),
+                        royalty_fraction: FEES_TOKEN(),
+                    })
+                },
+                false => { Option::None },
+            })
         }
 
         // optional hooks from ERC721Component::ERC721HooksTrait

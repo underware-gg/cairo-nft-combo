@@ -1,3 +1,4 @@
+use core::num::traits::Zero;
 use starknet::{ContractAddress};
 use openzeppelin_token::erc721::interface as erc721_interface;
 use nft_combo::erc721::erc721_combo::{ERC721ComboComponent as combo};
@@ -10,7 +11,8 @@ use example::tests::tester::{
         // IActionsDispatcherTrait,
         ICharacterDispatcherTrait,
         // ICashDispatcherTrait,
-        OWNER, OTHER,
+        OWNER, OTHER, RECEIVER,
+        WEI,
     }
 };
 
@@ -251,3 +253,91 @@ fn test_batch_metadata_update() {
     assert_eq!(event.to_token_id, TOKEN_ID_4, "event.to_token_id");
 }
 
+
+
+//
+// royalty_info
+//
+
+#[test]
+fn test_default_royalty() {
+    let sys: TestSystems = setup_world(true, 0);
+    let (receiver, numerator, denominator) = sys.character.default_royalty();
+    assert!(receiver.is_non_zero(), "default: receiver is zero");
+    assert_ne!(numerator, 0, "default: numerator is zero");
+    assert_ne!(denominator, 0, "default: denominator is zero");
+    assert_eq!(receiver, character::TREASURY(), "default: wrong receiver");
+    assert_eq!(numerator, 500, "default: wrong numerator");
+    // set
+    sys.character.set_royalty(RECEIVER(), 400);
+    let (receiver, numerator, denominator) = sys.character.default_royalty();
+    assert_eq!(receiver, RECEIVER(), "set: wrong receiver");
+    assert_eq!(numerator, 400, "set: wrong numerator");
+    assert_ne!(denominator, 0, "set: denominator is zero");
+    // reset
+    sys.character.reset_royalty();
+    let (receiver, numerator, denominator) = sys.character.default_royalty();
+    assert!(receiver.is_zero(), "reset: receiver is not zero");
+    assert_eq!(numerator, 0, "reset: numerator is not zero");
+    assert_ne!(denominator, 0, "reset: denominator is zero");
+}
+
+#[test]
+#[should_panic(expected:('CHARACTER: caller is not owner', 'ENTRYPOINT_FAILED'))]
+fn test_set_royalty_not_owner() {
+    let sys: TestSystems = setup_world(true, 0);
+    tester::impersonate(OTHER());
+    sys.character.set_royalty(OTHER(), 1000);
+}
+
+#[test]
+#[should_panic(expected:('CHARACTER: caller is not owner', 'ENTRYPOINT_FAILED'))]
+fn test_reset_royalty_not_owner() {
+    let sys: TestSystems = setup_world(true, 0);
+    tester::impersonate(OTHER());
+    sys.character.reset_royalty();
+}
+
+#[test]
+fn test_royalty_info() {
+    let mut sys: TestSystems = setup_world(true, 0);
+    // _mint(sys, OWNER()); // no need to mint
+    // test defautl royalty
+    let PRICE: u256 = WEI(100); // 100 ETH
+    let (receiver, fees) = sys.character.royalty_info(1, PRICE);
+    assert_eq!(receiver, character::TREASURY(), "default: wrong receiver");
+    assert_eq!(fees, WEI(5), "default: wrong fees"); // default 5%
+    // use default_royalty() hook -- precedence over default
+    tester::set_enable_default_royalty_hook(ref sys, true);
+    let (receiver, fees) = sys.character.royalty_info(1, PRICE);
+    assert_eq!(receiver, character::RECEIVER_DEFAULT(), "default_hook: wrong receiver");
+    assert_eq!(fees, WEI(3), "default_hook: wrong fees"); // default 5%
+    // use token_royalty() hook -- precedence over all
+    tester::set_enable_token_royalty_hook(ref sys, true);
+    let (receiver, fees) = sys.character.royalty_info(1, PRICE);
+    assert_eq!(receiver, character::RECEIVER_TOKEN(), "token_hook: wrong receiver");
+    assert_eq!(fees, WEI(1), "token_hook: wrong fees"); // default 5%
+}
+
+#[test]
+fn test_token_royalty() {
+    let mut sys: TestSystems = setup_world(true, 0);
+    // _mint(sys, OWNER()); // no need to mint
+    // test defautl royalty
+    let (receiver, numerator, denominator) = sys.character.token_royalty(1);
+    assert_eq!(receiver, character::TREASURY(), "default: wrong receiver");
+    assert_eq!(numerator, 500, "default: wrong numerator");
+    assert_ne!(denominator, 0, "default: denominator is zero");
+    // use default_royalty() hook -- precedence over default
+    tester::set_enable_default_royalty_hook(ref sys, true);
+    let (receiver, numerator, denominator) = sys.character.token_royalty(1);
+    assert_eq!(receiver, character::RECEIVER_DEFAULT(), "default_hook: wrong receiver");
+    assert_eq!(numerator, character::FEES_DEFAULT(), "default_hook: wrong numerator");
+    assert_ne!(denominator, 0, "default_hook: denominator is zero");
+    // use token_royalty() hook -- precedence over all
+    tester::set_enable_token_royalty_hook(ref sys, true);
+    let (receiver, numerator, denominator) = sys.character.token_royalty(1);
+    assert_eq!(receiver, character::RECEIVER_TOKEN(), "token_hook: wrong receiver");
+    assert_eq!(numerator, character::FEES_TOKEN(), "token_hook: wrong numerator");
+    assert_ne!(denominator, 0, "token_hook: denominator is zero");
+}

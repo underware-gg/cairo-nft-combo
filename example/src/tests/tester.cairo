@@ -25,6 +25,7 @@ pub mod tester {
     pub fn OTHER()     -> ContractAddress { starknet::contract_address_const::<0x222>() }
     pub fn RECIPIENT() -> ContractAddress { starknet::contract_address_const::<0x333>() }
     pub fn SPENDER()   -> ContractAddress { starknet::contract_address_const::<0x444>() }
+    pub fn RECEIVER()  -> ContractAddress { starknet::contract_address_const::<0x555>() }
 
     pub const ETH_TO_WEI: u256 = 1_000_000_000_000_000_000;
     pub fn WEI(eth: u256) -> u256 { eth * ETH_TO_WEI }
@@ -186,6 +187,16 @@ pub mod tester {
     pub fn set_enable_uri_hooks(ref sys: TestSystems, value: bool) {
         let mut model: Tester = sys.store.get_tester();
         model.enable_uri_hooks = value;
+        sys.world.write_model_test(@model);
+    }
+    pub fn set_enable_default_royalty_hook(ref sys: TestSystems, value: bool) {
+        let mut model: Tester = sys.store.get_tester();
+        model.enable_default_royalty_hook = value;
+        sys.world.write_model_test(@model);
+    }
+    pub fn set_enable_token_royalty_hook(ref sys: TestSystems, value: bool) {
+        let mut model: Tester = sys.store.get_tester();
+        model.enable_token_royalty_hook = value;
         sys.world.write_model_test(@model);
     }
     
