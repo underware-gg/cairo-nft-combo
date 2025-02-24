@@ -103,15 +103,15 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id +3");
     // mint TOKEN_ID_1
     tester::impersonate(OWNER());
-    sys.character.burn(TOKEN_ID_1.low);
+    sys.character.burn(TOKEN_ID_1);
     assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) -1=0");
     assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +1=2");
     assert_eq!(sys.character.total_supply(), 2, "total_supply -1=2");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id =3");
     // mint TOKEN_ID_2, TOKEN_ID_3
     tester::impersonate(OTHER());
-    sys.character.burn(TOKEN_ID_2.low);
-    sys.character.burn(TOKEN_ID_3.low);
+    sys.character.burn(TOKEN_ID_2);
+    sys.character.burn(TOKEN_ID_3);
     assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) << 0");
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) << 0");
     assert_eq!(sys.character.total_supply(), 0, "total_supply << 0");
@@ -144,7 +144,7 @@ fn test_burn_not_owner() {
     let sys: TestSystems = setup_world(true, 0);
     _mint(sys, OWNER());
     tester::impersonate(OTHER());
-    sys.character.burn(TOKEN_ID_1.low);
+    sys.character.burn(TOKEN_ID_1);
 }
 
 #[test]
@@ -221,7 +221,7 @@ fn test_contract_uri() {
 fn test_contract_uri_updated() {
     let sys: TestSystems = setup_world(true, 0);
     tester::drop_all_events(sys.character.contract_address);
-    sys.character.emit_contract_uri_updated();
+    sys.character.update_contract();
     let _event = tester::pop_log::<combo::ContractURIUpdated>(sys.character.contract_address, selector!("ContractURIUpdated")).unwrap();
 }
 
@@ -234,7 +234,7 @@ fn test_contract_uri_updated() {
 fn test_metadata_update() {
     let sys: TestSystems = setup_world(true, 0);
     tester::drop_all_events(sys.character.contract_address);
-    sys.character.emit_metadata_update(TOKEN_ID_3);
+    sys.character.update_character(TOKEN_ID_3);
     let event = tester::pop_log::<combo::MetadataUpdate>(sys.character.contract_address, selector!("MetadataUpdate")).unwrap();
     assert_eq!(event.token_id, TOKEN_ID_3, "event.token_id");
 }
@@ -243,7 +243,7 @@ fn test_metadata_update() {
 fn test_batch_metadata_update() {
     let sys: TestSystems = setup_world(true, 0);
     tester::drop_all_events(sys.character.contract_address);
-    sys.character.emit_batch_metadata_update(TOKEN_ID_2, TOKEN_ID_4);
+    sys.character.update_characters(TOKEN_ID_2, TOKEN_ID_4);
     let event = tester::pop_log::<combo::BatchMetadataUpdate>(sys.character.contract_address, selector!("BatchMetadataUpdate")).unwrap();
     assert_eq!(event.from_token_id, TOKEN_ID_2, "event.from_token_id");
     assert_eq!(event.to_token_id, TOKEN_ID_4, "event.to_token_id");

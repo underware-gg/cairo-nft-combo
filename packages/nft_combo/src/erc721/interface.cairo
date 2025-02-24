@@ -56,13 +56,10 @@ pub trait IERC721ComboABI<TState> {
     //-----------------------------------
     // IERC7572ContractMetadata
     fn contract_uri(self: @TState) -> ByteArray;
-    fn emit_contract_uri_updated(ref self: TState);
     // (CamelOnly)
     fn contractURI(self: @TState) -> ByteArray;
     //-----------------------------------
     // IERC4906MetadataUpdate
-    fn emit_metadata_update(ref self: TState, token_id: u256);
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
     //-----------------------------------
     // IERC2981RoyaltyInfo
     fn royalty_info(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
@@ -99,8 +96,6 @@ pub trait IERC721Minter<TState> {
 pub trait IERC7572ContractMetadata<TState> {
     // returns the contract metadata
     fn contract_uri(self: @TState) -> ByteArray;
-    // emits the `ContractURIUpdated` event
-    fn emit_contract_uri_updated(ref self: TState);
 }
 
 //
@@ -109,10 +104,6 @@ pub trait IERC7572ContractMetadata<TState> {
 //
 #[starknet::interface]
 pub trait IERC4906MetadataUpdate<TState> {
-    // emits the `MetadataUpdate` event
-    fn emit_metadata_update(ref self: TState, token_id: u256);
-    // emits the `BatchMetadataUpdate` event
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 }
 
 //

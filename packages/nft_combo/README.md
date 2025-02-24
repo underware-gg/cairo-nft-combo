@@ -120,8 +120,6 @@ Token metadata example (based on [OpenSea metadata standards](https://docs.opens
 pub trait IERC7572ContractMetadata<TState> {
     // returns the contract metadata (dynamic or stored)
     fn contract_uri(self: @TState) -> ByteArray;
-    // emits the `ContractURIUpdated` event
-    fn emit_contract_uri_updated(ref self: TState);
     
     ///--- internal (available to the contract only)
 
@@ -129,6 +127,8 @@ pub trait IERC7572ContractMetadata<TState> {
     fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
     // Reads the default stored contract URI.
     fn _contract_uri(self: @TState) -> ByteArray;
+    // emits the `ContractURIUpdated` event
+    fn _emit_contract_uri_updated(ref self: TState);
 }
 ```
 
@@ -154,10 +154,11 @@ Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/ei
 ```rust
 #[starknet::interface]
 pub trait IERC4906MetadataUpdate<TState> {
+    ///--- internal (available to the contract only)
     // emits the `MetadataUpdate` event
-    fn emit_metadata_update(ref self: TState, token_id: u256);
+    fn _emit_metadata_update(ref self: TState, token_id: u256);
     // emits the `BatchMetadataUpdate` event
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
+    fn _emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
 }
 ```
 

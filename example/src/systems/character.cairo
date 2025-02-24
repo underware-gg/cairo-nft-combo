@@ -48,13 +48,10 @@ pub trait ICharacter<TState> {
     //-----------------------------------
     // IERC7572ContractMetadata
     fn contract_uri(self: @TState) -> ByteArray;
-    fn emit_contract_uri_updated(ref self: TState);
     // (CamelOnly)
     fn contractURI(self: @TState) -> ByteArray;
     //-----------------------------------
     // IERC4906MetadataUpdate
-    fn emit_metadata_update(ref self: TState, token_id: u256);
-    fn emit_batch_metadata_update(ref self: TState, from_token_id: u256, to_token_id: u256);
     //-----------------------------------
     // IERC2981RoyaltyInfo
     fn royalty_info(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
@@ -71,26 +68,33 @@ pub trait ICharacter<TState> {
     // ICharacterPublic
     //
     fn mint(ref self: TState, recipient: ContractAddress);
-    fn burn(ref self: TState, token_id: u128);
+    fn burn(ref self: TState, token_id: u256);
     // admin (will check for ownership)
     fn pause(ref self: TState, paused: bool);
     fn reset_royalty(ref self: TState);
     fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
+    fn update_character(ref self: TState, token_id: u256);
+    fn update_characters(ref self: TState, from_token_id: u256, to_token_id: u256);
+    fn update_contract(ref self: TState);
 }
 
 // Exposed to Cartridge Controller
 #[starknet::interface]
 pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
-    fn burn(ref self: TState, token_id: u128);
+    fn burn(ref self: TState, token_id: u256);
     fn pause(ref self: TState, paused: bool);
     fn reset_royalty(ref self: TState);
     fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
+    fn update_character(ref self: TState, token_id: u256);
+    fn update_characters(ref self: TState, from_token_id: u256, to_token_id: u256);
+    fn update_contract(ref self: TState);
 }
 
 // Exposed to world only
 #[starknet::interface]
 pub trait ICharacterProtected<TState> {
+    // here we can define functions that are called by other contracts only
 }
 
 #[dojo::contract]
@@ -201,25 +205,38 @@ pub mod character {
         fn mint(ref self: ContractState, recipient: ContractAddress) {
             let _token_id = self.erc721_combo._mint_next(recipient);
         }
-        fn burn(ref self: ContractState, token_id: u128) {
+        fn burn(ref self: ContractState, token_id: u256) {
             // only owner is supposed to burn
-            self.erc721_combo._require_owner_of(starknet::get_caller_address(), token_id.into());
+            self.erc721_combo._require_owner_of(starknet::get_caller_address(), token_id);
             self.erc721.burn(token_id.into());
         }
+
+        // admin funcitons
+        // only owner (contract deployer) can execute these...
+
         fn pause(ref self: ContractState, paused: bool) {
-            // only owner (contract deployer) can execute this
             self.assert_caller_is_owner();
             self.erc721_combo._set_minting_paused(paused);
         }
         fn reset_royalty(ref self: ContractState) {
-            // only owner (contract deployer) can execute this
             self.assert_caller_is_owner();
             self.erc721_combo._delete_default_royalty();
         }
         fn set_royalty(ref self: ContractState, receiver: ContractAddress, fee_numerator: u128) {
-            // only owner (contract deployer) can execute this
             self.assert_caller_is_owner();
             self.erc721_combo._set_default_royalty(receiver, fee_numerator);
+        }
+        fn update_character(ref self: ContractState, token_id: u256) {
+            self.assert_caller_is_owner();
+            self.erc721_combo._emit_metadata_update(token_id);
+        }
+        fn update_characters(ref self: ContractState, from_token_id: u256, to_token_id: u256) {
+            self.assert_caller_is_owner();
+            self.erc721_combo._emit_batch_metadata_update(from_token_id, to_token_id);
+        }
+        fn update_contract(ref self: ContractState) {
+            self.assert_caller_is_owner();
+            self.erc721_combo._emit_contract_uri_updated();
         }
     }
 
