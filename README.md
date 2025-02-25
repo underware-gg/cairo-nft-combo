@@ -6,7 +6,12 @@ A Cairo component that extends OpenZeppelin ERC-721 tokens with additional featu
 * Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata
 * Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
 * Implements [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981): NFT Royalty Standard
-* Next: Fully on-chain metadata renderer
+
+Next...
+
+* Fully on-chain metadata renderer
+* ERC-1155 combo
+* ERC-1155 example
 
 Detailed features and instructions at [`/packages/nft_combo`](/packages/nft_combo/)
 
