@@ -68,9 +68,10 @@ pub trait IERC721Minter<TState> {
     fn last_token_id(self: @TState) -> u256;
     // returns true if minting is paused
     fn is_minting_paused(self: @TState) -> bool;
-
-    ///--- internal (available to the contract only)
-    
+}
+/// InternalImpl (available to the contract only)
+#[starknet::interface]
+pub trait IERC721MinterProtected<TState> {
     // token initializer (extends OZ ERC721 initializer)
     fn initializer(ref self: TState,
         name: ByteArray,
@@ -118,12 +119,12 @@ Token metadata example (based on [OpenSea metadata standards](https://docs.opens
 ```rust
 #[starknet::interface]
 pub trait IERC7572ContractMetadata<TState> {
-    // returns the contract metadata (dynamic or stored)
+    // returns the contract metadata
     fn contract_uri(self: @TState) -> ByteArray;
-    
-    ///--- internal (available to the contract only)
-
-    // Sets the default stored contract URI.
+}
+/// InternalImpl (available to the contract only)
+#[starknet::interface]
+pub trait IERC7572ContractMetadataProtected<TState> {
     fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
     // Reads the default stored contract URI.
     fn _contract_uri(self: @TState) -> ByteArray;
@@ -154,7 +155,10 @@ Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/ei
 ```rust
 #[starknet::interface]
 pub trait IERC4906MetadataUpdate<TState> {
-    ///--- internal (available to the contract only)
+}
+/// InternalImpl (available to the contract only)
+#[starknet::interface]
+pub trait IERC4906MetadataUpdateProtected<TState> {
     // emits the `MetadataUpdate` event
     fn _emit_metadata_update(ref self: TState, token_id: u256);
     // emits the `BatchMetadataUpdate` event
@@ -180,26 +184,27 @@ pub trait IERC4906MetadataUpdate<TState> {
 ```rust
 #[starknet::interface]
 pub trait IERC2981RoyaltyInfo<TState> {
-    // Returns how much royalty is owed and to whom, based on a sale price that may be denominated
-    // in any unit of exchange. The royalty amount is denominated and should be paid in that same
-    // unit of exchange.
+    /// Returns how much royalty is owed and to whom, based on a sale price that may be denominated
+    /// in any unit of exchange. The royalty amount is denominated and should be paid in that same
+    /// unit of exchange.
     fn royalty_info(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
-    // Returns the royalty information that all ids in this contract will default to.
-    // The returned tuple contains:
-    // - `t.0`: The receiver of the royalty payment.
-    // - `t.1`: The numerator of the royalty fraction.
-    // - `t.2`: The denominator of the royalty fraction.
+    /// Returns the royalty information that all ids in this contract will default to.
+    /// The returned tuple contains:
+    /// - `t.0`: The receiver of the royalty payment.
+    /// - `t.1`: The numerator of the royalty fraction.
+    /// - `t.2`: The denominator of the royalty fraction.
     fn default_royalty(self: @TState) -> (ContractAddress, u128, u128);
-    // Returns the royalty information specific to a token.
-    // If no specific royalty information is set for the token, the default is returned.
-    // The returned tuple contains:
-    // - `t.0`: The receiver of the royalty payment.
-    // - `t.1`: The numerator of the royalty fraction.
-    // - `t.2`: The denominator of the royalty fraction.
+    /// Returns the royalty information specific to a token.
+    /// If no specific royalty information is set for the token, the default is returned.
+    /// The returned tuple contains:
+    /// - `t.0`: The receiver of the royalty payment.
+    /// - `t.1`: The numerator of the royalty fraction.
+    /// - `t.2`: The denominator of the royalty fraction.
     fn token_royalty(self: @TState, token_id: u256) -> (ContractAddress, u128, u128);
-    
-    ///--- internal (available to the contract only)
-
+}
+/// InternalImpl (available to the contract only)
+#[starknet::interface]
+pub trait IERC2981RoyaltyInfoProtected<TState> {
     // Sets the royalty information that all ids in this contract will default to.
     // Requirements:
     // - `receiver` cannot be the zero address.

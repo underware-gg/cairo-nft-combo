@@ -12,6 +12,7 @@ pub mod ERC721ComboComponent {
     use openzeppelin_introspection::src5::SRC5Component;
     use openzeppelin_introspection::src5::SRC5Component::SRC5Impl;
     use openzeppelin_introspection::src5::SRC5Component::InternalTrait as SRC5InternalTrait;
+    use crate::common::{interface as common_interface};
     use crate::erc721::interface;
 
     #[storage]
@@ -175,9 +176,10 @@ pub mod ERC721ComboComponent {
             self._set_contract_uri(contract_uri);
             self._set_max_supply(max_supply);
             let mut src5_component = get_dep_component_mut!(ref self, SRC5);
-            src5_component.register_interface(interface::IERC7572_ID);
-            src5_component.register_interface(interface::IERC4906_ID);
-            src5_component.register_interface(interface::IERC2981_ID);
+            src5_component.register_interface(interface::IERC721Minter_ID);
+            src5_component.register_interface(common_interface::IERC7572_ID);
+            src5_component.register_interface(common_interface::IERC4906_ID);
+            src5_component.register_interface(common_interface::IERC2981_ID);
         }
 
         /// IERC721Minter
@@ -459,7 +461,7 @@ pub mod ERC721ComboComponent {
         impl ERC721: ERC721Component::HasComponent<TContractState>,
         impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
-    > of interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
+    > of common_interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (match ComboHooks::contract_uri(self) {
                 Option::Some(custom_uri) => { (custom_uri) },
@@ -473,7 +475,7 @@ pub mod ERC721ComboComponent {
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
-    > of interface::IERC4906MetadataUpdate<ComponentState<TContractState>> {
+    > of common_interface::IERC4906MetadataUpdate<ComponentState<TContractState>> {
     }
 
     #[embeddable_as(ERC2981RoyaltyInfoImpl)]
@@ -484,7 +486,7 @@ pub mod ERC721ComboComponent {
         impl ERC721: ERC721Component::HasComponent<TContractState>,
         impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
-    > of interface::IERC2981RoyaltyInfo<ComponentState<TContractState>> {
+    > of common_interface::IERC2981RoyaltyInfo<ComponentState<TContractState>> {
         fn royalty_info(self: @ComponentState<TContractState>, token_id: u256, sale_price: u256) -> (ContractAddress, u256) {
             let royalty_info: RoyaltyInfo = self._get_royalty_info(token_id);
             let royalty_amount: u256 = sale_price

@@ -1,8 +1,8 @@
 use core::num::traits::Zero;
 use starknet::{ContractAddress};
-use openzeppelin_token::erc721::interface as erc721_interface;
+use openzeppelin_token::erc721::{interface as erc721_interface};
 use nft_combo::erc721::erc721_combo::{ERC721ComboComponent as combo};
-use nft_combo::erc721::interface as combo_interface;
+use nft_combo::common::{interface as common_interface};
 use example::systems::character::{character};
 use example::tests::tester::{
     tester,
@@ -36,9 +36,9 @@ fn test_initializer() {
     assert_eq!(sys.character.name(), character::TOKEN_NAME(), "Name is wrong");
     assert!(sys.character.supports_interface(erc721_interface::IERC721_ID), "should support IERC721_ID");
     assert!(sys.character.supports_interface(erc721_interface::IERC721_METADATA_ID), "should support METADATA");
-    assert!(sys.character.supports_interface(combo_interface::IERC7572_ID), "should support IERC7572_ID");
-    assert!(sys.character.supports_interface(combo_interface::IERC4906_ID), "should support IERC4906_ID");
-    assert!(sys.character.supports_interface(combo_interface::IERC2981_ID), "should support IERC2981_ID");
+    assert!(sys.character.supports_interface(common_interface::IERC7572_ID), "should support IERC7572_ID");
+    assert!(sys.character.supports_interface(common_interface::IERC4906_ID), "should support IERC4906_ID");
+    assert!(sys.character.supports_interface(common_interface::IERC2981_ID), "should support IERC2981_ID");
 }
 
 
