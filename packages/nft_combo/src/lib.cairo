@@ -1,5 +1,7 @@
 pub mod common {
     pub mod interface;
+    pub mod renderer;
+    pub mod encoding;
 }
 
 pub mod erc721 {
