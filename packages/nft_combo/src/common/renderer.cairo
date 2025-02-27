@@ -1,4 +1,4 @@
-use crate::common::encoding::{Base64Encoder};
+use crate::common::encoder::{Base64Encoder};
 use graffiti::json::JsonImpl;
 // use graffiti::{Tag, TagImpl};
 

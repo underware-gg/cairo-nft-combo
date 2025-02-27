@@ -99,13 +99,13 @@ mod unit {
     }
 
     #[test]
-    fn test_encode_bytes() {
+    fn test_base64_encoder_bytes() {
         let _encoded = Base64EncoderTrait::encode_bytes(DECODED());
         assert_eq!(_encoded, ENCODED(), "bad encode_bytes()");
     }
 
     #[test]
-    fn test_encode_mime() {
+    fn test_base64_encoder_mime() {
         let _svg = Base64EncoderTrait::encode_svg(DECODED(), true);
         assert_eq!(_svg, ENCODED_MIME(), "bad encoding");
     }
