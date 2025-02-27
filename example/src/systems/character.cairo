@@ -139,9 +139,10 @@ pub mod character {
     // ERC721 end
     //-----------------------------------
 
-    // use example::libs::dns::{DnsTrait};
+    use nft_combo::common::renderer::{TokenMetadata, Attribute};
+    use nft_combo::common::encoder::{Base64Encoder};
     use example::libs::store::{Store, StoreTrait};
-    use example::models::tester::{Tester};
+    // use example::libs::dns::{DnsTrait};
 
     pub mod Errors {
         pub const CALLER_IS_NOT_OWNER: felt252 = 'CHARACTER: caller is not owner';
@@ -153,8 +154,8 @@ pub mod character {
     //
     pub fn TOKEN_NAME()     -> ByteArray {("Sample Character")}
     pub fn TOKEN_SYMBOL()   -> ByteArray {("CHARACTER")}
-    pub fn BASE_URI()       -> ByteArray {("https://underware.gg/token/")}
-    pub fn CONTRACT_URI()   -> ByteArray {("https://underware.gg/contract.json")}
+    pub fn BASE_URI()       -> ByteArray {("https://example.underware.gg/token/")}
+    pub fn CONTRACT_URI()   -> ByteArray {("https://example.underware.gg/contract.json")}
     pub fn MAX_SUPPLY()     -> u256 {(10)}
     pub fn TREASURY()       -> ContractAddress {(starknet::contract_address_const::<0x1234>())}
     pub fn ROYALTY_FEE()    -> u128 {(500)}
@@ -255,50 +256,96 @@ pub mod character {
         fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ByteArray> {
             let self = self.get_contract(); // get the component's contract state
             let mut store: Store = StoreTrait::new(self.world_default());
-            let tester: Tester = store.get_tester();
-            (match tester.enable_uri_hooks {
-                true => { Option::Some(format!("data:application/json,{{\"name\":\"{} ERC-721 token\"}}", self.name())) },
-                false => { Option::None },
-            })
+            if (!store.get_tester().enable_uri_hooks) {
+                return Option::None;
+            }
+            let uri = format!("data:application/json,{{\"name\":\"{} ERC-721 token\"}}", TOKEN_NAME());
+            (Option::Some(uri))
         }
+
+        fn render_token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<TokenMetadata> {
+            let self = self.get_contract(); // get the component's contract state
+            let mut store: Store = StoreTrait::new(self.world_default());
+            if (!store.get_tester().enable_uri_render_hooks) {
+                return Option::None;
+            }
+
+            // image option 1: pass a url or ipfs link to the image.
+            // let image: ByteArray = format!("https://example.underware.gg/api/characters/{}.png", token_id);
+            // let image: ByteArray = format!("ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq");
+            
+            // image option 2: pass a base-64 encoded svg string
+            let image: ByteArray = Base64Encoder::encode_svg("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"600\" height=\"600\" viewBox=\"-1 -1 6 6\"><style>text{fill:#fff;font-size:1px;font-family:'Courier New',monospace;}.BG{fill:#000;}</style><g><rect class=\"BG\" x=\"-1\" y=\"-1\" width=\"6\" height=\"6\" /><text x=\"0\" y=\"1\">Token</text><text x=\"0\" y=\"2\">#1</text></g></svg>", true);
+            
+            // Attributes appear in clients and marketplace
+            let attributes: Array<Attribute> = array![
+                Attribute {
+                    key: "Status",
+                    value: "Alive",
+                },
+                Attribute {
+                    key: "Mood",
+                    value: "Terrific",
+                },
+            ];
+            // (optional) Additional metadata can be added, and are not displayed at marketplaces
+            let additional_metadata: Array<Attribute> = array![
+                Attribute {
+                    key: "Licence",
+                    value: "CC0-1.0",
+                },
+            ];
+            
+            // return the metadata to be rendered by the component
+            let metadata = TokenMetadata {
+                token_id,
+                name: format!("{} #{}", TOKEN_NAME(), token_id),
+                description: "This is a test token",
+                image,
+                attributes: attributes.span(),
+                additional_metadata: additional_metadata.span(),
+            };
+            Option::Some(metadata)
+        }
+
         fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {
             let self = self.get_contract(); // get the component's contract state
             let mut store: Store = StoreTrait::new(self.world_default());
-            let tester: Tester = store.get_tester();
-            (match tester.enable_uri_hooks {
-                true => { Option::Some(format!("data:application/json,{{\"name\":\"{} #{}\"}}", self.name(), token_id)) },
-                false => { Option::None },
-            })
+            if (!store.get_tester().enable_uri_hooks) {
+                return Option::None;
+            }
+            // option 1: pass a url or ipfs link to the image metadata (json file)
+            // let uri: ByteArray = format!("https://example.underware.gg/api/characters/{}.json", token_id);
+            // let uri: ByteArray = format!("ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq");
+            
+            // option 2: return the fully rendered token uri or a
+            let uri = format!("data:application/json,{{\"name\":\"{} #{}\"}}", TOKEN_NAME(), token_id);
+
+            (Option::Some(uri))
         }
 
         fn default_royalty(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<RoyaltyInfo> {
             let self = self.get_contract(); // get the component's contract state
             let mut store: Store = StoreTrait::new(self.world_default());
-            let tester: Tester = store.get_tester();
-            (match tester.enable_default_royalty_hook {
-                true => {
-                    Option::Some(RoyaltyInfo {
-                        receiver: RECEIVER_DEFAULT(),
-                        royalty_fraction: FEES_DEFAULT(),
-                    })
-                },
-                false => { Option::None },
-            })
+            if (!store.get_tester().enable_default_royalty_hook) {
+                return Option::None;
+            }
+            (Option::Some(RoyaltyInfo {
+                receiver: RECEIVER_DEFAULT(),
+                royalty_fraction: FEES_DEFAULT(),
+            }))
         }
         // Per-token royalty info
         fn token_royalty(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<RoyaltyInfo> {
             let self = self.get_contract(); // get the component's contract state
             let mut store: Store = StoreTrait::new(self.world_default());
-            let tester: Tester = store.get_tester();
-            (match tester.enable_token_royalty_hook {
-                true => {
-                    Option::Some(RoyaltyInfo {
-                        receiver: RECEIVER_TOKEN(),
-                        royalty_fraction: FEES_TOKEN(),
-                    })
-                },
-                false => { Option::None },
-            })
+            if (!store.get_tester().enable_token_royalty_hook) {
+                return Option::None;
+            }
+            (Option::Some(RoyaltyInfo {
+                receiver: RECEIVER_TOKEN(),
+                royalty_fraction: FEES_TOKEN(),
+            }))
         }
 
         // optional hooks from ERC721Component::ERC721HooksTrait

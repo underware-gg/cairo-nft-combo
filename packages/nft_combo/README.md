@@ -91,7 +91,10 @@ pub trait IERC721MinterProtected<TState> {
 }
 ```
 
-* Custom `token_uri()` hook: The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) provides a `token_uri()` that concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Implement the `token_uri()` hook to return a JSON string containing the token metadata.
+* Hooks to customize `token_uri()`. The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Customize token uri by implementing one of the following hooks:
+
+1. Implement the `render_token_uri()` hook to use a fully rendered JSON string, just by returning it's `TokenMetadata`.
+2. Implement the `token_uri()` hook to render uri in the contract, returning the formatted url or json string.
 
 Token metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
 
@@ -224,9 +227,17 @@ Implement the `ERC721ComboHooksTrait` in your contract, including only the funct
 pub trait ERC721ComboHooksTrait<TContractState> {
     //
     // ERC-721 Metadata
-    // Custom token metadata, allows fully on-chain metadata
-    // the uri can be a url or a json string prefixed with `data:application/json,`
-    fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> Option<ByteArray> { (Option::None) }
+    // Custom token metadata, either...
+    // 1. pass the metadata to be rendered by the component
+    fn render_token_uri(
+        self: @ComponentState<TContractState>,
+        token_id: u256,
+    ) -> Option<renderer::TokenMetadata> { (Option::None) }
+    // 2. or pass the rendered uri, which can be a url or a json string prefixed with `data:application/json,`
+    fn token_uri(
+        self: @ComponentState<TContractState>,
+        token_id: u256,
+    ) -> Option<ByteArray> { (Option::None) }
 
     //
     // ERC-7572

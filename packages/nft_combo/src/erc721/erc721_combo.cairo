@@ -13,6 +13,7 @@ pub mod ERC721ComboComponent {
     use openzeppelin_introspection::src5::SRC5Component::SRC5Impl;
     use openzeppelin_introspection::src5::SRC5Component::InternalTrait as SRC5InternalTrait;
     use crate::common::{interface as common_interface};
+    use crate::common::{renderer};
     use crate::erc721::interface;
 
     #[storage]
@@ -75,8 +76,13 @@ pub mod ERC721ComboComponent {
     pub trait ERC721ComboHooksTrait<TContractState> {
         //
         // ERC-721 Metadata
-        // Custom token metadata, allows fully on-chain metadata
-        // the uri can be a url or a json string prefixed with `data:application/json,`
+        // Custom token metadata, either...
+        // 1. pass the metadata to be rendered by the component
+        fn render_token_uri(
+            self: @ComponentState<TContractState>,
+            token_id: u256,
+        ) -> Option<renderer::TokenMetadata> { (Option::None) }
+        // 2. or pass the rendered uri, which can be a url or a json string prefixed with `data:application/json,`
         fn token_uri(
             self: @ComponentState<TContractState>,
             token_id: u256,
@@ -316,9 +322,16 @@ pub mod ERC721ComboComponent {
         fn token_uri(self: @ComponentState<TContractState>, token_id: u256) -> ByteArray {
             let erc721 = get_dep_component!(ref self, ERC721);
             erc721._require_owned(token_id);
-            (match ComboHooks::token_uri(self, token_id) {
-                Option::Some(custom_uri) => { (custom_uri) },
-                Option::None => { (erc721.token_uri(token_id)) },
+            (match ComboHooks::render_token_uri(self, token_id) {
+                Option::Some(metadata) => {
+                    (renderer::MetadataRenderer::render_token_metadata(metadata))
+                },
+                Option::None => {
+                    (match ComboHooks::token_uri(self, token_id) {
+                        Option::Some(custom_uri) => { (custom_uri) },
+                        Option::None => { (erc721.token_uri(token_id)) },
+                    })
+                },
             })
         }
 

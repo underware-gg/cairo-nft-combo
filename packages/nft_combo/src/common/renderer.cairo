@@ -57,14 +57,13 @@ impl MetadataHelper of MetadataHelperTrait {
     fn _create_traits_array(attributes: Span<Attribute>) -> Span<ByteArray> {
         let mut result: Array<ByteArray> = array![];
         let mut n: usize = 0;
-        loop {
-            if (n >= attributes.len()) { break; }
+        while (n < attributes.len()) {
             let attr: @Attribute = attributes.at(n);
             let json = JsonImpl::new()
                 .add("trait", attr.key.clone())
                 .add("value", attr.value.clone());
             result.append(json.build());
-            n += 2;
+            n += 1;
         };
         (result.span())
     }

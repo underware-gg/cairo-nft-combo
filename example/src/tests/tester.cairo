@@ -206,6 +206,11 @@ pub mod tester {
     // execute calls
     //
 
+    pub fn set_enable_uri_render_hooks(ref sys: TestSystems, value: bool) {
+        let mut model: Tester = sys.store.get_tester();
+        model.enable_uri_render_hooks = value;
+        sys.world.write_model_test(@model);
+    }
     pub fn set_enable_uri_hooks(ref sys: TestSystems, value: bool) {
         let mut model: Tester = sys.store.get_tester();
         model.enable_uri_hooks = value;

@@ -89,7 +89,7 @@ mod unit {
     use super::{Base64EncoderTrait};
 
     fn DECODED() -> ByteArray {
-        ("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"600\" height=\"600\" viewBox=\"-1 -1 6 6\"><style>text{fill:#fff;font-size:1px;font-family:'Courier New',monospace;}.BG{fill:#000;}</style><g><rect class=\"BG\" x=\"-1\" y=\"-1\" width=\"6\" height=\"6\" /><text x=\"0\" y=\"1\">Karat</text><text x=\"0\" y=\"2\">#1</text></g></svg>")
+        ("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"600\" height=\"600\" viewBox=\"-1 -1 6 6\"><style>text{fill:#fff;font-size:1px;font-family:'Courier New',monospace;}.BG{fill:#000;}</style><g><rect class=\"BG\" x=\"-1\" y=\"-1\" width=\"6\" height=\"6\" /><text x=\"0\" y=\"1\">Token</text><text x=\"0\" y=\"2\">#1</text></g></svg>")
     }
     fn ENCODED() -> ByteArray {
         ("PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHdpZHRoPSI2MDAiIGhlaWdodD0iNjAwIiB2aWV3Qm94PSItMSAtMSA2IDYiPjxzdHlsZT50ZXh0e2ZpbGw6I2ZmZjtmb250LXNpemU6MXB4O2ZvbnQtZmFtaWx5OidDb3VyaWVyIE5ldycsbW9ub3NwYWNlO30uQkd7ZmlsbDojMDAwO308L3N0eWxlPjxnPjxyZWN0IGNsYXNzPSJCRyIgeD0iLTEiIHk9Ii0xIiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiAvPjx0ZXh0IHg9IjAiIHk9IjEiPkthcmF0PC90ZXh0Pjx0ZXh0IHg9IjAiIHk9IjIiPiMxPC90ZXh0PjwvZz48L3N2Zz4=")
