@@ -1,13 +1,6 @@
 use crate::common::encoder::{Base64Encoder};
 use starknet::{ContractAddress};
-use graffiti::json::JsonImpl;
-// use graffiti::{Tag, TagImpl};
-
-#[derive(Drop)]
-pub struct Attribute {
-    pub key: ByteArray,
-    pub value: ByteArray,
-}
+pub use graffiti::json::{JsonImpl, Attribute};
 
 #[derive(Drop)]
 pub struct TokenMetadata {
@@ -39,24 +32,24 @@ pub trait MetadataRendererTrait {
 pub impl MetadataRenderer of MetadataRendererTrait {
     fn render_token_metadata(metadata: TokenMetadata) -> ByteArray {
         let json = JsonImpl::new()
-            .add("id", format!("{}", metadata.token_id))
-            .add("name", metadata.name)
-            .add("description", metadata.description)
-            .add("image", metadata.image)
-            .add("metadata", MetadataHelper::_format_metadata(metadata.attributes, metadata.additional_metadata))
+            .add_if_not_null("id", format!("{}", metadata.token_id))
+            .add_if_not_null("name", metadata.name)
+            .add_if_not_null("description", metadata.description)
+            .add_if_not_null("image", metadata.image)
+            .add_if_not_null("metadata", MetadataHelper::_format_metadata(metadata.attributes, metadata.additional_metadata))
             .add_array("attributes", MetadataHelper::_create_traits_array(metadata.attributes));
         let result = json.build();
         (Base64Encoder::encode_json(result, false))
     }
     fn render_contract_metadata(metadata: ContractMetadata) -> ByteArray {
         let json = JsonImpl::new()
-            .add("name", metadata.name)
-            .add("symbol", metadata.symbol)
-            .add("description", metadata.description)
-            .add("image", metadata.image)
-            .add("banner_image", metadata.banner_image)
-            .add("featured_image", metadata.featured_image)
-            .add("external_link", metadata.external_link)
+            .add_if_not_null("name", metadata.name)
+            .add_if_not_null("symbol", metadata.symbol)
+            .add_if_not_null("description", metadata.description)
+            .add_if_not_null("image", metadata.image)
+            .add_if_not_null("banner_image", metadata.banner_image)
+            .add_if_not_null("featured_image", metadata.featured_image)
+            .add_if_not_null("external_link", metadata.external_link)
             .add_array("collaborators", MetadataHelper::_create_address_array(metadata.collaborators));
         let result = json.build();
         (Base64Encoder::encode_json(result, false))
