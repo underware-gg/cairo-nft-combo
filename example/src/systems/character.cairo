@@ -71,12 +71,13 @@ pub trait ICharacter<TState> {
     fn burn(ref self: TState, token_id: u256);
     // admin (will check for ownership)
     fn pause(ref self: TState, paused: bool);
-    fn update_max_supply(ref self: TState, supply: Option<u256>);
     fn reset_royalty(ref self: TState);
     fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
     fn update_character(ref self: TState, token_id: u256);
     fn update_characters(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract(ref self: TState);
+    fn update_max_supply(ref self: TState, supply: Option<u256>);
+    fn update_contract_uri(ref self: TState, uri: Option<ByteArray>);
 }
 
 // Exposed to Cartridge Controller
@@ -85,12 +86,13 @@ pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
     fn burn(ref self: TState, token_id: u256);
     fn pause(ref self: TState, paused: bool);
-    fn update_max_supply(ref self: TState, supply: Option<u256>);
     fn reset_royalty(ref self: TState);
     fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
     fn update_character(ref self: TState, token_id: u256);
     fn update_characters(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract(ref self: TState);
+    fn update_max_supply(ref self: TState, supply: Option<u256>);
+    fn update_contract_uri(ref self: TState, uri: Option<ByteArray>);
 }
 
 // Exposed to world only
@@ -175,8 +177,8 @@ pub mod character {
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
             BASE_URI(),
-            CONTRACT_URI(),
-            Option::Some(MAX_SUPPLY()),
+            Option::Some(CONTRACT_URI()), // use Option::None for automatic metadata or use hooks
+            Option::Some(MAX_SUPPLY()),   // use Option::None for infinite supply
         );
         // set default royalty to 5%
         self.erc721_combo._set_default_royalty(TREASURY(), ROYALTY_FEE());
@@ -221,10 +223,6 @@ pub mod character {
             self.assert_caller_is_owner();
             self.erc721_combo._set_minting_paused(paused);
         }
-        fn update_max_supply(ref self: ContractState, supply: Option<u256>) {
-            self.assert_caller_is_owner();
-            self.erc721_combo._set_max_supply(supply);
-        }
         fn reset_royalty(ref self: ContractState) {
             self.assert_caller_is_owner();
             self.erc721_combo._delete_default_royalty();
@@ -244,6 +242,16 @@ pub mod character {
         fn update_contract(ref self: ContractState) {
             self.assert_caller_is_owner();
             self.erc721_combo._emit_contract_uri_updated();
+        }
+
+        // for testing purposes...
+        fn update_max_supply(ref self: ContractState, supply: Option<u256>) {
+            self.assert_caller_is_owner();
+            self.erc721_combo._set_max_supply(supply);
+        }
+        fn update_contract_uri(ref self: ContractState, uri: Option<ByteArray>) {
+            self.assert_caller_is_owner();
+            self.erc721_combo._set_contract_uri(uri);
         }
     }
 

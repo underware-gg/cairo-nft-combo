@@ -30,8 +30,8 @@ fn dojo_init(ref self: ContractState) {
         TOKEN_NAME(),
         TOKEN_SYMBOL(),
         BASE_URI(),
-        CONTRACT_URI(),
-        Option::Some(MAX_SUPPLY()), // use Option::None for infinite supply
+        Option::Some(CONTRACT_URI()), // use Option::None for automatic metadata or use hooks
+        Option::Some(MAX_SUPPLY()),   // use Option::None for infinite supply
     );
     // set default royalty to 5%
     self.erc721_combo._set_default_royalty(TREASURY(), ROYALTY_FEE());
@@ -77,7 +77,7 @@ pub trait IERC721MinterProtected<TState> {
         name: ByteArray,
         symbol: ByteArray,
         base_uri: ByteArray,
-        contract_uri: ByteArray,
+        contract_uri: Option<ByteArray>,
         max_supply: Option<u256>,
     );
     // mints the next token sequnetially, based on supply
@@ -121,7 +121,7 @@ Token metadata example (based on [OpenSea metadata standards](https://docs.opens
 1. Implement the `ERC721ComboHooksTrait::render_contract_uri()` hook to use a fully rendered JSON string, just by returning it's `ContractMetadata`.
 2. Implement the ERC721ComboHooksTrait::`contract_uri()` hook to render uri in the contract, returning the formatted url or json string.
 3. Default uri set at initialization or by `_set_contract_uri()`.
-4. None if no default is set
+4. Auto generated simple metadata based with token name and symbol.
 
 * `emit_contract_uri_updated()`: Emits an `ContractURIUpdated` event to trigger indexers to refresh contract metadata.
 
@@ -134,9 +134,9 @@ pub trait IERC7572ContractMetadata<TState> {
 /// InternalImpl (available to the contract only)
 #[starknet::interface]
 pub trait IERC7572ContractMetadataProtected<TState> {
-    fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
+    fn _set_contract_uri(ref self: TState, contract_uri: Option<ByteArray>);
     // Reads the default stored contract URI.
-    fn _contract_uri(self: @TState) -> ByteArray;
+    fn _contract_uri(self: @TState) -> Option<ByteArray>;
     // emits the `ContractURIUpdated` event
     fn _emit_contract_uri_updated(ref self: TState);
 }

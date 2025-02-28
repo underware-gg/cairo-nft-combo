@@ -22,7 +22,7 @@ pub mod ERC721ComboComponent {
         pub ERC721_total_supply: u256,
         pub ERC721_last_token_id: u256,
         pub ERC721_minting_paused: bool,
-        pub ERC7572_contract_uri: ByteArray,
+        pub ERC7572_contract_uri: Option<ByteArray>,
         pub ERC2981_default_royalty_info: RoyaltyInfo,
     }
 
@@ -190,7 +190,7 @@ pub mod ERC721ComboComponent {
             name: ByteArray,
             symbol: ByteArray,
             base_uri: ByteArray,
-            contract_uri: ByteArray,
+            contract_uri: Option<ByteArray>,
             max_supply: Option<u256>,
         ) {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
@@ -225,11 +225,11 @@ pub mod ERC721ComboComponent {
         }
 
         /// IERC7572ContractMetadata
-        fn _set_contract_uri(ref self: ComponentState<TContractState>, contract_uri: ByteArray) {
+        fn _set_contract_uri(ref self: ComponentState<TContractState>, contract_uri: Option<ByteArray>) {
             self.ERC7572_contract_uri.write(contract_uri);
             self._emit_contract_uri_updated();
         }
-        fn _contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
+        fn _contract_uri(self: @ComponentState<TContractState>) -> Option<ByteArray> {
             (self.ERC7572_contract_uri.read())
         }
         fn _emit_contract_uri_updated(ref self: ComponentState<TContractState>) {
@@ -496,13 +496,34 @@ pub mod ERC721ComboComponent {
     > of common_interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (match ComboHooks::render_contract_uri(self) {
-                Option::Some(metadata) => {
-                    (renderer::MetadataRenderer::render_contract_metadata(metadata))
-                },
+                // 1. Render the contract metadata
+                Option::Some(metadata) => {(renderer::MetadataRenderer::render_contract_metadata(metadata))},
                 Option::None => {
                     (match ComboHooks::contract_uri(self) {
-                        Option::Some(custom_uri) => { (custom_uri) },
-                        Option::None => { (self._contract_uri()) },
+                        // 2. Contract metadata
+                        Option::Some(custom_uri) => {(custom_uri)},
+                        Option::None => {
+                            (match self._contract_uri() {
+                                // 3. stored _contract_uri
+                                Option::Some(contract_uri) => { (contract_uri) },
+                                Option::None => {
+                                    // 4. render simple metadata
+                                    let metadata = renderer::ContractMetadata {
+                                        name: self.name(),
+                                        symbol: self.symbol(),
+                                        description: "",
+                                        image: "",
+                                        banner_image: "",
+                                        featured_image: "",
+                                        external_link: "",
+                                        collaborators: array![].span(),
+                                    };
+                                    (renderer::MetadataRenderer::render_contract_metadata(metadata))
+                                },
+                            })
+                            
+                        
+                        },
                     })
                 },
             })
