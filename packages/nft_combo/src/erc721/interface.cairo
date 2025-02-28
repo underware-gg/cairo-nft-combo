@@ -2,12 +2,12 @@
 use starknet::{ContractAddress};
 
 // TODO: compute the correct ids
-// https://docs.openzeppelin.com/contracts-cairo/0.20.0/introspection#computing_the_interface_id
+// https://docs.openzeppelin.com/contracts-cairo/1.0.0/introspection#computing_the_interface_id
 pub const IERC721Minter_ID: felt252 = selector!("IERC721Minter_ID");
 
 //
 // cloned from ERC721ABI:
-// https://github.com/OpenZeppelin/cairo-contracts/blob/v0.20.0/packages/token/src/erc721/interface.cairo
+// https://github.com/OpenZeppelin/cairo-contracts/blob/v1.0.0/packages/token/src/erc721/interface.cairo
 //
 #[starknet::interface]
 pub trait IERC721ComboABI<TState> {
