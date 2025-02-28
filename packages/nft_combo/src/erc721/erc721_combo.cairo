@@ -13,7 +13,7 @@ pub mod ERC721ComboComponent {
     use openzeppelin_introspection::src5::SRC5Component::SRC5Impl;
     use openzeppelin_introspection::src5::SRC5Component::InternalTrait as SRC5InternalTrait;
     use crate::common::{interface as common_interface};
-    use crate::common::{renderer};
+    use crate::utils::{renderer};
     use crate::erc721::interface;
 
     #[storage]

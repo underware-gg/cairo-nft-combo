@@ -1,4 +1,4 @@
-use crate::common::encoder::{Base64Encoder};
+use crate::utils::encoder::{Encoder};
 use starknet::{ContractAddress};
 pub use graffiti::json::{JsonImpl, Attribute};
 
@@ -37,9 +37,9 @@ pub impl MetadataRenderer of MetadataRendererTrait {
             .add_if_not_null("description", metadata.description)
             .add_if_not_null("image", metadata.image)
             .add_if_not_null("metadata", MetadataHelper::_format_metadata(metadata.attributes, metadata.additional_metadata))
-            .add_array("attributes", MetadataHelper::_create_traits_array(metadata.attributes));
+            .add_array_if_not_empty("attributes", MetadataHelper::_create_traits_array(metadata.attributes));
         let result = json.build();
-        (Base64Encoder::encode_json(result, false))
+        (Encoder::encode_json(result, false))
     }
     fn render_contract_metadata(metadata: ContractMetadata) -> ByteArray {
         let json = JsonImpl::new()
@@ -50,9 +50,9 @@ pub impl MetadataRenderer of MetadataRendererTrait {
             .add_if_not_null("banner_image", metadata.banner_image)
             .add_if_not_null("featured_image", metadata.featured_image)
             .add_if_not_null("external_link", metadata.external_link)
-            .add_array("collaborators", MetadataHelper::_create_address_array(metadata.collaborators));
+            .add_array_if_not_empty("collaborators", MetadataHelper::_create_address_array(metadata.collaborators));
         let result = json.build();
-        (Base64Encoder::encode_json(result, false))
+        (Encoder::encode_json(result, false))
     }
 }
 

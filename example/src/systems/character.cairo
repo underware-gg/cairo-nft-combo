@@ -141,8 +141,8 @@ pub mod character {
     // ERC721 end
     //-----------------------------------
 
-    use nft_combo::common::renderer::{ContractMetadata, TokenMetadata, Attribute};
-    use nft_combo::common::encoder::{Base64Encoder};
+    use nft_combo::utils::renderer::{ContractMetadata, TokenMetadata, Attribute};
+    use nft_combo::utils::encoder::{Encoder};
     use example::libs::store::{Store, StoreTrait};
     // use example::libs::dns::{DnsTrait};
 
@@ -304,7 +304,7 @@ pub mod character {
             // let image: ByteArray = format!("ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq");
             
             // image option 2: pass a base-64 encoded svg string
-            let image: ByteArray = Base64Encoder::encode_svg("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"600\" height=\"600\" viewBox=\"-1 -1 6 6\"><style>text{fill:#fff;font-size:1px;font-family:'Courier New',monospace;}.BG{fill:#000;}</style><g><rect class=\"BG\" x=\"-1\" y=\"-1\" width=\"6\" height=\"6\" /><text x=\"0\" y=\"1\">Token</text><text x=\"0\" y=\"2\">#1</text></g></svg>", true);
+            let image: ByteArray = Encoder::encode_svg("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"600\" height=\"600\" viewBox=\"-1 -1 6 6\"><style>text{fill:#fff;font-size:1px;font-family:'Courier New',monospace;}.BG{fill:#000;}</style><g><rect class=\"BG\" x=\"-1\" y=\"-1\" width=\"6\" height=\"6\" /><text x=\"0\" y=\"1\">Token</text><text x=\"0\" y=\"2\">#1</text></g></svg>", true);
             
             // Attributes appear in clients and marketplace
             let attributes: Array<Attribute> = array![
