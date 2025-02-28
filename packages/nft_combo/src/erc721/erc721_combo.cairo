@@ -1,6 +1,6 @@
 #[starknet::component]
 pub mod ERC721ComboComponent {
-    use core::num::traits::Zero;
+    use core::num::traits::{Zero, Bounded};
     use starknet::{ContractAddress};
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use openzeppelin_token::erc721::{ERC721Component};
@@ -18,7 +18,7 @@ pub mod ERC721ComboComponent {
 
     #[storage]
     pub struct Storage {
-        pub ERC721_max_supply: u256,
+        pub ERC721_max_supply: Option<u256>,
         pub ERC721_total_supply: u256,
         pub ERC721_last_token_id: u256,
         pub ERC721_minting_paused: bool,
@@ -191,7 +191,7 @@ pub mod ERC721ComboComponent {
             symbol: ByteArray,
             base_uri: ByteArray,
             contract_uri: ByteArray,
-            max_supply: u256,
+            max_supply: Option<u256>,
         ) {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             erc721.initializer(name, symbol, base_uri);
@@ -211,7 +211,7 @@ pub mod ERC721ComboComponent {
             erc721.mint(recipient, token_id);
             (token_id)
         }
-        fn _set_max_supply(ref self: ComponentState<TContractState>, max_supply: u256) {
+        fn _set_max_supply(ref self: ComponentState<TContractState>, max_supply: Option<u256>) {
             self.ERC721_max_supply.write(max_supply);
         }
         fn _set_minting_paused(ref self: ComponentState<TContractState>, paused: bool) {
@@ -469,7 +469,10 @@ pub mod ERC721ComboComponent {
         +Drop<TContractState>,
     > of interface::IERC721Minter<ComponentState<TContractState>> {
         fn max_supply(self: @ComponentState<TContractState>) -> u256 {
-            self.ERC721_max_supply.read()
+            (match self.ERC721_max_supply.read() {
+                Option::Some(max_supply) => { (max_supply) },
+                Option::None => { (Bounded::<u256>::MAX) },
+            })
         }
         fn total_supply(self: @ComponentState<TContractState>) -> u256 {
             self.ERC721_total_supply.read()

@@ -71,6 +71,7 @@ pub trait ICharacter<TState> {
     fn burn(ref self: TState, token_id: u256);
     // admin (will check for ownership)
     fn pause(ref self: TState, paused: bool);
+    fn update_max_supply(ref self: TState, supply: Option<u256>);
     fn reset_royalty(ref self: TState);
     fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
     fn update_character(ref self: TState, token_id: u256);
@@ -84,6 +85,7 @@ pub trait ICharacterPublic<TState> {
     fn mint(ref self: TState, recipient: ContractAddress);
     fn burn(ref self: TState, token_id: u256);
     fn pause(ref self: TState, paused: bool);
+    fn update_max_supply(ref self: TState, supply: Option<u256>);
     fn reset_royalty(ref self: TState);
     fn set_royalty(ref self: TState, receiver: ContractAddress, fee_numerator: u128);
     fn update_character(ref self: TState, token_id: u256);
@@ -174,7 +176,7 @@ pub mod character {
             TOKEN_SYMBOL(),
             BASE_URI(),
             CONTRACT_URI(),
-            MAX_SUPPLY(),
+            Option::Some(MAX_SUPPLY()),
         );
         // set default royalty to 5%
         self.erc721_combo._set_default_royalty(TREASURY(), ROYALTY_FEE());
@@ -218,6 +220,10 @@ pub mod character {
         fn pause(ref self: ContractState, paused: bool) {
             self.assert_caller_is_owner();
             self.erc721_combo._set_minting_paused(paused);
+        }
+        fn update_max_supply(ref self: ContractState, supply: Option<u256>) {
+            self.assert_caller_is_owner();
+            self.erc721_combo._set_max_supply(supply);
         }
         fn reset_royalty(ref self: ContractState) {
             self.assert_caller_is_owner();
@@ -273,7 +279,7 @@ pub mod character {
                     starknet::contract_address_const::<0x17cc6ca902ed4e8baa8463a7009ff18cc294fa85a94b4ce6ac30a9ebd6057c7>(),
                 ].span(),
             };
-            Option::Some(metadata)
+            (Option::Some(metadata))
         }
 
         fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ByteArray> {
@@ -328,7 +334,7 @@ pub mod character {
                 attributes: attributes.span(),
                 additional_metadata: additional_metadata.span(),
             };
-            Option::Some(metadata)
+            (Option::Some(metadata))
         }
 
         fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {

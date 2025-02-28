@@ -126,7 +126,65 @@ fn test_mint_burn_supply() {
 
 #[test]
 #[should_panic(expected:('ERC721Combo: reached max supply', 'ENTRYPOINT_FAILED'))]
-fn test_mint_max_supply() {
+fn test_mint_max_supply_panic() {
+    let sys: TestSystems = setup_world(true, 0);
+    // mint all available tokens
+    let max_supply: u256 = sys.character.max_supply();
+    assert_eq!(max_supply, 10, "max_supply == 10");
+    while (sys.character.last_token_id() < max_supply) {
+        _mint(sys, OWNER());
+    };
+    // one more will panic
+    _mint(sys, OWNER());
+}
+
+#[test]
+fn test_mint_new_max_supply_ok() {
+    let sys: TestSystems = setup_world(true, 0);
+    // mint all available tokens
+    let max_supply: u256 = sys.character.max_supply();
+    sys.character.update_max_supply(Option::Some(15));
+    let new_max_supply: u256 = sys.character.max_supply();
+    assert_gt!(new_max_supply, max_supply, "new_max_supply");
+    while (sys.character.last_token_id() < new_max_supply) {
+        _mint(sys, OWNER());
+    };
+    // no panic!
+}
+
+#[test]
+fn test_mint_new_max_supply_none_ok() {
+    let sys: TestSystems = setup_world(true, 0);
+    // mint all available tokens
+    let max_supply: u256 = sys.character.max_supply();
+    sys.character.update_max_supply(Option::None);
+    let new_max_supply: u256 = sys.character.max_supply();
+    assert_eq!(new_max_supply, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, "new_max_supply");
+    while (sys.character.last_token_id() < max_supply * 2) {
+        _mint(sys, OWNER());
+    };
+    // no panic!
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: reached max supply', 'ENTRYPOINT_FAILED'))]
+fn test_mint_new_max_supply_panic() {
+    let sys: TestSystems = setup_world(true, 0);
+    // mint all available tokens
+    let max_supply: u256 = sys.character.max_supply();
+    sys.character.update_max_supply(Option::Some(15));
+    let new_max_supply: u256 = sys.character.max_supply();
+    assert_gt!(new_max_supply, max_supply, "new_max_supply");
+    while (sys.character.last_token_id() < new_max_supply) {
+        _mint(sys, OWNER());
+    };
+    // one more will panic
+    _mint(sys, OWNER());
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: reached max supply', 'ENTRYPOINT_FAILED'))]
+fn test_mint_no_max_supply() {
     let sys: TestSystems = setup_world(true, 0);
     // mint all available tokens
     let max_supply: u256 = sys.character.max_supply();

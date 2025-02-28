@@ -31,7 +31,7 @@ fn dojo_init(ref self: ContractState) {
         TOKEN_SYMBOL(),
         BASE_URI(),
         CONTRACT_URI(),
-        MAX_SUPPLY(),
+        Option::Some(MAX_SUPPLY()), // use Option::None for infinite supply
     );
     // set default royalty to 5%
     self.erc721_combo._set_default_royalty(TREASURY(), ROYALTY_FEE());
@@ -78,12 +78,12 @@ pub trait IERC721MinterProtected<TState> {
         symbol: ByteArray,
         base_uri: ByteArray,
         contract_uri: ByteArray,
-        max_supply: u256,
+        max_supply: Option<u256>,
     );
     // mints the next token sequnetially, based on supply
     fn _mint_next(ref self: TState, recipient: ContractAddress) -> u256;
-    // sets the maximum number of tokens that can be minted
-    fn _set_max_supply(ref self: TState, max_supply: u256);
+    // sets the maximum number of tokens that can be minted (use Option::None for infinite supply)
+    fn _set_max_supply(ref self: TState, max_supply: Option<u256>);
     // pauses/unpauses minting
     fn _set_minting_paused(ref self: TState, paused: bool);
     // panics if caller is not owner of the token
