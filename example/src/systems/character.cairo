@@ -267,8 +267,8 @@ pub mod character {
             }
             // return the metadata to be rendered by the component
             let metadata = ContractMetadata {
-                name: TOKEN_NAME(),
-                symbol: TOKEN_SYMBOL(),
+                name: self.name(),
+                symbol: self.symbol(),
                 description: "This is a test token",
                 image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
                 banner_image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
@@ -288,7 +288,7 @@ pub mod character {
             if (!store.get_tester().enable_uri_hooks) {
                 return Option::None;
             }
-            let uri = format!("data:application/json,{{\"name\":\"{} ERC-721 token\"}}", TOKEN_NAME());
+            let uri = format!("data:application/json,{{\"name\":\"{} ERC-721 token\"}}", self.name());
             (Option::Some(uri))
         }
 
@@ -328,7 +328,7 @@ pub mod character {
             // return the metadata to be rendered by the component
             let metadata = TokenMetadata {
                 token_id,
-                name: format!("{} #{}", TOKEN_NAME(), token_id),
+                name: format!("{} #{}", self.name(), token_id),
                 description: "This is a test token",
                 image,
                 attributes: attributes.span(),
@@ -348,7 +348,7 @@ pub mod character {
             // let uri: ByteArray = format!("ipfs://bafybeiemxf5abjwjbikoz4mc3a3dla6ual3jsgpdr4cjr3oz3evfyavhwq");
             
             // option 2: return the fully rendered token uri or a
-            let uri = format!("data:application/json,{{\"name\":\"{} #{}\"}}", TOKEN_NAME(), token_id);
+            let uri = format!("data:application/json,{{\"name\":\"{} #{}\"}}", self.name(), token_id);
 
             (Option::Some(uri))
         }
