@@ -91,10 +91,11 @@ pub trait IERC721MinterProtected<TState> {
 }
 ```
 
-* Hooks to customize `token_uri()`. The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. Customize token uri by implementing one of the following hooks:
+* Hooks to customize `token_uri()`. The OpenZeppelin ERC-721 [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/erc721/erc721.cairo) concatenates a constant pre-configured `base_uri` with the `token_id`, unsuitable for fully on-chain metadata. The component will return in this precedence...
 
-1. Implement the `render_token_uri()` hook to use a fully rendered JSON string, just by returning it's `TokenMetadata`.
-2. Implement the `token_uri()` hook to render uri in the contract, returning the formatted url or json string.
+1. Implement the `ERC721ComboHooksTrait::render_token_uri()` hook to use a fully rendered JSON string, just by returning it's `TokenMetadata`.
+2. Implement the `ERC721ComboHooksTrait::token_uri()` hook to render uri in the contract, returning the formatted url or json string.
+3. Default, the concatenation of `base_uri` with the `token_id`.
 
 Token metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
 
@@ -115,8 +116,13 @@ Token metadata example (based on [OpenSea metadata standards](https://docs.opens
 
 ### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata
 
-* A default uri can be set at initialization or by `_set_contract_uri()`.
-* `ERC721ComboHooksTrait::contract_uri()`: hook to provide dynamic, fully on-chain JSON contract metadata, bypassing the default stored uri.
+* Hooks to customize `contract_uri()`. The component will return in this precedence...
+
+1. Implement the `ERC721ComboHooksTrait::render_contract_uri()` hook to use a fully rendered JSON string, just by returning it's `ContractMetadata`.
+2. Implement the ERC721ComboHooksTrait::`contract_uri()` hook to render uri in the contract, returning the formatted url or json string.
+3. Default uri set at initialization or by `_set_contract_uri()`.
+4. None if no default is set
+
 * `emit_contract_uri_updated()`: Emits an `ContractURIUpdated` event to trigger indexers to refresh contract metadata.
 
 ```rust
@@ -219,7 +225,7 @@ pub trait IERC2981RoyaltyInfoProtected<TState> {
 ```
 
 
-## The hook: `ERC721ComboHooksTrait`
+## The `ERC721ComboHooksTrait` hooks:
 
 Implement the `ERC721ComboHooksTrait` in your contract, including only the functions you need to customize:
 
@@ -232,33 +238,51 @@ pub trait ERC721ComboHooksTrait<TContractState> {
     fn render_token_uri(
         self: @ComponentState<TContractState>,
         token_id: u256,
-    ) -> Option<renderer::TokenMetadata> { (Option::None) }
+    ) -> Option<renderer::TokenMetadata> {(Option::None)}
     // 2. or pass the rendered uri, which can be a url or a json string prefixed with `data:application/json,`
     fn token_uri(
         self: @ComponentState<TContractState>,
         token_id: u256,
-    ) -> Option<ByteArray> { (Option::None) }
+    ) -> Option<ByteArray> {(Option::None)}
 
     //
     // ERC-7572
-    // Contract-level metadata, allows fully on-chain metadata
-    // the uri can be a url or a json string prefixed with `data:application/json,`
-    fn contract_uri(self: @ComponentState<TContractState>) -> Option<ByteArray> { (Option::None)  }
+    // Contract-level metadata, either...
+    // 1. pass the metadata to be rendered by the component
+    fn render_contract_uri(
+        self: @ComponentState<TContractState>,
+    ) -> Option<renderer::ContractMetadata> {(Option::None)}
+    // 2. or pass the rendered uri, which can be a url or a json string prefixed with `data:application/json,`
+    fn contract_uri(
+        self: @ComponentState<TContractState>,
+    ) -> Option<ByteArray> {(Option::None)}
 
     //
     // ERC-2981
     // Default royalty info
-    fn default_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
-        (Option::None)
-    }
+    fn default_royalty(
+        self: @ComponentState<TContractState>,
+        token_id: u256,
+    ) -> Option<RoyaltyInfo> {(Option::None)}
     // Per-token royalty info
-    fn token_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
-        (Option::None)
-    }
+    fn token_royalty(
+        self: @ComponentState<TContractState>,
+        token_id: u256,
+    ) -> Option<RoyaltyInfo> {(Option::None)}
 
     //
     // ERC721Component::ERC721HooksTrait
-    fn before_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
-    fn after_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
+    fn before_update(
+        ref self: ComponentState<TContractState>,
+        to: ContractAddress,
+        token_id: u256,
+        auth: ContractAddress,
+    ) {}
+    fn after_update(
+        ref self: ComponentState<TContractState>,
+        to: ContractAddress,
+        token_id: u256,
+        auth: ContractAddress,
+    ) {}
 }
 ```

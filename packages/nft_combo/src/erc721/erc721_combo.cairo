@@ -81,36 +81,52 @@ pub mod ERC721ComboComponent {
         fn render_token_uri(
             self: @ComponentState<TContractState>,
             token_id: u256,
-        ) -> Option<renderer::TokenMetadata> { (Option::None) }
+        ) -> Option<renderer::TokenMetadata> {(Option::None)}
         // 2. or pass the rendered uri, which can be a url or a json string prefixed with `data:application/json,`
         fn token_uri(
             self: @ComponentState<TContractState>,
             token_id: u256,
-        ) -> Option<ByteArray> { (Option::None) }
+        ) -> Option<ByteArray> {(Option::None)}
 
         //
         // ERC-7572
-        // Contract-level metadata, allows fully on-chain metadata
-        // the uri can be a url or a json string prefixed with `data:application/json,`
+        // Contract-level metadata, either...
+        // 1. pass the metadata to be rendered by the component
+        fn render_contract_uri(
+            self: @ComponentState<TContractState>,
+        ) -> Option<renderer::ContractMetadata> {(Option::None)}
+        // 2. or pass the rendered uri, which can be a url or a json string prefixed with `data:application/json,`
         fn contract_uri(
             self: @ComponentState<TContractState>,
-        ) -> Option<ByteArray> { (Option::None)  }
+        ) -> Option<ByteArray> {(Option::None)}
 
         //
         // ERC-2981
         // Default royalty info
-        fn default_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
-            (Option::None)
-        }
+        fn default_royalty(
+            self: @ComponentState<TContractState>,
+            token_id: u256,
+        ) -> Option<RoyaltyInfo> {(Option::None)}
         // Per-token royalty info
-        fn token_royalty(self: @ComponentState<TContractState>, token_id: u256) -> Option<RoyaltyInfo> {
-            (Option::None)
-        }
+        fn token_royalty(
+            self: @ComponentState<TContractState>,
+            token_id: u256,
+        ) -> Option<RoyaltyInfo> {(Option::None)}
 
         //
         // ERC721Component::ERC721HooksTrait
-        fn before_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
-        fn after_update(ref self: ComponentState<TContractState>, to: ContractAddress, token_id: u256, auth: ContractAddress) {}
+        fn before_update(
+            ref self: ComponentState<TContractState>,
+            to: ContractAddress,
+            token_id: u256,
+            auth: ContractAddress,
+        ) {}
+        fn after_update(
+            ref self: ComponentState<TContractState>,
+            to: ContractAddress,
+            token_id: u256,
+            auth: ContractAddress,
+        ) {}
     }
 
     //
@@ -476,9 +492,16 @@ pub mod ERC721ComboComponent {
         +Drop<TContractState>,
     > of common_interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
-            (match ComboHooks::contract_uri(self) {
-                Option::Some(custom_uri) => { (custom_uri) },
-                Option::None => { (self._contract_uri()) },
+            (match ComboHooks::render_contract_uri(self) {
+                Option::Some(metadata) => {
+                    (renderer::MetadataRenderer::render_contract_metadata(metadata))
+                },
+                Option::None => {
+                    (match ComboHooks::contract_uri(self) {
+                        Option::Some(custom_uri) => { (custom_uri) },
+                        Option::None => { (self._contract_uri()) },
+                    })
+                },
             })
         }
     }

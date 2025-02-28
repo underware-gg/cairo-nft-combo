@@ -139,7 +139,7 @@ pub mod character {
     // ERC721 end
     //-----------------------------------
 
-    use nft_combo::common::renderer::{TokenMetadata, Attribute};
+    use nft_combo::common::renderer::{ContractMetadata, TokenMetadata, Attribute};
     use nft_combo::common::encoder::{Base64Encoder};
     use example::libs::store::{Store, StoreTrait};
     // use example::libs::dns::{DnsTrait};
@@ -253,6 +253,29 @@ pub mod character {
     // ERC721ComboHooksTrait
     //
     pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
+        fn render_contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ContractMetadata> {
+            let self = self.get_contract(); // get the component's contract state
+            let mut store: Store = StoreTrait::new(self.world_default());
+            if (!store.get_tester().enable_uri_render_hooks) {
+                return Option::None;
+            }
+            // return the metadata to be rendered by the component
+            let metadata = ContractMetadata {
+                name: TOKEN_NAME(),
+                symbol: TOKEN_SYMBOL(),
+                description: "This is a test token",
+                image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
+                banner_image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
+                featured_image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
+                external_link: "https://example.underware.gg",
+                collaborators: array![
+                    starknet::contract_address_const::<0x13d9ee239f33fea4f8785b9e3870ade909e20a9599ae7cd62c1c292b73af1b7>(),
+                    starknet::contract_address_const::<0x17cc6ca902ed4e8baa8463a7009ff18cc294fa85a94b4ce6ac30a9ebd6057c7>(),
+                ].span(),
+            };
+            Option::Some(metadata)
+        }
+
         fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ByteArray> {
             let self = self.get_contract(); // get the component's contract state
             let mut store: Store = StoreTrait::new(self.world_default());

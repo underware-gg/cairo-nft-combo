@@ -219,13 +219,25 @@ fn test_contract_uri_default() {
 }
 
 #[test]
-fn test_contract_uri() {
+fn test_contract_uri_render_hook() {
+    let mut sys: TestSystems = setup_world(true, 0);
+    tester::set_enable_uri_render_hooks(ref sys, true);
+    let uri: ByteArray = sys.character.contract_uri();
+    let uri_camel = sys.character.contractURI();
+    println!("___render_contract_uri(1): {}", uri);
+    assert_gt!(uri.len(), 100, "contract_uri() len");
+    assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
+    assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");
+}
+
+#[test]
+fn test_contract_uri_hook() {
     let mut sys: TestSystems = setup_world(true, 0);
     tester::set_enable_uri_hooks(ref sys, true);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
     println!("___contract_uri(1): {}", uri);
-    assert_ne!(uri, "", "contract_uri() should not be empty");
+    assert_lt!(uri.len(), 100, "contract_uri() len");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");
 }
