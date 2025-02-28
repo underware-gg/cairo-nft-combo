@@ -68,6 +68,10 @@ pub trait IERC721Minter<TState> {
     fn last_token_id(self: @TState) -> u256;
     // returns true if minting is paused
     fn is_minting_paused(self: @TState) -> bool;
+    // returns true if address is the owner of the token
+    fn is_owner_of(self: @TState, address: ContractAddress, token_id: u256) -> bool;
+    // returns true if the token exists (is owned)
+    fn exists(self: @TState, token_id: u256) -> bool;
 }
 /// InternalImpl (available to the contract only)
 #[starknet::interface]

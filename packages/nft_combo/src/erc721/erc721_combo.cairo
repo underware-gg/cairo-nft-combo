@@ -218,7 +218,7 @@ pub mod ERC721ComboComponent {
             self.ERC721_minting_paused.write(paused);
         }
         fn _require_owner_of(self: @ComponentState<TContractState>, caller: ContractAddress, token_id: u256) -> ContractAddress {
-            let mut erc721 = get_dep_component!(self, ERC721);
+            let erc721 = get_dep_component!(self, ERC721);
             let owner = erc721._owner_of(token_id);
             assert(!owner.is_zero() && owner == caller, Errors::NOT_OWNER);
             (owner)
@@ -253,18 +253,21 @@ pub mod ERC721ComboComponent {
         fn _set_default_royalty(ref self: ComponentState<TContractState>, receiver: ContractAddress, fee_numerator: u128) {
             assert(fee_numerator <= ROYALTY_FEE_DENOMINATOR, Errors::INVALID_ROYALTY);
             assert(receiver.is_non_zero(), Errors::INVALID_ROYALTY_RECEIVER);
-            self.ERC2981_default_royalty_info.write(RoyaltyInfo { receiver, royalty_fraction: fee_numerator })
+            (self.ERC2981_default_royalty_info.write(RoyaltyInfo { receiver, royalty_fraction: fee_numerator }))
         }
         fn _delete_default_royalty(ref self: ComponentState<TContractState>) {
-            self.ERC2981_default_royalty_info.write(RoyaltyInfo { receiver: Zero::zero(), royalty_fraction: 0 })
+            (self.ERC2981_default_royalty_info.write(RoyaltyInfo { receiver: Zero::zero(), royalty_fraction: 0 }))
         }
         fn _get_royalty_info(self: @ComponentState<TContractState>, token_id: u256) -> RoyaltyInfo {
             (match ComboHooks::token_royalty(self, token_id) {
-                Option::Some(token_royalty_info) => { (token_royalty_info) }, // 1: Per-token royalty hook
+                // 1. Per-token royalty hook
+                Option::Some(token_royalty_info) => {(token_royalty_info)},
                 Option::None => { 
                     (match ComboHooks::default_royalty(self, token_id) {
-                        Option::Some(default_royalty_info) => { (default_royalty_info) }, // 2: Default royalty hook
-                        Option::None => { (self.ERC2981_default_royalty_info.read()) }, // 3: Default royalty set, or none
+                        // 2. Default royalty hook
+                        Option::Some(default_royalty_info) => {(default_royalty_info)},
+                        // 3. Default royalty set, or none
+                        Option::None => {(self.ERC2981_default_royalty_info.read())},
                     })
                  },
             })
@@ -339,13 +342,14 @@ pub mod ERC721ComboComponent {
             let erc721 = get_dep_component!(ref self, ERC721);
             erc721._require_owned(token_id);
             (match ComboHooks::render_token_uri(self, token_id) {
-                Option::Some(metadata) => {
-                    (renderer::MetadataRenderer::render_token_metadata(metadata))
-                },
+                // 1. Render the contract metadata
+                Option::Some(metadata) => {(renderer::MetadataRenderer::render_token_metadata(metadata))},
                 Option::None => {
                     (match ComboHooks::token_uri(self, token_id) {
-                        Option::Some(custom_uri) => { (custom_uri) },
-                        Option::None => { (erc721.token_uri(token_id)) },
+                        // 2. Contract metadata
+                        Option::Some(custom_uri) => {(custom_uri)},
+                        // 3. default (base_uri + token_id)
+                        Option::None => {(erc721.token_uri(token_id))},
                     })
                 },
             })
@@ -369,7 +373,7 @@ pub mod ERC721ComboComponent {
             Self::transfer_from(ref self, from, to, tokenId);
         }
         #[inline(always)]
-        fn setApprovalForAll(ref self: ComponentState<TContractState>, operator: ContractAddress, approved: bool,) {
+        fn setApprovalForAll(ref self: ComponentState<TContractState>, operator: ContractAddress, approved: bool) {
             Self::set_approval_for_all(ref self, operator, approved);
         }
         #[inline(always)]
@@ -404,6 +408,14 @@ pub mod ERC721ComboComponent {
         fn is_minting_paused(self: @ComponentState<TContractState>) -> bool {
             (ERC721Minter::is_minting_paused(self))
         }
+        #[inline(always)]
+        fn is_owner_of(self: @ComponentState<TContractState>, address: ContractAddress, token_id: u256) -> bool {
+            (ERC721Minter::is_owner_of(self, address, token_id))
+        }
+        #[inline(always)]
+        fn exists(self: @ComponentState<TContractState>, token_id: u256) -> bool {
+            (ERC721Minter::exists(self, token_id))
+        }
 
         // IERC721MinterCamelOnly
         #[inline(always)]
@@ -413,14 +425,6 @@ pub mod ERC721ComboComponent {
         #[inline(always)]
         fn totalSupply(self: @ComponentState<TContractState>) -> u256 {
             (ERC721Minter::total_supply(self))
-        }
-        #[inline(always)]
-        fn lastTokenId(self: @ComponentState<TContractState>) -> u256 {
-            (ERC721Minter::last_token_id(self))
-        }
-        #[inline(always)]
-        fn isMintingPaused(self: @ComponentState<TContractState>) -> bool {
-            (ERC721Minter::is_minting_paused(self))
         }
 
         // IERC7572ContractMetadata
@@ -466,6 +470,9 @@ pub mod ERC721ComboComponent {
     impl ERC721Minter<
         TContractState,
         +HasComponent<TContractState>,
+        impl SRC5: SRC5Component::HasComponent<TContractState>,
+        impl ERC721: ERC721Component::HasComponent<TContractState>,
+        impl ComboHooks: ERC721ComboHooksTrait<TContractState>,
         +Drop<TContractState>,
     > of interface::IERC721Minter<ComponentState<TContractState>> {
         fn max_supply(self: @ComponentState<TContractState>) -> u256 {
@@ -475,13 +482,24 @@ pub mod ERC721ComboComponent {
             })
         }
         fn total_supply(self: @ComponentState<TContractState>) -> u256 {
-            self.ERC721_total_supply.read()
+            (self.ERC721_total_supply.read())
         }
         fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
-            self.ERC721_last_token_id.read()
+            (self.ERC721_last_token_id.read())
         }
         fn is_minting_paused(self: @ComponentState<TContractState>) -> bool {
-            self.ERC721_minting_paused.read()
+            (self.ERC721_minting_paused.read())
+        }
+        fn is_owner_of(self: @ComponentState<TContractState>,
+            address: ContractAddress,
+            token_id: u256,
+        ) -> bool {
+            let erc721 = get_dep_component!(self, ERC721);
+            (erc721._owner_of(token_id) == address)
+        }
+        fn exists(self: @ComponentState<TContractState>, token_id: u256) -> bool {
+            let erc721 = get_dep_component!(self, ERC721);
+            (erc721._owner_of(token_id).is_non_zero())
         }
     }
 
@@ -505,7 +523,7 @@ pub mod ERC721ComboComponent {
                         Option::None => {
                             (match self._contract_uri() {
                                 // 3. stored _contract_uri
-                                Option::Some(contract_uri) => { (contract_uri) },
+                                Option::Some(contract_uri) => {(contract_uri)},
                                 Option::None => {
                                     // 4. render simple metadata
                                     let metadata = renderer::ContractMetadata {
