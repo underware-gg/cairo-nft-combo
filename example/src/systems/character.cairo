@@ -278,14 +278,14 @@ pub mod character {
                 name: self.name(),
                 symbol: self.symbol(),
                 description: "This is a test token",
-                image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
-                banner_image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
-                featured_image: "ipfs://QmS9m6e1E1NfioMM8dy1WMZNN2FRh2WDjeqJFWextqXCT8",
-                external_link: "https://example.underware.gg",
-                collaborators: array![
+                image: Option::None,
+                banner_image: Option::None,
+                featured_image: Option::None,
+                external_link: Option::Some("https://example.underware.gg"),
+                collaborators: Option::Some(array![
                     starknet::contract_address_const::<0x13d9ee239f33fea4f8785b9e3870ade909e20a9599ae7cd62c1c292b73af1b7>(),
                     starknet::contract_address_const::<0x17cc6ca902ed4e8baa8463a7009ff18cc294fa85a94b4ce6ac30a9ebd6057c7>(),
-                ].span(),
+                ].span()),
             };
             (Option::Some(metadata))
         }
@@ -339,13 +339,13 @@ pub mod character {
                 name: format!("{} #{}", self.name(), token_id),
                 description: "This is a test token",
                 image,
-                image_data: "",
-                external_url: "",
-                background_color: "",
-                animation_url: "",
-                youtube_url: "",
-                attributes: attributes.span(),
-                additional_metadata: additional_metadata.span(),
+                image_data: Option::None,
+                external_url: Option::Some("https://example.underware.gg"),
+                background_color: Option::Some("0x000000"),
+                animation_url: Option::None,
+                youtube_url: Option::None,
+                attributes: Option::Some(attributes.span()),
+                additional_metadata: Option::Some(additional_metadata.span()),
             };
             (Option::Some(metadata))
         }

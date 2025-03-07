@@ -529,12 +529,12 @@ pub mod ERC721ComboComponent {
                                     let metadata = renderer::ContractMetadata {
                                         name: self.name(),
                                         symbol: self.symbol(),
-                                        description: "",
-                                        image: "",
-                                        banner_image: "",
-                                        featured_image: "",
-                                        external_link: "",
-                                        collaborators: array![].span(),
+                                        description: format!("{} ERC-721 token", self.name()),
+                                        image: Option::None,
+                                        banner_image: Option::None,
+                                        featured_image: Option::None,
+                                        external_link: Option::None,
+                                        collaborators: Option::None,
                                     };
                                     (renderer::MetadataRenderer::render_contract_metadata(metadata))
                                 },
