@@ -2,12 +2,19 @@ use crate::utils::encoder::{Encoder};
 use starknet::{ContractAddress};
 pub use graffiti::json::{JsonImpl, Attribute};
 
+// Based on OpenSea metadata standards
+// https://docs.opensea.io/docs/metadata-standards#metadata-structure
 #[derive(Drop)]
 pub struct TokenMetadata {
     pub token_id: u256,
     pub name: ByteArray,
     pub description: ByteArray,
     pub image: ByteArray,
+    pub image_data: ByteArray,
+    pub external_url: ByteArray,
+    pub background_color: ByteArray,
+    pub animation_url: ByteArray,
+    pub youtube_url: ByteArray,
     pub attributes: Span<Attribute>,
     pub additional_metadata: Span<Attribute>,
 }
@@ -36,6 +43,11 @@ pub impl MetadataRenderer of MetadataRendererTrait {
             .add_if_not_null("name", metadata.name)
             .add_if_not_null("description", metadata.description)
             .add_if_not_null("image", metadata.image)
+            .add_if_not_null("image_data", metadata.image_data)
+            .add_if_not_null("external_url", metadata.external_url)
+            .add_if_not_null("background_color", metadata.background_color)
+            .add_if_not_null("animation_url", metadata.animation_url)
+            .add_if_not_null("youtube_url", metadata.youtube_url)
             .add_if_not_null("metadata", MetadataHelper::_format_metadata(metadata.attributes, metadata.additional_metadata))
             .add_array_if_not_empty("attributes", MetadataHelper::_create_traits_array(metadata.attributes));
         let result = json.build();

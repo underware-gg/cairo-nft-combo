@@ -339,6 +339,11 @@ pub mod character {
                 name: format!("{} #{}", self.name(), token_id),
                 description: "This is a test token",
                 image,
+                image_data: "",
+                external_url: "",
+                background_color: "",
+                animation_url: "",
+                youtube_url: "",
                 attributes: attributes.span(),
                 additional_metadata: additional_metadata.span(),
             };
