@@ -36,7 +36,7 @@ dependencies = [
 [[package]]
 name = "graffiti"
 version = "0.1.0"
-source = "git+https://github.com/rsodre/graffiti?rev=json2#ff25c565fb35f0b40d7bddf66e4e9684e0571dcb"
+source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea299ed556900564ff2"
 
 [[package]]
 name = "nft_combo"
