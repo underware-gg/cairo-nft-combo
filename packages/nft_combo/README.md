@@ -11,7 +11,7 @@ A Cairo component that extends OpenZeppelin ERC-721 tokens with additional featu
 [dependencies]
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.20.0" }
-nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v0.2.1"}
+nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v0.2.2"}
 ```
 
 ### Adding the OZ ERC-721 + `nft_combo` to a new contract:

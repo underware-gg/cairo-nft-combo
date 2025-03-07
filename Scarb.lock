@@ -24,7 +24,7 @@ source = "git+https://github.com/dojoengine/dojo?tag=v1.2.0#596f96d2af81ef3327bc
 
 [[package]]
 name = "example"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "dojo",
  "dojo_cairo_test",
@@ -40,7 +40,7 @@ source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea
 
 [[package]]
 name = "nft_combo"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "graffiti",
  "openzeppelin_introspection",
