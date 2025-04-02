@@ -277,7 +277,7 @@ pub mod ERC721ComboComponent {
     //-----------------------------------------
     // ERC721ABI mixin
     // cloned from ERC721Component::ERC721Mixin
-    // https://github.com/OpenZeppelin/cairo-contracts/blob/v0.20.0/packages/token/src/erc721/erc721.cairo#L342
+    // https://github.com/OpenZeppelin/cairo-contracts/blob/v1.0.0/packages/token/src/erc721/erc721.cairo#L342
     //
     #[embeddable_as(ERC721ComboMixinImpl)]
     pub impl ERC721ComboMixin<

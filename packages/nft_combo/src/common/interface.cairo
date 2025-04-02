@@ -2,7 +2,7 @@
 use starknet::{ContractAddress};
 
 // TODO: compute the correct ids
-// https://docs.openzeppelin.com/contracts-cairo/0.20.0/introspection#computing_the_interface_id
+// https://docs.openzeppelin.com/contracts-cairo/1.0.0/introspection#computing_the_interface_id
 pub const IERC7572_ID: felt252 = selector!("IERC7572_ID");
 pub const IERC4906_ID: felt252 = selector!("IERC4906_ID");
 // definitive IDs (OZ)
