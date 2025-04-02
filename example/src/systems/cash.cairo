@@ -49,7 +49,7 @@ pub mod cash {
     //
     use openzeppelin_token::erc20::ERC20Component;
     use openzeppelin_token::erc20::ERC20HooksEmptyImpl;
-    use example::systems::components::coin_component::{CoinComponent};
+    use crate::systems::components::coin_component::{CoinComponent};
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: CoinComponent, storage: coin, event: CoinEvent);
     #[abi(embed_v0)]
@@ -75,7 +75,7 @@ pub mod cash {
     // OpenZeppelin end
     //-----------------------------------
 
-    use example::libs::dns::{DnsTrait};
+    use crate::libs::dns::{DnsTrait};
 
 
     //*******************************************

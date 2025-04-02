@@ -10,8 +10,8 @@ pub trait IActions<TState> {
 pub mod actions {
     // use starknet::{ContractAddress};
     use dojo::world::{WorldStorage};
-    use example::libs::store::{Store, StoreTrait};
-    use example::libs::dns::{
+    use crate::libs::store::{Store, StoreTrait};
+    use crate::libs::dns::{
         DnsTrait,
         ICashDispatcher, ICashDispatcherTrait,
         ICharacterDispatcher, ICharacterDispatcherTrait,

@@ -20,6 +20,8 @@ pub struct TokenMetadata {
     pub additional_metadata: Option<Span<Attribute>>,
 }
 
+// Based on OpenSea contract metadata standards
+// https://docs.opensea.io/docs/contract-level-metadata
 #[derive(Drop)]
 pub struct ContractMetadata {
     pub name: ByteArray,

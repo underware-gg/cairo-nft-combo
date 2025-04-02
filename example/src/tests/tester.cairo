@@ -8,17 +8,17 @@ pub mod tester {
         WorldStorageTestTrait,
     };
 
-    pub use example::systems::{
+    pub use crate::systems::{
         actions::{actions, IActionsDispatcher, IActionsDispatcherTrait},
         character::{character, ICharacterDispatcher, ICharacterDispatcherTrait},
         cash::{cash, ICashDispatcher, ICashDispatcherTrait},
     };
-    use example::models::{
+    use crate::models::{
         coin_config::{m_CoinConfig},
         tester::{m_Tester, Tester},
     };
-    use example::libs::store::{Store, StoreTrait};
-    use example::libs::dns::{DnsTrait};
+    use crate::libs::store::{Store, StoreTrait};
+    use crate::libs::dns::{DnsTrait};
 
     pub fn ZERO()      -> ContractAddress { starknet::contract_address_const::<0x0>() }
     pub fn OWNER()     -> ContractAddress { starknet::contract_address_const::<0x111>() }

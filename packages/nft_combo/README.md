@@ -84,6 +84,8 @@ pub trait IERC721MinterProtected<TState> {
         contract_uri: Option<ByteArray>,
         max_supply: Option<u256>,
     );
+    // returns the stored default value of base_uri
+    fn _base_uri(ref self: TState) -> ByteArray;
     // mints the next token sequnetially, based on supply
     fn _mint_next(ref self: TState, recipient: ContractAddress) -> u256;
     // sets the maximum number of tokens that can be minted (use Option::None for infinite supply)
@@ -101,7 +103,7 @@ pub trait IERC721MinterProtected<TState> {
 2. Implement the `ERC721ComboHooksTrait::token_uri()` hook to render uri in the contract, returning the formatted url or json string.
 3. Default, the concatenation of `base_uri` with the `token_id`.
 
-Token metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards)):
+Token metadata example (based on [OpenSea metadata standards](https://docs.opensea.io/docs/metadata-standards#metadata-structure)):
 
 ```json
 {
@@ -139,14 +141,14 @@ pub trait IERC7572ContractMetadata<TState> {
 #[starknet::interface]
 pub trait IERC7572ContractMetadataProtected<TState> {
     fn _set_contract_uri(ref self: TState, contract_uri: Option<ByteArray>);
-    // Reads the default stored contract URI.
+    // returns the stored default value of contract_uri URI
     fn _contract_uri(self: @TState) -> Option<ByteArray>;
     // emits the `ContractURIUpdated` event
     fn _emit_contract_uri_updated(ref self: TState);
 }
 ```
 
-Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-contracturi)):
+Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/eip-7572#schema-for-contracturi) and [OpenSea contract metadata standards](https://docs.opensea.io/docs/contract-level-metadata)):
 
 ```json
 {

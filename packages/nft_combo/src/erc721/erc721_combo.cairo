@@ -205,6 +205,10 @@ pub mod ERC721ComboComponent {
         }
 
         /// IERC721Minter
+        fn _base_uri(self: @ComponentState<TContractState>) -> ByteArray {
+            let erc721 = get_dep_component!(self, ERC721);
+            erc721._base_uri()
+        }
         fn _mint_next(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             let token_id = ERC721Minter::last_token_id(@self) + 1;

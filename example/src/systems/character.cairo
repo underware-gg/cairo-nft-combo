@@ -145,8 +145,8 @@ pub mod character {
 
     use nft_combo::utils::renderer::{ContractMetadata, TokenMetadata, Attribute};
     use nft_combo::utils::encoder::{Encoder};
-    use example::libs::store::{Store, StoreTrait};
-    // use example::libs::dns::{DnsTrait};
+    use crate::libs::store::{Store, StoreTrait};
+    // use crate::libs::dns::{DnsTrait};
 
     pub mod Errors {
         pub const CALLER_IS_NOT_OWNER: felt252 = 'CHARACTER: caller is not owner';

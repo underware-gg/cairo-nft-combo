@@ -3,7 +3,7 @@ use dojo::world::{WorldStorage};
 use dojo::model::{ModelStorage, ModelValueStorage};
 
 // re-export models
-pub use example::models::{
+pub use crate::models::{
     coin_config::{CoinConfig, CoinConfigValue},
     tester::{Tester},
 };

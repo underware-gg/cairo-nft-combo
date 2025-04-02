@@ -100,6 +100,8 @@ pub trait IERC721MinterProtected<TState> {
         contract_uri: ByteArray,
         max_supply: u256,
     );
+    // returns the stored default value of base_uri
+    fn _base_uri(ref self: TState) -> ByteArray;
     // mints the next token sequnetially, based on supply
     fn _mint_next(ref self: TState, recipient: ContractAddress) -> u256;
     // sets the maximum number of tokens that can be minted

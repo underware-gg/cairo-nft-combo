@@ -1,12 +1,12 @@
 use starknet::{ContractAddress};
 use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
 
-pub use example::systems::{
+pub use crate::systems::{
     actions::{IActionsDispatcher, IActionsDispatcherTrait},
     cash::{ICashDispatcher, ICashDispatcherTrait},
     character::{ICharacterDispatcher, ICharacterDispatcherTrait},
 };
-pub use example::libs::store::{Store, StoreTrait};
+pub use crate::libs::store::{Store, StoreTrait};
 
 #[generate_trait]
 pub impl DnsImpl of DnsTrait {

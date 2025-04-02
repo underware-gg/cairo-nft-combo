@@ -1,10 +1,11 @@
 use core::num::traits::Zero;
 use starknet::{ContractAddress};
+use openzeppelin_introspection::{interface as src5_interface};
 use openzeppelin_token::erc721::{interface as erc721_interface};
 use nft_combo::erc721::erc721_combo::{ERC721ComboComponent as combo};
 use nft_combo::common::{interface as common_interface};
-use example::systems::character::{character};
-use example::tests::tester::{
+use crate::systems::character::{character};
+use crate::tests::tester::{
     tester,
     tester::{
         setup_world, TestSystems,
@@ -34,6 +35,7 @@ fn test_initializer() {
     assert_ne!(sys.character.name(), "", "Name is empty");
     assert_eq!(sys.character.symbol(), character::TOKEN_SYMBOL(), "Symbol is wrong");
     assert_eq!(sys.character.name(), character::TOKEN_NAME(), "Name is wrong");
+    assert!(sys.character.supports_interface(src5_interface::ISRC5_ID), "should support ISRC5_ID");
     assert!(sys.character.supports_interface(erc721_interface::IERC721_ID), "should support IERC721_ID");
     assert!(sys.character.supports_interface(erc721_interface::IERC721_METADATA_ID), "should support METADATA");
     assert!(sys.character.supports_interface(common_interface::IERC7572_ID), "should support IERC7572_ID");
@@ -104,14 +106,14 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +2");
     assert_eq!(sys.character.total_supply(), 3, "total_supply +3");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id +3");
-    // mint TOKEN_ID_1
+    // burn TOKEN_ID_1
     tester::impersonate(OWNER());
     sys.character.burn(TOKEN_ID_1);
     assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) -1=0");
     assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +1=2");
     assert_eq!(sys.character.total_supply(), 2, "total_supply -1=2");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id =3");
-    // mint TOKEN_ID_2, TOKEN_ID_3
+    // burn TOKEN_ID_2, TOKEN_ID_3
     tester::impersonate(OTHER());
     sys.character.burn(TOKEN_ID_2);
     sys.character.burn(TOKEN_ID_3);
@@ -225,7 +227,7 @@ fn test_token_uri_default() {
     _mint(sys, OWNER());
     let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
     let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
-    println!("___token_uri(1): {}", uri);
+    println!("___token_uri(1):[{}]", uri);
     assert_ne!(uri, "", "token_uri() should not be empty");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
     assert!(tester::starts_with(uri, "https:"), "token_uri() should start with https:");
@@ -238,7 +240,7 @@ fn test_token_uri_render_hook() {
     _mint(sys, OWNER());
     let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
     let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
-    println!("___render_token_uri(1): {}", uri);
+    println!("___render_token_uri(1):[{}]", uri);
     assert_gt!(uri.len(), 100, "token_uri() len");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
     assert!(tester::starts_with(uri, "data:"), "token_uri() should be a json string");
@@ -251,7 +253,7 @@ fn test_token_uri_hook() {
     _mint(sys, OWNER());
     let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
     let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
-    println!("___token_uri(1): {}", uri);
+    println!("___token_uri(1):[{}]", uri);
     assert_lt!(uri.len(), 100, "token_uri() len");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
     assert!(tester::starts_with(uri, "data:"), "token_uri() should be a json string");
@@ -273,7 +275,7 @@ fn test_contract_uri_default() {
     let mut sys: TestSystems = setup_world(true, 0);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
-    println!("___contract_uri(1): {}", uri);
+    println!("___contract_uri(1):[{}]", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "https:"), "contract_uri() should start with https:");
@@ -285,7 +287,7 @@ fn test_contract_uri_default_none() {
     sys.character.update_contract_uri(Option::None);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
-    println!("___contract_uri_none(1): {}", uri);
+    println!("___contract_uri_none(1):[{}]", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");
@@ -297,7 +299,7 @@ fn test_contract_uri_render_hook() {
     tester::set_enable_uri_render_hooks(ref sys, true);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
-    println!("___contract_uri_render_hook(1): {}", uri);
+    println!("___contract_uri_render_hook(1):[{}]", uri);
     assert_gt!(uri.len(), 100, "contract_uri() len");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");
@@ -309,7 +311,7 @@ fn test_contract_uri_hook() {
     tester::set_enable_uri_hooks(ref sys, true);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
-    println!("___contract_uri_hook(1): {}", uri);
+    println!("___contract_uri_hook(1):[{}]", uri);
     assert_lt!(uri.len(), 100, "contract_uri() len");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");

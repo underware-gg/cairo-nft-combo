@@ -24,8 +24,8 @@ pub mod CoinComponent {
         ERC20Component::{InternalImpl as ERC20InternalImpl},
     };
 
-    use example::libs::dns::{DnsTrait};
-    use example::libs::store::{
+    use crate::libs::dns::{DnsTrait};
+    use crate::libs::store::{
         Store, StoreTrait,
         CoinConfig, CoinConfigValue,
     };

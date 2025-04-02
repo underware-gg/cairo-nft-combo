@@ -1,5 +1,5 @@
 // use starknet::{ContractAddress};
-use example::tests::tester::{
+use crate::tests::tester::{
     tester,
     tester::{
         setup_world, TestSystems,

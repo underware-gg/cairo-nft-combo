@@ -21,7 +21,7 @@ pub trait IERC7572ContractMetadata<TState> {
 #[starknet::interface]
 pub trait IERC7572ContractMetadataProtected<TState> {
     fn _set_contract_uri(ref self: TState, contract_uri: ByteArray);
-    // Reads the default stored contract URI.
+    // returns the stored default value of contract_uri URI
     fn _contract_uri(self: @TState) -> ByteArray;
     // emits the `ContractURIUpdated` event
     fn _emit_contract_uri_updated(ref self: TState);
