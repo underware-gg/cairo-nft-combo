@@ -77,10 +77,10 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) : 0");
     assert_eq!(sys.character.total_supply(), 0, "total_supply : 0");
     assert_eq!(sys.character.last_token_id(), 0, "last_token_id : 0");
-    assert!(!sys.character.exists(TOKEN_ID_1), "!exists(TOKEN_ID_1)");
+    assert!(!sys.character.token_exists(TOKEN_ID_1), "!exists(TOKEN_ID_1)");
     // mint TOKEN_ID_1
     _mint(sys, OWNER());
-    assert!(sys.character.exists(TOKEN_ID_1), "exists(TOKEN_ID_1)");
+    assert!(sys.character.token_exists(TOKEN_ID_1), "exists(TOKEN_ID_1)");
     assert!(sys.character.is_owner_of(OWNER(), TOKEN_ID_1), "is_owner_of(OWNER(), TOKEN_ID_1)");
     assert!(!sys.character.is_owner_of(OTHER(), TOKEN_ID_1), "!is_owner_of(OTHER(), TOKEN_ID_1)");
     assert_eq!(sys.character.owner_of(TOKEN_ID_1), OWNER(), "owner_of_1");

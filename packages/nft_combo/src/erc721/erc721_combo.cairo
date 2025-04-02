@@ -413,8 +413,8 @@ pub mod ERC721ComboComponent {
             (ERC721Minter::is_owner_of(self, address, token_id))
         }
         #[inline(always)]
-        fn exists(self: @ComponentState<TContractState>, token_id: u256) -> bool {
-            (ERC721Minter::exists(self, token_id))
+        fn token_exists(self: @ComponentState<TContractState>, token_id: u256) -> bool {
+            (ERC721Minter::token_exists(self, token_id))
         }
 
         // IERC721MinterCamelOnly
@@ -497,7 +497,7 @@ pub mod ERC721ComboComponent {
             let erc721 = get_dep_component!(self, ERC721);
             (erc721._owner_of(token_id) == address)
         }
-        fn exists(self: @ComponentState<TContractState>, token_id: u256) -> bool {
+        fn token_exists(self: @ComponentState<TContractState>, token_id: u256) -> bool {
             let erc721 = get_dep_component!(self, ERC721);
             (erc721._owner_of(token_id).is_non_zero())
         }
