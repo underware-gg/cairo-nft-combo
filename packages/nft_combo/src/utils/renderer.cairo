@@ -9,8 +9,8 @@ pub struct TokenMetadata {
     pub token_id: u256,
     pub name: ByteArray,
     pub description: ByteArray,
-    pub image: ByteArray,
     // optionals
+    pub image: Option<ByteArray>,
     pub image_data: Option<ByteArray>,
     pub external_url: Option<ByteArray>,
     pub background_color: Option<ByteArray>,
@@ -46,7 +46,7 @@ pub impl MetadataRenderer of MetadataRendererTrait {
             .add("id", format!("{}", metadata.token_id))
             .add("name", metadata.name)
             .add("description", metadata.description)
-            .add("image", metadata.image)
+            .add_if_some("image", metadata.image)
             .add_if_some("image_data", metadata.image_data)
             .add_if_some("external_url", metadata.external_url)
             .add_if_some("background_color", metadata.background_color)

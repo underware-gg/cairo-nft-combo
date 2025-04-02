@@ -346,14 +346,34 @@ pub mod ERC721ComboComponent {
             let erc721 = get_dep_component!(ref self, ERC721);
             erc721._require_owned(token_id);
             (match ComboHooks::render_token_uri(self, token_id) {
-                // 1. Render the contract metadata
+                // 1. Render the provided token metadata
                 Option::Some(metadata) => {(renderer::MetadataRenderer::render_token_metadata(metadata))},
                 Option::None => {
                     (match ComboHooks::token_uri(self, token_id) {
-                        // 2. Contract metadata
+                        // 2. Use the provided token uri
                         Option::Some(custom_uri) => {(custom_uri)},
                         // 3. default (base_uri + token_id)
-                        Option::None => {(erc721.token_uri(token_id))},
+                        Option::None => {
+                            let result = erc721.token_uri(token_id);
+                            if (result.len() > 0) {
+                                (result)
+                            } else {
+                                let metadata = renderer::TokenMetadata {
+                                    token_id,
+                                    name: erc721.name(),
+                                    description: format!("{} ERC-721 token", erc721.name()),
+                                    image: Option::None,
+                                    image_data: Option::None,
+                                    external_url: Option::None,
+                                    background_color: Option::None,
+                                    animation_url: Option::None,
+                                    youtube_url: Option::None,
+                                    attributes: Option::None,
+                                    additional_metadata: Option::None,
+                                };
+                                (renderer::MetadataRenderer::render_token_metadata(metadata))
+                            }
+                        },
                     })
                 },
             })
@@ -518,15 +538,15 @@ pub mod ERC721ComboComponent {
     > of common_interface::IERC7572ContractMetadata<ComponentState<TContractState>> {
         fn contract_uri(self: @ComponentState<TContractState>) -> ByteArray {
             (match ComboHooks::render_contract_uri(self) {
-                // 1. Render the contract metadata
+                // 1. Render the provided contract metadata
                 Option::Some(metadata) => {(renderer::MetadataRenderer::render_contract_metadata(metadata))},
                 Option::None => {
                     (match ComboHooks::contract_uri(self) {
-                        // 2. Contract metadata
+                        // 2. Use the provided contract uri
                         Option::Some(custom_uri) => {(custom_uri)},
                         Option::None => {
                             (match self._contract_uri() {
-                                // 3. stored _contract_uri
+                                // 3. Use the stored _contract_uri
                                 Option::Some(contract_uri) => {(contract_uri)},
                                 Option::None => {
                                     // 4. render simple metadata
@@ -543,8 +563,6 @@ pub mod ERC721ComboComponent {
                                     (renderer::MetadataRenderer::render_contract_metadata(metadata))
                                 },
                             })
-                            
-                        
                         },
                     })
                 },

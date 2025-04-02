@@ -338,7 +338,7 @@ pub mod character {
                 token_id,
                 name: format!("{} #{}", self.name(), token_id),
                 description: "This is a test token",
-                image,
+                image: Option::Some(image),
                 image_data: Option::None,
                 external_url: Option::Some("https://example.underware.gg"),
                 background_color: Option::Some("0x000000"),
