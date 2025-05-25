@@ -20,6 +20,7 @@ Detailed features and instructions at [`/packages/nft_combo`](/packages/nft_comb
 
 * [`/packages/nft_combo`](/packages/nft_combo/): The cairo `nft_combo` component
 * [`/example`](/example/): A [Dojo](https://book.dojoengine.org/) project with ERC-721 and ERC-20 example tokens.
+* [`/src5`](/src5/): SRC5 interface generators.
 
 
 ## Resources

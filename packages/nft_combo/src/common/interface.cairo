@@ -1,12 +1,15 @@
 
 use starknet::{ContractAddress};
 
-// TODO: compute the correct ids
-// https://docs.openzeppelin.com/contracts-cairo/1.0.0/introspection#computing_the_interface_id
-pub const IERC7572_ID: felt252 = selector!("IERC7572_ID");
-pub const IERC4906_ID: felt252 = selector!("IERC4906_ID");
 // definitive IDs (OZ)
 pub const IERC2981_ID: felt252 = 0x2d3414e45a8700c29f119a54b9f11dca0e29e06ddcb214018fc37340e165ed6;
+// generated
+// https://github.com/ericnordelo/src5-rs
+// https://docs.openzeppelin.com/contracts-cairo/1.0.0/introspection#computing_the_interface_id
+pub const IERC7572_ID: felt252 = 0x12c8405df0790491b695f1b5bf7d22c855ae0b1745deaa890f763bb9d0a06ca;
+// TODO: theres no function to compute the id!!!
+pub const IERC4906_ID: felt252 = selector!("IERC4906_ID");
+
 
 //
 // ERC-7572: Contract-level metadata
