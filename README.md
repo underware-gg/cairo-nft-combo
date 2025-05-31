@@ -1,6 +1,6 @@
 # cairo-nft-combo
 
-A Cairo component that extends OpenZeppelin ERC-721 tokens with additional features.
+A Cairo component extending OpenZeppelin ERC-721 tokens.
 
 * Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721): `IERC721Minter`
 * Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata

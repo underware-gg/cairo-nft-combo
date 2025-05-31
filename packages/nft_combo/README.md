@@ -1,9 +1,11 @@
 # nft_combo
 
-A Cairo component that extends OpenZeppelin ERC-721 tokens with additional features.
+A Cairo component extending OpenZeppelin ERC-721 tokens.
 
 
 ## Installation
+
+### Contract dependencies
 
 * Add to your `Scarb.toml` dependencies:
 
@@ -11,18 +13,32 @@ A Cairo component that extends OpenZeppelin ERC-721 tokens with additional featu
 [dependencies]
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v0.2.2"}
+nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.0.0"}
 ```
 
-### Adding the OZ ERC-721 + `nft_combo` to a new contract:
+### Adding OpenZeppelin ERC-721 + `nft_combo` to a new contract:
 
-* Copy the `IERC721ComboABI` section from [`ierc721/nterface.cairo`](/packages/nft_combo/src/ierc721/nterface.cairo) to your contract's interface (see [character](/example/src/systems/character.cairo) example).
+* Copy the `IERC721ComboABI` section from [`erc721/interface.cairo`](/packages/nft_combo/src/erc721/interface.cairo) to your contract's interface (see [character](/example/src/systems/character.cairo) example).
 
 * Copy the `ERC721` section from the [character](/example/src/systems/character.cairo) example to your contract's body.
 
 * Implement the `ERC721ComboHooksTrait` if you need it (see [character](/example/src/systems/character.cairo) example).
 
-* Call the combo initializers in your `constructor` or `dojo_init()`:
+* Call the combo initializer in your `constructor` or `dojo_init()`:
+
+
+### Adding `nft_combo` to existing ERC-721 contract:
+
+* replace `ERC721MixinImpl` with `ERC721ComboMixinImpl`.
+* replace `ERC721InternalImpl` with `ERC721ComboInternalImpl`.
+* replace `erc721.initializer()` with `erc721_combo.initializer()` (see above).
+* import `ERC721ComboComponent::ERC721HooksImpl`.
+* remove `ERC721HooksEmptyImpl`, if used.
+* or move your `ERC721HooksTrait` calls to `ERC721ComboHooksTrait`.
+* Implement an admin funciton to cal the combo initializer.
+
+
+## Initializer
 
 ```rust
 fn dojo_init(ref self: ContractState) {
@@ -39,16 +55,6 @@ fn dojo_init(ref self: ContractState) {
     self.erc721_combo._set_minting_paused(true);
 }
 ```
-
-### Adding `nft_combo` to existing ERC-721 contract:
-
-* replace `ERC721MixinImpl` with `ERC721ComboMixinImpl`.
-* replace `ERC721InternalImpl` with `ERC721ComboInternalImpl`.
-* replace `erc721.initializer()` with `erc721_combo.initializer()` (see above).
-* import `ERC721ComboComponent::ERC721HooksImpl`.
-* remove `ERC721HooksEmptyImpl`, if used.
-* or move your `ERC721HooksTrait` calls to `ERC721ComboHooksTrait`.
-
 
 
 ## Features
