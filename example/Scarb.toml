@@ -22,7 +22,7 @@ build-external-contracts = [
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.0" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-# nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.0.0"}
+# nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.0.1"}
 nft_combo = { path = "../packages/nft_combo" }
 
 [dev-dependencies]
