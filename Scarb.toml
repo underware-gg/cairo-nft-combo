@@ -3,17 +3,17 @@ members = [
   "packages/nft_combo",
   "example",
 ]
-description = "Dojo erc721 combo library"
+description = "A Cairo component extending OpenZeppelin ERC-721 tokens"
 homepage = "https://github.com/underware-gg/cairo-nft-combo"
-cairo-version = ">=2.9.4"
+cairo-version = ">=2.10.1"
 
 [workspace.package]
 version = "1.0.0"
 edition = "2024_07"
 
 [workspace.dependencies]
-starknet = ">=2.9.4"
-cairo_test = ">=2.9.4"
+starknet = ">=2.10.1"
+cairo_test = ">=2.10.1"
 
 [workspace.tool.fmt]
 sort-module-level-items = true
