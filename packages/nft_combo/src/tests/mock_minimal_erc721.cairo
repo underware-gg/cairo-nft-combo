@@ -56,7 +56,7 @@ pub mod MinimalERC721Mock {
         self.erc721_combo.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
-            BASE_URI(),
+            Option::Some(BASE_URI()),
             Option::None,
             Option::None,
         );

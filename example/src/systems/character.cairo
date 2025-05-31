@@ -176,8 +176,8 @@ pub mod character {
         self.erc721_combo.initializer(
             TOKEN_NAME(),
             TOKEN_SYMBOL(),
-            BASE_URI(),
-            Option::Some(CONTRACT_URI()), // use Option::None for automatic metadata or use hooks
+            Option::Some(BASE_URI()),     // use Option::None for automatic metadata, or use hooks
+            Option::Some(CONTRACT_URI()), // use Option::None for automatic metadata, or use hooks
             Option::Some(MAX_SUPPLY()),   // use Option::None for infinite supply
         );
         // set default royalty to 5%

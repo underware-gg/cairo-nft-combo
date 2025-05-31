@@ -7,9 +7,9 @@ use crate::erc721::erc721_combo::{ERC721ComboComponent};
 use crate::erc721::erc721_combo::ERC721ComboComponent::{ERC721ComboMixinImpl, InternalImpl};
 use crate::tests::mock_minimal_erc721::{MinimalERC721Mock, IMinimalERC721Mock};
 
-pub fn TOKEN_NAME()     -> ByteArray {("Minimal")}
-pub fn TOKEN_SYMBOL()   -> ByteArray {("MINI")}
-pub fn BASE_URI()       -> ByteArray {("https://api.minimal.contract/token/")}
+pub fn TOKEN_NAME()     -> ByteArray {("My Token")}
+pub fn TOKEN_SYMBOL()   -> ByteArray {("MY")}
+pub fn BASE_URI()       -> ByteArray {("https://example.underware.gg/token/")}
 
 pub fn OWNER() -> ContractAddress { starknet::contract_address_const::<0x111>() }
 pub fn OTHER() -> ContractAddress { starknet::contract_address_const::<0x222>() }
@@ -35,8 +35,8 @@ fn setup() -> (ComponentState, MinimalERC721Mock::ContractState) {
     state.initializer(
         TOKEN_NAME(),
         TOKEN_SYMBOL(),
-        BASE_URI(),
-        Option::None, // generate default contract_uri
+        Option::None, // automatic metadata
+        Option::None, // automatic metadata
         Option::None, // infinite supply
     );
     (state, mock_state)
@@ -101,7 +101,7 @@ fn test_token_uri() {
     _mint(ref mock_state, OWNER());
     let uri: ByteArray = mock_state.token_uri(TOKEN_ID_1);
     let uri_camel = mock_state.tokenURI(TOKEN_ID_1);
-    println!("___token_uri(1):[{}]", uri);
+    println!("___token_uri_minimal(1):[{}]", uri);
     assert_ne!(uri, "", "token_uri() should not be empty");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
 }
@@ -111,7 +111,7 @@ fn test_contract_uri_default() {
     let (mut _state, mut mock_state) = setup();
     let uri: ByteArray = mock_state.contract_uri();
     let uri_camel = mock_state.contractURI();
-    println!("___contract_uri(1):[{}]", uri);
+    println!("___contract_uri_minimal():[{}]", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
 }

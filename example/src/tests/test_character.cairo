@@ -227,7 +227,7 @@ fn test_token_uri_default() {
     _mint(sys, OWNER());
     let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
     let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
-    println!("___token_uri(1):[{}]", uri);
+    println!("___token_uri_default(1):[{}]", uri);
     assert_ne!(uri, "", "token_uri() should not be empty");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
     assert!(tester::starts_with(uri, "https:"), "token_uri() should start with https:");
@@ -240,7 +240,7 @@ fn test_token_uri_render_hook() {
     _mint(sys, OWNER());
     let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
     let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
-    println!("___render_token_uri(1):[{}]", uri);
+    println!("___token_uri_render(1):[{}]", uri);
     assert_gt!(uri.len(), 100, "token_uri() len");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
     assert!(tester::starts_with(uri, "data:"), "token_uri() should be a json string");
@@ -253,7 +253,7 @@ fn test_token_uri_hook() {
     _mint(sys, OWNER());
     let uri: ByteArray = sys.character.token_uri(TOKEN_ID_1);
     let uri_camel = sys.character.tokenURI(TOKEN_ID_1);
-    println!("___token_uri(1):[{}]", uri);
+    println!("___token_uri_hook(1):[{}]", uri);
     assert_lt!(uri.len(), 100, "token_uri() len");
     assert_eq!(uri, uri_camel, "tokenURI() == token_uri()");
     assert!(tester::starts_with(uri, "data:"), "token_uri() should be a json string");
@@ -275,7 +275,7 @@ fn test_contract_uri_default() {
     let mut sys: TestSystems = setup_world(true, 0);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
-    println!("___contract_uri(1):[{}]", uri);
+    println!("___contract_uri_default(1):[{}]", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "https:"), "contract_uri() should start with https:");
@@ -287,7 +287,7 @@ fn test_contract_uri_default_none() {
     sys.character.update_contract_uri(Option::None);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
-    println!("___contract_uri_none(1):[{}]", uri);
+    println!("___contract_uri_automatic(1):[{}]", uri);
     assert_ne!(uri, "", "contract_uri() should not be empty");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");
@@ -299,7 +299,7 @@ fn test_contract_uri_render_hook() {
     tester::set_enable_uri_render_hooks(ref sys, true);
     let uri: ByteArray = sys.character.contract_uri();
     let uri_camel = sys.character.contractURI();
-    println!("___contract_uri_render_hook(1):[{}]", uri);
+    println!("___contract_uri_render(1):[{}]", uri);
     assert_gt!(uri.len(), 100, "contract_uri() len");
     assert_eq!(uri, uri_camel, "contractURI() == contract_uri()");
     assert!(tester::starts_with(uri, "data:"), "contract_uri() should be a json string");

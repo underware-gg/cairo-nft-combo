@@ -13,8 +13,6 @@ Next...
 * ERC-1155 combo
 * ERC-1155 example
 
-Detailed features and instructions at [`/packages/nft_combo`](/packages/nft_combo/)
-
 
 ## Contents
 

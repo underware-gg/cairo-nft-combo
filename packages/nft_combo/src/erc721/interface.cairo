@@ -96,9 +96,9 @@ pub trait IERC721MinterProtected<TState> {
     fn initializer(ref self: TState,
         name: ByteArray,
         symbol: ByteArray,
-        base_uri: ByteArray,
-        contract_uri: ByteArray,
-        max_supply: u256,
+        base_uri: Option<ByteArray>,
+        contract_uri: Option<ByteArray>,
+        max_supply: Option<u256>,
     );
     // returns the stored default value of base_uri
     fn _base_uri(ref self: TState) -> ByteArray;

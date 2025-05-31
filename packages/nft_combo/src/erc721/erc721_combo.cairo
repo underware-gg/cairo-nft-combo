@@ -189,10 +189,14 @@ pub mod ERC721ComboComponent {
             ref self: ComponentState<TContractState>,
             name: ByteArray,
             symbol: ByteArray,
-            base_uri: ByteArray,
+            base_uri: Option<ByteArray>,
             contract_uri: Option<ByteArray>,
             max_supply: Option<u256>,
         ) {
+            let base_uri: ByteArray = match base_uri {
+                Option::Some(base_uri) => {(base_uri)},
+                Option::None => {("")},
+            };
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
             erc721.initializer(name, symbol, base_uri);
             self._set_contract_uri(contract_uri);
@@ -352,8 +356,8 @@ pub mod ERC721ComboComponent {
                     (match ComboHooks::token_uri(self, token_id) {
                         // 2. Use the provided token uri (hooks)
                         Option::Some(custom_uri) => {(custom_uri)},
-                        // 3. Off-chain metadata (_base_uri + token_id)
                         Option::None => {
+                            // 3. Off-chain metadata (_base_uri + token_id)
                             let result = erc721.token_uri(token_id);
                             if (result.len() > 0) {
                                 (result)
@@ -361,8 +365,8 @@ pub mod ERC721ComboComponent {
                                 // 4. Automatic metadata
                                 let metadata = renderer::TokenMetadata {
                                     token_id,
-                                    name: erc721.name(),
-                                    description: format!("{} ERC-721 token", erc721.name()),
+                                    name: format!("{} #{}", self.name(), token_id),
+                                    description: format!("{} ERC-721 token", self.name()),
                                     image: Option::None,
                                     image_data: Option::None,
                                     external_url: Option::None,

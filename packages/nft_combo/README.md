@@ -3,7 +3,7 @@
 A Cairo component extending OpenZeppelin ERC-721 tokens.
 
 
-## Installation
+## Setup
 
 ### Contract dependencies
 
@@ -40,26 +40,169 @@ nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1
 
 ## Initializer
 
+`nft-combo` offers a range of options for providing token and contract metadata, conbining the `intitializer()` function and `ERC721ComboHooksTrait`.
+
+```rust
+fn initializer(ref self: TState,
+    name: ByteArray,
+    symbol: ByteArray,
+    base_uri: Option<ByteArray>,
+    contract_uri: Option<ByteArray>,
+    max_supply: Option<u256>,
+);
+```
+
+The component will search for available options, in this preference...
+
+### Option 1: nft-combo renders the metadata
+
+```rust
+fn dojo_init(ref self: ContractState) {
+    self.erc721_combo.initializer(
+        "My Token",   // token name
+        "MY",         // token symbol
+        Option::None, // use hooks
+        Option::None, // use hooks
+        Option::None, // infinite supply
+    );
+}
+
+pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
+    fn render_contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ContractMetadata> {
+        // add only the data you need...
+        let metadata = ContractMetadata {
+            name: self.name(),
+            symbol: self.symbol(),
+            description: "This is a test token",
+            image: Option::Some("https://example.underware.gg/image.png"),
+            banner_image: Option::None,
+            featured_image: Option::None,
+            external_link: Option::Some("https://example.underware.gg"),
+            collaborators: Option::Some(array![starknet::contract_address_const::<0xabcd>()].span()),
+        };
+        (Option::Some(metadata))
+    }
+    fn render_token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<TokenMetadata> {
+        // add only the data you need...
+        let attributes: Array<Attribute> = array![
+            Attribute {
+                key: "Mood",
+                value: "Terrific",
+            },
+        ];
+        let additional_metadata: Array<Attribute> = array![
+            Attribute {
+                key: "Licence",
+                value: "CC0-1.0",
+            },
+        ];
+        let metadata = TokenMetadata {
+            token_id,
+            name: format!("{} #{}", self.name(), token_id),
+            description: "This is a test token",
+            image: Option::Some("https://example.underware.gg/image.png"),
+            image_data: Option::None,
+            external_url: Option::Some("https://example.underware.gg"),
+            background_color: Option::Some("0x000000"),
+            animation_url: Option::None,
+            youtube_url: Option::None,
+            attributes: Option::Some(attributes.span()),
+            additional_metadata: Option::Some(additional_metadata.span()),
+        };
+        (Option::Some(metadata))
+    }
+}
+```
+
+### Option 2: Provide your own renderered metadata
+
+```rust
+fn dojo_init(ref self: ContractState) {
+    self.erc721_combo.initializer(
+        "My Token",   // token name
+        "MY",         // token symbol
+        Option::None, // use hooks
+        Option::None, // use hooks
+        Option::None, // infinite supply
+    );
+}
+
+pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<ContractState> {
+    fn contract_uri(self: @ERC721ComboComponent::ComponentState<ContractState>) -> Option<ByteArray> {
+        // render your own on-chain metadata
+        let uri = format!("data:application/json,{{\"name\":\"{} ERC-721 token\"}}", self.name());
+        (Option::Some(uri))
+        // or use off-chain metadata...
+        // (Option::Some("https://example.underware.gg/contract.json"))
+    }
+    fn token_uri(self: @ERC721ComboComponent::ComponentState<ContractState>, token_id: u256) -> Option<ByteArray> {
+        // render your own on-chain metadata
+        let uri = format!("data:application/json,{{\"name\":\"{} #{}\"}}", self.name(), token_id);
+        (Option::Some(uri))
+        // or use off-chain metadata...
+        // (Option::Some("https://example.underware.gg/token/1.json"))
+    }
+}
+```
+
+### Option 3: Standard off-chain metadata, using `base_uri`.
+
+```rust
+fn dojo_init(ref self: ContractState) {
+    self.erc721_combo.initializer(
+        "My Token",   // token name
+        "MY",         // token symbol
+        Option::Some("https://example.underware.gg/token/"),
+        Option::Some("https://example.underware.gg/contract.json"),
+        Option::None, // infinite supply
+    );
+}
+// token_uri(1) returns: "https://example.underware.gg/token/1"
+```
+
+### Option 4: Automatic metadata based on token name and id
+
+```rust
+fn dojo_init(ref self: ContractState) {
+    self.erc721_combo.initializer(
+        "My Token",   // token name
+        "MY",         // token symbol
+        Option::None, // automatic token metadata
+        Option::None, // automatic contract metadata
+        Option::None, // infinite supply
+    );
+}
+// contract_uri() returns: "data:application/json,{"symbol":"MY","name":"My Token","description":"My Token ERC-721 token"}"
+// token_uri(1) returns:  "data:application/json,{"id":"1","name":"My Token #1","description":"My Token ERC-721 token"}"
+```
+
+
+### Additional initialization
+
+* Max supply: the maximum number of tokens that can be minted by `IERC721Minter`.
+* Default royalty
+* Pause minting
+
 ```rust
 fn dojo_init(ref self: ContractState) {
     self.erc721_combo.initializer(
         TOKEN_NAME(),
         TOKEN_SYMBOL(),
-        BASE_URI(),
-        Option::Some(CONTRACT_URI()), // use Option::None for automatic metadata or use hooks
-        Option::Some(MAX_SUPPLY()),   // use Option::None for infinite supply
+        Option::None(),
+        Option::None(),
+        Option::Some(1000), // max supply
     );
-    // set default royalty to 5%
-    self.erc721_combo._set_default_royalty(TREASURY(), ROYALTY_FEE());
-    // usually it's a good idea to deploy paused and unpause later
+    // set default royalty to 5%, payable to 0x1234
+    self.erc721_combo._set_default_royalty('0x1234', 500);
+    // sometimes it's a good idea to deploy paused and unpause later
     self.erc721_combo._set_minting_paused(true);
 }
 ```
 
 
-## Features
+## ERC-721: `IERC721Minter`
 
-### Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721): `IERC721Minter`
+New [ERC-721](https://eips.ethereum.org/EIPS/eip-721) interface for supply control and minting helpers.
 
 * Simple helpers for minting tokens.
 
@@ -86,7 +229,7 @@ pub trait IERC721MinterProtected<TState> {
     fn initializer(ref self: TState,
         name: ByteArray,
         symbol: ByteArray,
-        base_uri: ByteArray,
+        base_uri: Option<ByteArray>,
         contract_uri: Option<ByteArray>,
         max_supply: Option<u256>,
     );
@@ -126,9 +269,11 @@ Token metadata example (based on [OpenSea metadata standards](https://docs.opens
 ```
 
 
-### Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata
+## ERC-7572: Contract-level metadata
 
-* Hooks to customize `contract_uri()`. The component will return in this precedence...
+Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572), with additional hooks to to customize `contract_uri()`.
+
+The component will return in this precedence...
 
 1. Implement the `ERC721ComboHooksTrait::render_contract_uri()` hook to use a fully rendered JSON string, just by returning it's `ContractMetadata`.
 2. Implement the ERC721ComboHooksTrait::`contract_uri()` hook to render uri in the contract, returning the formatted url or json string.
@@ -169,7 +314,9 @@ Contract metadata example (based on [EIP-7572](https://eips.ethereum.org/EIPS/ei
 }
 ```
 
-### Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
+## ERC-4906: Metadata Update Extension
+
+Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906).
 
 * Emit events that trigger indexers to refresh one tokens metadata.
 
@@ -188,11 +335,12 @@ pub trait IERC4906MetadataUpdateProtected<TState> {
 ```
 
 
-### Implements [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981): NFT Royalty Standard
+## ERC-2981: NFT Royalty Standard
 
-* The OpenZeppelin [implementation](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/common/erc2981/interface.cairo) was used as reference, but not included to avoid additional dependencies, and for simplicity.
-* The fee **denominator** is constant `10_000` (same as the OZ implementations default). Meaning that for every `1%` fees, increase the **numerator** by `100`.
+Implements [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981) for NFT Royalty control, based on OpenZeppelin [erc2981](https://github.com/OpenZeppelin/cairo-contracts/blob/main/packages/token/src/common/erc2981/interface.cairo).
+
 * It is acceptable market practice to set royalty fees between `2.5%` (numerator `250`) and `5%` (numerator `500`).
+* The fee **denominator** is constant `10_000` (same as the OZ implementations default). For every `1%` fees, increase the **numerator** by `100`.
 * The component will calculate royalties in this order...
 
 1. Per-token royalty implemented in the contract by the hook `ERC721ComboHooksTrait::token_royalty(token_id) -> Option<RoyaltyInfo>`.
@@ -237,7 +385,7 @@ pub trait IERC2981RoyaltyInfoProtected<TState> {
 ```
 
 
-## The `ERC721ComboHooksTrait` hooks:
+## The `ERC721ComboHooksTrait` hooks
 
 Implement the `ERC721ComboHooksTrait` in your contract, including only the functions you need to customize:
 
