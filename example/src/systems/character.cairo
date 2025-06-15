@@ -37,14 +37,20 @@ pub trait ICharacter<TState> {
     //-----------------------------------
     // IERC721Minter
     fn max_supply(self: @TState) -> u256;
-    fn total_supply(self: @TState) -> u256;
+    fn reserved_supply(self: @TState) -> u256;
+    fn available_supply(self: @TState) -> u256;
     fn minted_supply(self: @TState) -> u256;
+    fn total_supply(self: @TState) -> u256;
     fn last_token_id(self: @TState) -> u256;
     fn is_minting_paused(self: @TState) -> bool;
+    fn is_minted_out(self: @TState) -> bool;
     fn is_owner_of(self: @TState, address: ContractAddress, token_id: u256) -> bool;
     fn token_exists(self: @TState, token_id: u256) -> bool;
     // (CamelOnly)
     fn maxSupply(self: @TState) -> u256;
+    fn reservedSupply(self: @TState) -> u256;
+    fn availableSupply(self: @TState) -> u256;
+    fn mintedSupply(self: @TState) -> u256;
     fn totalSupply(self: @TState) -> u256;
     //-----------------------------------
     // IERC7572ContractMetadata
@@ -68,7 +74,8 @@ pub trait ICharacter<TState> {
     //-----------------------------------
     // ICharacterPublic
     //
-    fn mint(ref self: TState, recipient: ContractAddress);
+    fn mint(ref self: TState, recipient: ContractAddress) -> u256;
+    fn mint_reserved(ref self: TState, recipient: ContractAddress) -> u256;
     fn burn(ref self: TState, token_id: u256);
     // admin (will check for ownership)
     fn pause(ref self: TState, paused: bool);
@@ -78,6 +85,7 @@ pub trait ICharacter<TState> {
     fn update_characters(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract(ref self: TState);
     fn update_max_supply(ref self: TState, supply: Option<u256>);
+    fn update_reserved_supply(ref self: TState, supply: u256);
     fn update_contract_uri(ref self: TState, uri: Option<ByteArray>);
     fn mint_token_id(ref self: TState, recipient: ContractAddress, token_id: u256);
 }
@@ -85,7 +93,8 @@ pub trait ICharacter<TState> {
 // Exposed to Cartridge Controller
 #[starknet::interface]
 pub trait ICharacterPublic<TState> {
-    fn mint(ref self: TState, recipient: ContractAddress);
+    fn mint(ref self: TState, recipient: ContractAddress) -> u256;
+    fn mint_reserved(ref self: TState, recipient: ContractAddress) -> u256;
     fn burn(ref self: TState, token_id: u256);
     fn pause(ref self: TState, paused: bool);
     fn reset_royalty(ref self: TState);
@@ -94,6 +103,7 @@ pub trait ICharacterPublic<TState> {
     fn update_characters(ref self: TState, from_token_id: u256, to_token_id: u256);
     fn update_contract(ref self: TState);
     fn update_max_supply(ref self: TState, supply: Option<u256>);
+    fn update_reserved_supply(ref self: TState, supply: u256);
     fn update_contract_uri(ref self: TState, uri: Option<ByteArray>);
     fn mint_token_id(ref self: TState, recipient: ContractAddress, token_id: u256);
 }
@@ -210,8 +220,14 @@ pub mod character {
     //
     #[abi(embed_v0)]
     impl CharacterPublicImpl of super::ICharacterPublic<ContractState> {
-        fn mint(ref self: ContractState, recipient: ContractAddress) {
-            let _token_id = self.erc721_combo._mint_next(recipient);
+        fn mint(ref self: ContractState, recipient: ContractAddress) -> u256 {
+            let token_id = self.erc721_combo._mint_next(recipient);
+            (token_id)
+        }
+        fn mint_reserved(ref self: ContractState, recipient: ContractAddress) -> u256 {
+            self.assert_caller_is_owner();
+            let token_id = self.erc721_combo._mint_next_reserved(recipient);
+            (token_id)
         }
         fn burn(ref self: ContractState, token_id: u256) {
             // only owner is supposed to burn
@@ -251,6 +267,10 @@ pub mod character {
         fn update_max_supply(ref self: ContractState, supply: Option<u256>) {
             self.assert_caller_is_owner();
             self.erc721_combo._set_max_supply(supply);
+        }
+        fn update_reserved_supply(ref self: ContractState, supply: u256) {
+            self.assert_caller_is_owner();
+            self.erc721_combo._set_reserved_supply(supply);
         }
         fn update_contract_uri(ref self: ContractState, uri: Option<ByteArray>) {
             self.assert_caller_is_owner();

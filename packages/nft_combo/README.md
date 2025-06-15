@@ -179,7 +179,7 @@ fn dojo_init(ref self: ContractState) {
 
 ### Additional initialization
 
-* Max supply: the maximum number of tokens that can be minted by `IERC721Minter`.
+* Max supply: the maximum amount of tokens that can be minted by `IERC721Minter`.
 * Default royalty
 * Pause minting
 
@@ -192,6 +192,9 @@ fn dojo_init(ref self: ContractState) {
         Option::None(),
         Option::Some(1000), // max supply
     );
+    // set reseve supply (optional)
+    // can be minted by _mint_next_reserved()
+    self.erc721_combo._set_reserved_supply(5);
     // set default royalty to 5%, payable to 0x1234
     self.erc721_combo._set_default_royalty('0x1234', 500);
     // sometimes it's a good idea to deploy paused and unpause later
@@ -209,16 +212,22 @@ New [ERC-721](https://eips.ethereum.org/EIPS/eip-721) interface for supply contr
 ```rust
 #[starknet::interface]
 pub trait IERC721Minter<TState> {
-    // returns the maximum number of tokens that can be minted
+    // returns the maximum amount of tokens that can be minted
     fn max_supply(self: @TState) -> u256;
-    // returns the total number of existing tokens (minted minus burned)
-    fn total_supply(self: @TState) -> u256;
-    // returns the total number of minted tokens (same as last_token_id())
+    // returns the amount of reserved tokens, minted only by _mint_next_reserved()
+    fn reserved_supply(self: @TState) -> u256;
+    // returns the amount of available tokens (max_supply - minted_supply - reserved_supply)
+    fn available_supply(self: @TState) -> u256;
+    // returns the total amount of minted tokens (same as last_token_id())
     fn minted_supply(self: @TState) -> u256;
+    // returns the total amount of existing tokens (minted minus burned)
+    fn total_supply(self: @TState) -> u256;
     // returns the last minted token id
     fn last_token_id(self: @TState) -> u256;
     // returns true if minting is paused
     fn is_minting_paused(self: @TState) -> bool;
+    // returns true if minted all of the supply
+    fn is_minted_out(self: @TState) -> bool;
     // returns true if address is the owner of the token
     fn is_owner_of(self: @TState, address: ContractAddress, token_id: u256) -> bool;
     // returns true if the token exists (is owned)
@@ -237,10 +246,14 @@ pub trait IERC721MinterProtected<TState> {
     );
     // returns the stored default value of base_uri
     fn _base_uri(ref self: TState) -> ByteArray;
-    // mints the next token sequnetially, based on supply
+    // mints the next token sequentially, based on supply
     fn _mint_next(ref self: TState, recipient: ContractAddress) -> u256;
-    // sets the maximum number of tokens that can be minted (use Option::None for infinite supply)
+    // mints the next token sequentially, from reserved supply
+    fn _mint_next_reserved(ref self: TState, recipient: ContractAddress) -> u256;
+    // sets the maximum amount of tokens that can be minted (use Option::None for infinite supply)
     fn _set_max_supply(ref self: TState, max_supply: Option<u256>);
+    // sets the amount of reserved tokens, minted only by _mint_next_reserved()
+    fn _set_reserved_supply(ref self: TState, reserved_supply: u256);
     // pauses/unpauses minting
     fn _set_minting_paused(ref self: TState, paused: bool);
     // panics if caller is not owner of the token

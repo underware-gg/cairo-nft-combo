@@ -23,8 +23,13 @@ const TOKEN_ID_3: u256 = 3;
 const TOKEN_ID_4: u256 = 4;
 
 fn _mint(mut sys: TestSystems, recipient: ContractAddress   ) {
-    tester::impersonate(sys.actions.contract_address);
+    // tester::impersonate(sys.actions.contract_address);
     sys.character.mint(recipient);
+}
+
+fn _mint_reserved(mut sys: TestSystems, recipient: ContractAddress   ) {
+    tester::impersonate(OWNER()); // only owner can mint reserved
+    sys.character.mint_reserved(recipient);
 }
 
 #[test]
@@ -77,12 +82,17 @@ fn test_mint_burn_supply() {
     let sys: TestSystems = setup_world(true, 0);
     assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) : 0");
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) : 0");
-    assert_eq!(sys.character.total_supply(), 0, "total_supply : 0");
-    assert_eq!(sys.character.minted_supply(), 0, "minted_supply : 0");
+    assert_eq!(sys.character.max_supply(), 10, "max_supply: 10");
+    assert_eq!(sys.character.available_supply(), 10, "available_supply: 10");
+    assert_eq!(sys.character.reserved_supply(), 0, "reserved_supply: 0");
+    assert_eq!(sys.character.total_supply(), 0, "total_supply: 0");
+    assert_eq!(sys.character.minted_supply(), 0, "minted_supply: 0");
     assert_eq!(sys.character.last_token_id(), 0, "last_token_id : 0");
     assert!(!sys.character.token_exists(TOKEN_ID_1), "!exists(TOKEN_ID_1)");
     // mint TOKEN_ID_1
     _mint(sys, OWNER());
+    assert_eq!(sys.character.max_supply(), 10, "max_supply: 10 still");
+    assert_eq!(sys.character.available_supply(), 9, "available_supply: 9");
     assert!(sys.character.token_exists(TOKEN_ID_1), "exists(TOKEN_ID_1)");
     assert!(sys.character.is_owner_of(OWNER(), TOKEN_ID_1), "is_owner_of(OWNER(), TOKEN_ID_1)");
     assert!(!sys.character.is_owner_of(OTHER(), TOKEN_ID_1), "!is_owner_of(OTHER(), TOKEN_ID_1)");
@@ -96,6 +106,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.totalSupply(), 1, "totalSupply +1");
     // mint TOKEN_ID_2
     _mint(sys, OTHER());
+    assert_eq!(sys.character.available_supply(), 8, "available_supply: 8");
     assert_eq!(sys.character.owner_of(TOKEN_ID_2), OTHER(), "owner_of_2");
     assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) =1");
     assert_eq!(sys.character.balance_of(OTHER()), 1, "balance_of (OTHER) +1");
@@ -104,6 +115,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.last_token_id(), 2, "last_token_id +2");
     // mint TOKEN_ID_3
     _mint(sys, OTHER());
+    assert_eq!(sys.character.available_supply(), 7, "available_supply: 7");
     assert_eq!(sys.character.owner_of(TOKEN_ID_3), OTHER(), "owner_of_3");
     assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) ==1");
     assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +2");
@@ -128,11 +140,15 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.minted_supply(), 3, "minted_supply ==3");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id ==3");
     // mint all available tokens
+    assert_eq!(sys.character.available_supply(), 7, "available_supply: 7 still");
     let max_supply: u256 = sys.character.max_supply();
     assert_eq!(max_supply, 10, "max_supply == 10");
     while (sys.character.last_token_id() < max_supply) {
+        assert!(!sys.character.is_minted_out(), "!is_minted_out");
         _mint(sys, OWNER());
-    }
+    };
+    assert_eq!(sys.character.available_supply(), 0, "available_supply: 0");
+    assert!(sys.character.is_minted_out(), "is_minted_out");
 }
 
 #[test]
@@ -150,10 +166,15 @@ fn test_mint_max_supply_panic() {
 }
 
 #[test]
-fn test_mint_new_max_supply_ok() {
+fn test_mint_set_max_supply_ok() {
     let sys: TestSystems = setup_world(true, 0);
     // mint all available tokens
     let max_supply: u256 = sys.character.max_supply();
+    while (sys.character.last_token_id() < max_supply) {
+        _mint(sys, OWNER());
+    };
+    // increase and mint out
+    tester::impersonate(OWNER());
     sys.character.update_max_supply(Option::Some(15));
     let new_max_supply: u256 = sys.character.max_supply();
     assert_gt!(new_max_supply, max_supply, "new_max_supply");
@@ -164,7 +185,7 @@ fn test_mint_new_max_supply_ok() {
 }
 
 #[test]
-fn test_mint_new_max_supply_none_ok() {
+fn test_mint_set_max_supply_none_ok() {
     let sys: TestSystems = setup_world(true, 0);
     // mint all available tokens
     let max_supply: u256 = sys.character.max_supply();
@@ -179,7 +200,7 @@ fn test_mint_new_max_supply_none_ok() {
 
 #[test]
 #[should_panic(expected:('ERC721Combo: reached max supply', 'ENTRYPOINT_FAILED'))]
-fn test_mint_new_max_supply_panic() {
+fn test_mint_set_max_supply_panic() {
     let sys: TestSystems = setup_world(true, 0);
     // mint all available tokens
     let max_supply: u256 = sys.character.max_supply();
@@ -191,6 +212,28 @@ fn test_mint_new_max_supply_panic() {
     };
     // one more will panic
     _mint(sys, OWNER());
+}
+
+#[test]
+#[should_panic(expected:('CHARACTER: caller is not owner', 'ENTRYPOINT_FAILED'))]
+fn test_mint_set_max_supply_not_owner() {
+    let sys: TestSystems = setup_world(true, 0);
+    tester::impersonate(OTHER());
+    sys.character.update_max_supply(Option::Some(1000));
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: invalid supply', 'ENTRYPOINT_FAILED'))]
+fn test_mint_set_max_supply_invalid() {
+    let sys: TestSystems = setup_world(true, 0);
+    // mint all available tokens
+    let max_supply: u256 = sys.character.max_supply();
+    while (sys.character.last_token_id() < max_supply) {
+        _mint(sys, OWNER());
+    };
+    // cant set new max supply to less than minted
+    tester::impersonate(OWNER());
+    sys.character.update_max_supply(Option::Some(max_supply-1));
 }
 
 #[test]
@@ -286,6 +329,160 @@ fn test_token_uri_invalid() {
     let sys: TestSystems = setup_world(true, 0);
     sys.character.token_uri(TOKEN_ID_1);
 }
+
+//
+// reserved supply
+//
+
+#[test]
+fn test_reserved_ok() {
+    let sys: TestSystems = setup_world(true, 0);
+    // set reserved
+    let max_supply: u256 = sys.character.max_supply();
+    let reserved_supply: u256 = sys.character.reserved_supply();
+    assert_eq!(max_supply, 10, "max_supply == 10");
+    assert_eq!(reserved_supply, 0, "max_supply == 0");
+    assert_eq!(sys.character.available_supply(), 10, "available_supply: 10");
+    tester::impersonate(OWNER());
+    sys.character.update_reserved_supply(8);
+    let mut reserved_supply: u256 = sys.character.reserved_supply();
+    assert_eq!(reserved_supply, 8, "reserved_supply == 8");
+    assert_eq!(sys.character.available_supply(), 2, "available_supply: 2");
+    assert_eq!(sys.character.total_supply(), 0, "total_supply: 0");
+    // mint available first
+    _mint(sys, OWNER());
+    _mint(sys, OWNER());
+    assert_eq!(sys.character.total_supply(), 2, "total_supply: 2");
+    assert_eq!(sys.character.available_supply(), 0, "available_supply: 0");
+    assert!(!sys.character.is_minted_out(), "!is_minted_out");
+    // mint reserved last
+    while (sys.character.last_token_id() < max_supply) {
+        _mint_reserved(sys, OWNER());
+        reserved_supply -= 1;
+        assert_eq!(sys.character.reserved_supply(), reserved_supply, "reserved_supply == {}", reserved_supply);
+    };
+    assert_eq!(sys.character.total_supply(), max_supply, "total_supply: full");
+    assert_eq!(sys.character.available_supply(), 0, "available_supply: 0");
+    assert_eq!(sys.character.reserved_supply(), 0, "reserved_supply: 0");
+    assert!(sys.character.is_minted_out(), "is_minted_out");
+}
+
+#[test]
+fn test_reserved_first_ok() {
+    let sys: TestSystems = setup_world(true, 0);
+    assert_eq!(sys.character.available_supply(), 10, "available_supply: 10");
+    // set reserved
+    tester::impersonate(OWNER());
+    sys.character.update_reserved_supply(8);
+    assert_eq!(sys.character.reserved_supply(), 8, "reserved_supply: 8");
+    assert_eq!(sys.character.available_supply(), 2, "available_supply: 2");
+    // mint reserved first
+    let mut reserved_supply: u256 = sys.character.reserved_supply();
+    while (sys.character.last_token_id() < 8) {
+        _mint_reserved(sys, OWNER());
+        reserved_supply -= 1;
+        assert_eq!(sys.character.reserved_supply(), reserved_supply, "reserved_supply == {}", reserved_supply);
+    };
+    assert_eq!(sys.character.reserved_supply(), 0, "total_supply: 0");
+    assert_eq!(sys.character.total_supply(), 8, "total_supply: full");
+    assert_eq!(sys.character.available_supply(), 2, "available_supply: 2");
+    assert!(!sys.character.is_minted_out(), "!is_minted_out");
+    // mint available last
+    _mint(sys, OWNER());
+    _mint(sys, OWNER());
+    assert_eq!(sys.character.available_supply(), 0, "available_supply: 0");
+    assert_eq!(sys.character.total_supply(), 10, "total_supply: full");
+    assert!(sys.character.is_minted_out(), "is_minted_out");
+}
+
+#[test]
+fn test_reserved_mixed_ok() {
+    let sys: TestSystems = setup_world(true, 0);
+    // set reserved
+    tester::impersonate(OWNER());
+    sys.character.update_reserved_supply(5);
+    let mut reserved_supply: u256 = sys.character.reserved_supply();
+    // mint one of each
+    while (reserved_supply > 0) {
+        _mint(sys, OWNER());
+        _mint_reserved(sys, OWNER());
+        reserved_supply -= 1;
+        assert_eq!(sys.character.reserved_supply(), reserved_supply, "reserved_supply == {}", reserved_supply);
+    };
+    assert_eq!(sys.character.reserved_supply(), 0, "reserved_supply: 0");
+    assert_eq!(sys.character.available_supply(), 0, "available_supply: 0");
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: reserved supply', 'ENTRYPOINT_FAILED'))]
+fn test_reserved_reserved() {
+    let sys: TestSystems = setup_world(true, 0);
+    // same as test_reserved_ok()
+    tester::impersonate(OWNER());
+    sys.character.update_reserved_supply(8);
+    assert_eq!(sys.character.available_supply(), 2, "available_supply: 2");
+    // mint available
+    _mint(sys, OWNER());
+    _mint(sys, OWNER());
+    // panic!
+    assert_eq!(sys.character.available_supply(), 0, "available_supply: 0");
+    _mint(sys, OWNER());
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: no reserve', 'ENTRYPOINT_FAILED'))]
+fn test_reserved_no_reserve() {
+    let sys: TestSystems = setup_world(true, 0);
+    // same as test_reserved_ok()
+    tester::impersonate(OWNER());
+    _mint_reserved(sys, OWNER());
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: invalid supply', 'ENTRYPOINT_FAILED'))]
+fn test_reserved_invalid_supply_more_than_max() {
+    let sys: TestSystems = setup_world(true, 0);
+    tester::impersonate(OWNER());
+    sys.character.update_reserved_supply(11);
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: invalid supply', 'ENTRYPOINT_FAILED'))]
+fn test_reserved_invalid_supply_more_than_available() {
+    let sys: TestSystems = setup_world(true, 0);
+    tester::impersonate(OWNER());
+    _mint(sys, OWNER());
+    _mint(sys, OWNER());
+    assert_eq!(sys.character.available_supply(), 8, "available_supply: 8");
+    tester::impersonate(OWNER());
+    sys.character.update_reserved_supply(9);
+}
+
+#[test]
+#[should_panic(expected:('ERC721Combo: invalid supply', 'ENTRYPOINT_FAILED'))]
+fn test_reserved_invalid_supply_minted_out() {
+    let sys: TestSystems = setup_world(true, 0);
+    tester::impersonate(OWNER());
+    sys.character.update_max_supply(Option::Some(2));
+    _mint(sys, OWNER());
+    _mint(sys, OWNER());
+    assert_eq!(sys.character.available_supply(), 0, "available_supply: 0");
+    tester::impersonate(OWNER());
+    sys.character.update_reserved_supply(1);
+}
+
+#[test]
+#[should_panic(expected:('CHARACTER: caller is not owner', 'ENTRYPOINT_FAILED'))]
+fn test_set_reserved_supply_not_owner() {
+    let sys: TestSystems = setup_world(true, 0);
+    tester::impersonate(OTHER());
+    sys.character.update_reserved_supply(50);
+}
+
+
+
+
+
 
 //
 // contract_uri

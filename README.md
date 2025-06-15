@@ -2,11 +2,17 @@
 
 A Cairo component extending OpenZeppelin ERC-721 tokens.
 
-* Extends [ERC-721](https://eips.ethereum.org/EIPS/eip-721): `IERC721Minter`
 * Implements [ERC-7572](https://eips.ethereum.org/EIPS/eip-7572): Contract-level metadata
 * Implements [ERC-4906](https://eips.ethereum.org/EIPS/eip-4906): Metadata Update Extension
 * Implements [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981): NFT Royalty Standard
-* Fully on-chain metadata renderer
+* Fully on-chain metadata renderer with `ERC721ComboHooksTrait`
+* New [ERC-721](https://eips.ethereum.org/EIPS/eip-721) extension `IERC721Minter`, including...
+  * Token ID counter
+  * Sequential minting with `_mint_next()`
+  * **Reserved** supply and minting, with `_mint_next_reserved()`
+  * Max supply control (or infinite) with `max_supply()` and `minted_supply()`
+  * Token availability with `available_supply()`
+  * Minting pause control
 
 Next...
 

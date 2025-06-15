@@ -18,12 +18,14 @@ pub mod ERC721ComboComponent {
 
     #[storage]
     pub struct Storage {
-        pub ERC721_max_supply: Option<u256>,
-        pub ERC721_total_supply: u256,
-        pub ERC721_last_token_id: u256,
-        pub ERC721_minting_paused: bool,
-        pub ERC7572_contract_uri: Option<ByteArray>,
-        pub ERC2981_default_royalty_info: RoyaltyInfo,
+        pub ERC721_max_supply: Option<u256>,            // max amount of minted tokens, Option::None for unlimited
+        pub ERC721_total_supply: u256,                  // amount of existing tokens (minted minus burtned)
+        pub ERC721_last_token_id: u256,                 // last token id minted, also minted_supply(), used for _mint_next()
+        pub ERC721_minting_paused: bool,                // whether minting is paused
+        pub ERC7572_contract_uri: Option<ByteArray>,    // static contract uri, Option::None to use hooks
+        pub ERC2981_default_royalty_info: RoyaltyInfo,  // default royalty info, used for token_royalty()
+        // new in v1.1.0
+        pub ERC721_reserved_supply: u256,               // amount of reserved tokens, mintable with _mint_next_reserved()
     }
 
     #[event]
@@ -61,8 +63,11 @@ pub mod ERC721ComboComponent {
 
     pub mod Errors {
         pub const REACHED_MAX_SUPPLY: felt252 = 'ERC721Combo: reached max supply';
+        pub const REACHED_RESERVED_SUPPLY: felt252 = 'ERC721Combo: reserved supply';
         pub const MINTING_IS_PAUSED: felt252 = 'ERC721Combo: minting is paused';
         pub const NOT_OWNER: felt252 = 'ERC721Combo: not owner';
+        pub const NO_RESERVE: felt252 = 'ERC721Combo: no reserve';
+        pub const INVALID_SUPPLY: felt252 = 'ERC721Combo: invalid supply';
         pub const INVALID_ROYALTY: felt252 = 'ERC721Combo: invalid royalty';
         pub const INVALID_ROYALTY_RECEIVER: felt252 = 'ERC721Combo: invalid receiver';
     }
@@ -146,16 +151,22 @@ pub mod ERC721ComboComponent {
             let mut comp = HasComponent::get_component_mut(ref contract);
             let mut erc721 = ERC721Component::HasComponent::get_component_mut(ref contract);
             if (erc721._owner_of(token_id).is_zero()) {
+                // check if minted out
+                let max_supply = ERC721Minter::max_supply(@comp);
+                assert(token_id <= max_supply, Errors::REACHED_MAX_SUPPLY);
+                // check if reserved
+                let reserved_supply = comp.ERC721_reserved_supply.read();
+                assert(token_id <= (max_supply - reserved_supply), Errors::REACHED_RESERVED_SUPPLY);
+                // check if paused
+                assert(!comp.ERC721_minting_paused.read(), Errors::MINTING_IS_PAUSED);
                 // minting...
-                assert(token_id <= ERC721Minter::max_supply(@comp), Errors::REACHED_MAX_SUPPLY);
-                assert(!ERC721Minter::is_minting_paused(@comp), Errors::MINTING_IS_PAUSED);
-                let supply = ERC721Minter::total_supply(@comp);
-                comp.ERC721_total_supply.write(supply + 1);
+                let total_supply = comp.ERC721_total_supply.read();
+                comp.ERC721_total_supply.write(total_supply + 1);
                 comp.ERC721_last_token_id.write(token_id);
             } else if (to.is_zero()) {
                 // burning...
-                let supply = ERC721Minter::total_supply(@comp);
-                comp.ERC721_total_supply.write(supply - 1);
+                let total_supply = comp.ERC721_total_supply.read();
+                comp.ERC721_total_supply.write(total_supply - 1);
             }
             // call user hook if implemented
             ComboHooks::before_update(ref comp, to, token_id, auth);
@@ -215,12 +226,31 @@ pub mod ERC721ComboComponent {
         }
         fn _mint_next(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
-            let token_id = ERC721Minter::last_token_id(@self) + 1;
+            let token_id = self.ERC721_last_token_id.read() + 1;
+            // supply check done in before_update()
             erc721.mint(recipient, token_id);
             (token_id)
         }
+        fn _mint_next_reserved(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
+            let reserved_supply = self.ERC721_reserved_supply.read();
+            assert(reserved_supply > 0, Errors::NO_RESERVE);
+            self.ERC721_reserved_supply.write(reserved_supply - 1);
+            (self._mint_next(recipient))
+        }
         fn _set_max_supply(ref self: ComponentState<TContractState>, max_supply: Option<u256>) {
+            match max_supply {
+                Option::Some(new_max_supply) => {   
+                    assert(new_max_supply >= self.ERC721_last_token_id.read(), Errors::INVALID_SUPPLY);
+                },
+                Option::None => {},
+            }
             self.ERC721_max_supply.write(max_supply);
+        }
+        fn _set_reserved_supply(ref self: ComponentState<TContractState>, reserved_supply: u256) {
+            let minted_supply = self.ERC721_last_token_id.read();
+            let available_supply = (ERC721Minter::max_supply(@self) - minted_supply);
+            assert(reserved_supply <= available_supply, Errors::INVALID_SUPPLY);
+            self.ERC721_reserved_supply.write(reserved_supply);
         }
         fn _set_minting_paused(ref self: ComponentState<TContractState>, paused: bool) {
             self.ERC721_minting_paused.write(paused);
@@ -426,12 +456,20 @@ pub mod ERC721ComboComponent {
             (ERC721Minter::max_supply(self))
         }
         #[inline(always)]
-        fn total_supply(self: @ComponentState<TContractState>) -> u256 {
-            (ERC721Minter::total_supply(self))
+        fn reserved_supply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::reserved_supply(self))
+        }
+        #[inline(always)]
+        fn available_supply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::available_supply(self))
         }
         #[inline(always)]
         fn minted_supply(self: @ComponentState<TContractState>) -> u256 {
             (ERC721Minter::minted_supply(self))
+        }
+        #[inline(always)]
+        fn total_supply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::total_supply(self))
         }
         #[inline(always)]
         fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
@@ -440,6 +478,10 @@ pub mod ERC721ComboComponent {
         #[inline(always)]
         fn is_minting_paused(self: @ComponentState<TContractState>) -> bool {
             (ERC721Minter::is_minting_paused(self))
+        }
+        #[inline(always)]
+        fn is_minted_out(self: @ComponentState<TContractState>) -> bool {
+            (ERC721Minter::is_minted_out(self))
         }
         #[inline(always)]
         fn is_owner_of(self: @ComponentState<TContractState>, address: ContractAddress, token_id: u256) -> bool {
@@ -454,6 +496,18 @@ pub mod ERC721ComboComponent {
         #[inline(always)]
         fn maxSupply(self: @ComponentState<TContractState>) -> u256 {
             (ERC721Minter::max_supply(self))
+        }
+        #[inline(always)]
+        fn reservedSupply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::reserved_supply(self))
+        }
+        #[inline(always)]
+        fn availableSupply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::available_supply(self))
+        }
+        #[inline(always)]
+        fn mintedSupply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::minted_supply(self))
         }
         #[inline(always)]
         fn totalSupply(self: @ComponentState<TContractState>) -> u256 {
@@ -514,17 +568,26 @@ pub mod ERC721ComboComponent {
                 Option::None => { (Bounded::<u256>::MAX) },
             })
         }
-        fn total_supply(self: @ComponentState<TContractState>) -> u256 {
-            (self.ERC721_total_supply.read())
+        fn reserved_supply(self: @ComponentState<TContractState>) -> u256 {
+            (self.ERC721_reserved_supply.read())
+        }
+        fn available_supply(self: @ComponentState<TContractState>) -> u256 {
+            (Self::max_supply(self) - Self::reserved_supply(self) - Self::minted_supply(self))
         }
         fn minted_supply(self: @ComponentState<TContractState>) -> u256 {
             (self.ERC721_last_token_id.read())
+        }
+        fn total_supply(self: @ComponentState<TContractState>) -> u256 {
+            (self.ERC721_total_supply.read())
         }
         fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
             (self.ERC721_last_token_id.read())
         }
         fn is_minting_paused(self: @ComponentState<TContractState>) -> bool {
             (self.ERC721_minting_paused.read())
+        }
+        fn is_minted_out(self: @ComponentState<TContractState>) -> bool {
+            (self.ERC721_last_token_id.read() >= Self::max_supply(self))
         }
         fn is_owner_of(self: @ComponentState<TContractState>,
             address: ContractAddress,
