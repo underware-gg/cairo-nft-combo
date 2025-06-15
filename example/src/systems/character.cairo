@@ -38,6 +38,7 @@ pub trait ICharacter<TState> {
     // IERC721Minter
     fn max_supply(self: @TState) -> u256;
     fn total_supply(self: @TState) -> u256;
+    fn minted_supply(self: @TState) -> u256;
     fn last_token_id(self: @TState) -> u256;
     fn is_minting_paused(self: @TState) -> bool;
     fn is_owner_of(self: @TState, address: ContractAddress, token_id: u256) -> bool;
@@ -78,6 +79,7 @@ pub trait ICharacter<TState> {
     fn update_contract(ref self: TState);
     fn update_max_supply(ref self: TState, supply: Option<u256>);
     fn update_contract_uri(ref self: TState, uri: Option<ByteArray>);
+    fn mint_token_id(ref self: TState, recipient: ContractAddress, token_id: u256);
 }
 
 // Exposed to Cartridge Controller
@@ -93,6 +95,7 @@ pub trait ICharacterPublic<TState> {
     fn update_contract(ref self: TState);
     fn update_max_supply(ref self: TState, supply: Option<u256>);
     fn update_contract_uri(ref self: TState, uri: Option<ByteArray>);
+    fn mint_token_id(ref self: TState, recipient: ContractAddress, token_id: u256);
 }
 
 // Exposed to world only
@@ -252,6 +255,10 @@ pub mod character {
         fn update_contract_uri(ref self: ContractState, uri: Option<ByteArray>) {
             self.assert_caller_is_owner();
             self.erc721_combo._set_contract_uri(uri);
+        }
+        fn mint_token_id(ref self: ContractState, recipient: ContractAddress, token_id: u256) {
+            self.assert_caller_is_owner();
+            self.erc721.mint(recipient, token_id);
         }
     }
 

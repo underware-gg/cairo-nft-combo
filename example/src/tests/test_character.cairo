@@ -78,6 +78,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) : 0");
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) : 0");
     assert_eq!(sys.character.total_supply(), 0, "total_supply : 0");
+    assert_eq!(sys.character.minted_supply(), 0, "minted_supply : 0");
     assert_eq!(sys.character.last_token_id(), 0, "last_token_id : 0");
     assert!(!sys.character.token_exists(TOKEN_ID_1), "!exists(TOKEN_ID_1)");
     // mint TOKEN_ID_1
@@ -89,6 +90,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) +1");
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) +0");
     assert_eq!(sys.character.total_supply(), 1, "total_supply +1");
+    assert_eq!(sys.character.minted_supply(), 1, "minted_supply +1");
     assert_eq!(sys.character.last_token_id(), 1, "last_token_id +1");
     // validate CamelOnly
     assert_eq!(sys.character.totalSupply(), 1, "totalSupply +1");
@@ -98,6 +100,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) =1");
     assert_eq!(sys.character.balance_of(OTHER()), 1, "balance_of (OTHER) +1");
     assert_eq!(sys.character.total_supply(), 2, "total_supply +2");
+    assert_eq!(sys.character.minted_supply(), 2, "minted_supply +2");
     assert_eq!(sys.character.last_token_id(), 2, "last_token_id +2");
     // mint TOKEN_ID_3
     _mint(sys, OTHER());
@@ -105,6 +108,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) ==1");
     assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +2");
     assert_eq!(sys.character.total_supply(), 3, "total_supply +3");
+    assert_eq!(sys.character.minted_supply(), 3, "minted_supply +3");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id +3");
     // burn TOKEN_ID_1
     tester::impersonate(OWNER());
@@ -112,6 +116,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) -1=0");
     assert_eq!(sys.character.balance_of(OTHER()), 2, "balance_of (OTHER) +1=2");
     assert_eq!(sys.character.total_supply(), 2, "total_supply -1=2");
+    assert_eq!(sys.character.minted_supply(), 3, "minted_supply =3");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id =3");
     // burn TOKEN_ID_2, TOKEN_ID_3
     tester::impersonate(OTHER());
@@ -120,6 +125,7 @@ fn test_mint_burn_supply() {
     assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) << 0");
     assert_eq!(sys.character.balance_of(OTHER()), 0, "balance_of (OTHER) << 0");
     assert_eq!(sys.character.total_supply(), 0, "total_supply << 0");
+    assert_eq!(sys.character.minted_supply(), 3, "minted_supply ==3");
     assert_eq!(sys.character.last_token_id(), 3, "last_token_id ==3");
     // mint all available tokens
     let max_supply: u256 = sys.character.max_supply();
@@ -208,6 +214,21 @@ fn test_burn_not_owner() {
     _mint(sys, OWNER());
     tester::impersonate(OTHER());
     sys.character.burn(TOKEN_ID_1);
+}
+
+#[test]
+// #[should_panic(expected:('ERC721Combo: invalid token ID', 'ENTRYPOINT_FAILED'))]
+fn test_burn_mint_again() {
+    let sys: TestSystems = setup_world(true, 0);
+    _mint(sys, OWNER());
+    assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) : 0");
+    tester::impersonate(OWNER());
+    sys.character.burn(TOKEN_ID_1);
+    assert_eq!(sys.character.balance_of(OWNER()), 0, "balance_of (OWNER) : 1");
+    // try to mint the same ID again
+    // (it works, but it's not a good idea!)
+    sys.character.mint_token_id(OWNER(), TOKEN_ID_1);
+    assert_eq!(sys.character.balance_of(OWNER()), 1, "balance_of (OWNER) : 1 again???");
 }
 
 #[test]

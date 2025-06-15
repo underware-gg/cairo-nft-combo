@@ -430,6 +430,10 @@ pub mod ERC721ComboComponent {
             (ERC721Minter::total_supply(self))
         }
         #[inline(always)]
+        fn minted_supply(self: @ComponentState<TContractState>) -> u256 {
+            (ERC721Minter::minted_supply(self))
+        }
+        #[inline(always)]
         fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
             (ERC721Minter::last_token_id(self))
         }
@@ -512,6 +516,9 @@ pub mod ERC721ComboComponent {
         }
         fn total_supply(self: @ComponentState<TContractState>) -> u256 {
             (self.ERC721_total_supply.read())
+        }
+        fn minted_supply(self: @ComponentState<TContractState>) -> u256 {
+            (self.ERC721_last_token_id.read())
         }
         fn last_token_id(self: @ComponentState<TContractState>) -> u256 {
             (self.ERC721_last_token_id.read())

@@ -43,6 +43,7 @@ pub trait IERC721ComboABI<TState> {
     // IERC721Minter
     fn max_supply(self: @TState) -> u256;
     fn total_supply(self: @TState) -> u256;
+    fn minted_supply(self: @TState) -> u256;
     fn last_token_id(self: @TState) -> u256;
     fn is_minting_paused(self: @TState) -> bool;
     fn is_owner_of(self: @TState, address: ContractAddress, token_id: u256) -> bool;
@@ -80,6 +81,8 @@ pub trait IERC721Minter<TState> {
     fn max_supply(self: @TState) -> u256;
     // returns the total number of existing tokens (minted minus burned)
     fn total_supply(self: @TState) -> u256;
+    // returns the total number of minted tokens (same as last_token_id())
+    fn minted_supply(self: @TState) -> u256;
     // returns the last minted token id
     fn last_token_id(self: @TState) -> u256;
     // returns true if minting is paused
