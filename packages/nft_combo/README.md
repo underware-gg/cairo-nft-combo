@@ -78,7 +78,7 @@ pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<Con
             banner_image: Option::None,
             featured_image: Option::None,
             external_link: Option::Some("https://example.underware.gg"),
-            collaborators: Option::Some(array![starknet::contract_address_const::<0xabcd>()].span()),
+            collaborators: Option::Some(array![collab_address].span()),
         };
         (Option::Some(metadata))
     }
