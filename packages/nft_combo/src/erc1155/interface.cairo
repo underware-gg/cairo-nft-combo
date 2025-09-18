@@ -3,60 +3,83 @@ use starknet::{ContractAddress};
 
 // TODO: compute the correct ids
 // https://docs.openzeppelin.com/contracts-cairo/1.0.0/introspection#computing_the_interface_id
-pub const IERC721Minter_ID: felt252 = selector!("IERC721Minter_ID");
+pub const IERC1155Minter_ID: felt252 = selector!("IERC1155Minter_ID");
 
 //
 // cloned from ERC721ABI:
-// https://github.com/OpenZeppelin/cairo-contracts/blob/v1.0.0/packages/token/src/erc721/interface.cairo
+// https://github.com/OpenZeppelin/cairo-contracts/blob/v1.0.0/packages/token/src/erc1155/interface.cairo
 //
 #[starknet::interface]
-pub trait IERC721ComboABI<TState> {
+pub trait IERC1155ComboABI<TState> {
     //-----------------------------------
-    // IERC721ComboABI start
+    // IERC1155ComboABI start
     //
     // (ISRC5)
     fn supports_interface(self: @TState, interface_id: felt252) -> bool;
-    // (IERC721)
-    fn balance_of(self: @TState, account: ContractAddress) -> u256;
-    fn owner_of(self: @TState, token_id: u256) -> ContractAddress;
-    fn safe_transfer_from(ref self: TState, from: ContractAddress, to: ContractAddress, token_id: u256, data: Span<felt252>);
-    fn transfer_from(ref self: TState, from: ContractAddress, to: ContractAddress, token_id: u256);
-    fn approve(ref self: TState, to: ContractAddress, token_id: u256);
+    // (IERC1155)
+    fn balance_of(self: @TState, account: ContractAddress, token_id: u256) -> u256;
+    fn balance_of_batch(
+        self: @TState, accounts: Span<ContractAddress>, token_ids: Span<u256>,
+    ) -> Span<u256>;
+    fn safe_transfer_from(
+        ref self: TState,
+        from: ContractAddress,
+        to: ContractAddress,
+        token_id: u256,
+        value: u256,
+        data: Span<felt252>,
+    );
+    fn safe_batch_transfer_from(
+        ref self: TState,
+        from: ContractAddress,
+        to: ContractAddress,
+        token_ids: Span<u256>,
+        values: Span<u256>,
+        data: Span<felt252>,
+    );
+    fn is_approved_for_all(
+        self: @TState, owner: ContractAddress, operator: ContractAddress,
+    ) -> bool;
     fn set_approval_for_all(ref self: TState, operator: ContractAddress, approved: bool);
-    fn get_approved(self: @TState, token_id: u256) -> ContractAddress;
-    fn is_approved_for_all(self: @TState, owner: ContractAddress, operator: ContractAddress) -> bool;
-    // (IERC721CamelOnly)
-    fn balanceOf(self: @TState, account: ContractAddress) -> u256;
-    fn ownerOf(self: @TState, tokenId: u256) -> ContractAddress;
-    fn safeTransferFrom(ref self: TState, from: ContractAddress, to: ContractAddress, tokenId: u256, data: Span<felt252>);
-    fn transferFrom(ref self: TState, from: ContractAddress, to: ContractAddress, tokenId: u256);
-    fn setApprovalForAll(ref self: TState, operator: ContractAddress, approved: bool);
-    fn getApproved(self: @TState, tokenId: u256) -> ContractAddress;
+    // (IERC1155Camel)
+    fn balanceOf(self: @TState, account: ContractAddress, tokenId: u256) -> u256;
+    fn balanceOfBatch(
+        self: @TState, accounts: Span<ContractAddress>, tokenIds: Span<u256>,
+    ) -> Span<u256>;
+    fn safeTransferFrom(
+        ref self: TState,
+        from: ContractAddress,
+        to: ContractAddress,
+        tokenId: u256,
+        value: u256,
+        data: Span<felt252>,
+    );
+    fn safeBatchTransferFrom(
+        ref self: TState,
+        from: ContractAddress,
+        to: ContractAddress,
+        tokenIds: Span<u256>,
+        values: Span<u256>,
+        data: Span<felt252>,
+    );
     fn isApprovedForAll(self: @TState, owner: ContractAddress, operator: ContractAddress) -> bool;
-    // (IERC721Metadata)
-    fn name(self: @TState) -> ByteArray;
-    fn symbol(self: @TState) -> ByteArray;
-    fn token_uri(self: @TState, token_id: u256) -> ByteArray;
-    // (IERC721MetadataCamelOnly)
-    fn tokenURI(self: @TState, tokenId: u256) -> ByteArray;
+    fn setApprovalForAll(ref self: TState, operator: ContractAddress, approved: bool);
+    // (IERC1155MetadataURI)
+    // fn name(self: @TState) -> ByteArray;
+    // fn symbol(self: @TState) -> ByteArray;
+    fn uri(self: @TState, token_id: u256) -> ByteArray;
     //-----------------------------------
-    // IERC721Minter
-    fn max_supply(self: @TState) -> u256;
-    fn reserved_supply(self: @TState) -> u256;
-    fn available_supply(self: @TState) -> u256;
-    fn minted_supply(self: @TState) -> u256;
-    fn total_supply(self: @TState) -> u256;
-    fn last_token_id(self: @TState) -> u256;
+    // IERC1155Minter
+    fn max_supply(self: @TState, tokenId: u256) -> u256;
+    fn available_supply(self: @TState, tokenId: u256) -> u256;
+    fn total_supply(self: @TState, tokenId: u256) -> u256;
     fn is_minting_paused(self: @TState) -> bool;
-    fn is_minted_out(self: @TState) -> bool;
+    fn is_minted_out(self: @TState, tokenId: u256) -> bool;
     fn is_owner_of(self: @TState, address: ContractAddress, token_id: u256) -> bool;
-    fn token_exists(self: @TState, token_id: u256) -> bool;
     // (CamelOnly)
-    fn maxSupply(self: @TState) -> u256;
-    fn reservedSupply(self: @TState) -> u256;
-    fn availableSupply(self: @TState) -> u256;
-    fn mintedSupply(self: @TState) -> u256;
-    fn totalSupply(self: @TState) -> u256;
+    fn maxSupply(self: @TState, tokenId: u256) -> u256;
+    fn availableSupply(self: @TStat, tokenId: u256e) -> u256;
+    fn totalSupply(self: @TState, tokenId: u256) -> u256;
     //-----------------------------------
     // IERC7572ContractMetadata
     fn contract_uri(self: @TState) -> ByteArray;
@@ -73,7 +96,7 @@ pub trait IERC721ComboABI<TState> {
     fn royaltyInfo(self: @TState, token_id: u256, sale_price: u256) -> (ContractAddress, u256);
     fn defaultRoyalty(self: @TState) -> (ContractAddress, u128, u128);
     fn tokenRoyalty(self: @TState, token_id: u256) -> (ContractAddress, u128, u128);
-    // IERC721ComboABI end
+    // IERC1155ComboABI end
     //-----------------------------------
 }
 
@@ -82,7 +105,7 @@ pub trait IERC721ComboABI<TState> {
 // ERC-721: Minter extension
 //
 #[starknet::interface]
-pub trait IERC721Minter<TState> {
+pub trait IERC1155Minter<TState> {
     // returns the maximum amount of tokens that can be minted
     fn max_supply(self: @TState) -> u256;
     // returns the amount of reserved tokens, minted only by _mint_next_reserved()
@@ -106,7 +129,7 @@ pub trait IERC721Minter<TState> {
 }
 /// InternalImpl (available to the contract only)
 #[starknet::interface]
-pub trait IERC721MinterProtected<TState> {
+pub trait IERC1155MinterProtected<TState> {
     // token initializer (extends OZ ERC721 initializer)
     fn initializer(ref self: TState,
         name: ByteArray,
