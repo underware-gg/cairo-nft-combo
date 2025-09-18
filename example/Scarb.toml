@@ -2,7 +2,7 @@
 name = "example"
 version.workspace = true
 edition.workspace = true
-cairo-version = ">=2.10.1"
+cairo-version = "=2.12.2"
 
 [cairo]
 sierra-replace-ids = true
@@ -19,21 +19,14 @@ build-external-contracts = [
 ]
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.5.0" }
+starknet = "=2.12.2"
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
+dojo_macros = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 # nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.1.0"}
 nft_combo = { path = "../packages/nft_combo" }
 
 [dev-dependencies]
-cairo_test = ">=2.10.1"
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.5.0" }
-
-
-#--------------------------
-# Dojo profiles declaration
-#
-[profile.dev]
-[profile.slot]
-[profile.sepolia]
-[profile.mainnet]
+cairo_test = "=2.12.2"
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.4" }
