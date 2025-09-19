@@ -18,7 +18,7 @@ pub impl DnsImpl of DnsTrait {
             },
             Option::None => {
                 assert!(false, "DnsTrait:: contract not found [{}]", contract_name);
-                (starknet::contract_address_const::<0x0>())
+                (0x0.try_into().unwrap())
             },
         }
     }

@@ -20,12 +20,12 @@ pub mod tester {
     use crate::libs::store::{Store, StoreTrait};
     use crate::libs::dns::{DnsTrait};
 
-    pub fn ZERO()      -> ContractAddress { starknet::contract_address_const::<0x0>() }
-    pub fn OWNER()     -> ContractAddress { starknet::contract_address_const::<0x111>() }
-    pub fn OTHER()     -> ContractAddress { starknet::contract_address_const::<0x222>() }
-    pub fn RECIPIENT() -> ContractAddress { starknet::contract_address_const::<0x333>() }
-    pub fn SPENDER()   -> ContractAddress { starknet::contract_address_const::<0x444>() }
-    pub fn RECEIVER()  -> ContractAddress { starknet::contract_address_const::<0x555>() }
+    pub fn ZERO()      -> ContractAddress { 0x0.try_into().unwrap() }
+    pub fn OWNER()     -> ContractAddress { 0x111.try_into().unwrap() }
+    pub fn OTHER()     -> ContractAddress { 0x222.try_into().unwrap() }
+    pub fn RECIPIENT() -> ContractAddress { 0x333.try_into().unwrap() }
+    pub fn SPENDER()   -> ContractAddress { 0x444.try_into().unwrap() }
+    pub fn RECEIVER()  -> ContractAddress { 0x555.try_into().unwrap() }
 
     pub const ETH_TO_WEI: u256 = 1_000_000_000_000_000_000;
     pub fn WEI(eth: u256) -> u256 { eth * ETH_TO_WEI }
@@ -133,14 +133,14 @@ pub mod tester {
             namespace: "example",
             resources: [
                 // example models
-                TestResource::Model(m_CoinConfig::TEST_CLASS_HASH),
-                TestResource::Model(m_Tester::TEST_CLASS_HASH),
+                TestResource::Model(m_CoinConfig::TEST_CLASS_HASH.into()),
+                TestResource::Model(m_Tester::TEST_CLASS_HASH.into()),
                 // events
-                // TestResource::Event(e_CoinConfig::TEST_CLASS_HASH),
+                // TestResource::Event(e_CoinConfig::TEST_CLASS_HASH.into()),
                 // contracts
-                TestResource::Contract(actions::TEST_CLASS_HASH),
-                TestResource::Contract(character::TEST_CLASS_HASH),
-                TestResource::Contract(cash::TEST_CLASS_HASH),
+                TestResource::Contract(actions::TEST_CLASS_HASH.into()),
+                TestResource::Contract(character::TEST_CLASS_HASH.into()),
+                TestResource::Contract(cash::TEST_CLASS_HASH.into()),
             ].span(),
         };
 

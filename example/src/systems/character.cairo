@@ -161,16 +161,16 @@ pub mod character {
     pub fn BASE_URI()       -> ByteArray {("https://example.underware.gg/token/")}
     pub fn CONTRACT_URI()   -> ByteArray {("https://example.underware.gg/contract.json")}
     pub fn MAX_SUPPLY()     -> u256 {(10)}
-    pub fn TREASURY()       -> ContractAddress {(starknet::contract_address_const::<0x1234>())}
+    pub fn TREASURY()       -> ContractAddress {(0x1234.try_into().unwrap())}
     pub fn ROYALTY_FEE()    -> u128 {(500)}
     //*************************************
 
-    pub fn RECEIVER_DEFAULT() -> ContractAddress {(starknet::contract_address_const::<0x1111>())}
-    pub fn RECEIVER_TOKEN() -> ContractAddress {(starknet::contract_address_const::<0x2222>())}
+    pub fn RECEIVER_DEFAULT() -> ContractAddress {(0x1111.try_into().unwrap())}
+    pub fn RECEIVER_TOKEN() -> ContractAddress {(0x2222.try_into().unwrap())}
     pub fn FEES_DEFAULT() -> u128 {(300)}
     pub fn FEES_TOKEN() -> u128 {(100)}
 
-    fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
+    fn ZERO() -> ContractAddress {(0x0.try_into().unwrap())}
 
     fn dojo_init(ref self: ContractState) {
         self.erc721_combo.initializer(
@@ -273,6 +273,8 @@ pub mod character {
             if (!store.get_tester().enable_uri_render_hooks) {
                 return Option::None;
             }
+            let collab_1: ContractAddress = 0x13d9ee239f33fea4f8785b9e3870ade909e20a9599ae7cd62c1c292b73af1b7.try_into().unwrap();
+            let collab_2: ContractAddress = 0x17cc6ca902ed4e8baa8463a7009ff18cc294fa85a94b4ce6ac30a9ebd6057c7.try_into().unwrap();            
             // return the metadata to be rendered by the component
             let metadata = ContractMetadata {
                 name: self.name(),
@@ -282,10 +284,7 @@ pub mod character {
                 banner_image: Option::None,
                 featured_image: Option::None,
                 external_link: Option::Some("https://example.underware.gg"),
-                collaborators: Option::Some(array![
-                    starknet::contract_address_const::<0x13d9ee239f33fea4f8785b9e3870ade909e20a9599ae7cd62c1c292b73af1b7>(),
-                    starknet::contract_address_const::<0x17cc6ca902ed4e8baa8463a7009ff18cc294fa85a94b4ce6ac30a9ebd6057c7>(),
-                ].span()),
+                collaborators: Option::Some(array![collab_1, collab_2].span()),
             };
             (Option::Some(metadata))
         }

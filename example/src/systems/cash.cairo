@@ -83,7 +83,7 @@ pub mod cash {
     fn COIN_SYMBOL() -> ByteArray {("CA$H")}
     //*******************************************
 
-    fn ZERO() -> ContractAddress {(starknet::contract_address_const::<0x0>())}
+    fn ZERO() -> ContractAddress {(0x0.try_into().unwrap())}
 
     fn dojo_init(
         ref self: ContractState,

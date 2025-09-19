@@ -11,8 +11,8 @@ pub fn TOKEN_NAME()     -> ByteArray {("Minimal")}
 pub fn TOKEN_SYMBOL()   -> ByteArray {("MINI")}
 pub fn BASE_URI()       -> ByteArray {("https://api.minimal.contract/token/")}
 
-pub fn OWNER() -> ContractAddress { starknet::contract_address_const::<0x111>() }
-pub fn OTHER() -> ContractAddress { starknet::contract_address_const::<0x222>() }
+pub fn OWNER() -> ContractAddress { 0x111.try_into().unwrap() }
+pub fn OTHER() -> ContractAddress { 0x222.try_into().unwrap() }
 
 const TOKEN_ID_1: u256 = 1;
 const TOKEN_ID_2: u256 = 2;
