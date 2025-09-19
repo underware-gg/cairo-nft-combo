@@ -5,15 +5,24 @@ members = [
 ]
 description = "Dojo erc721 combo library"
 homepage = "https://github.com/underware-gg/cairo-nft-combo"
-cairo-version = ">=2.9.4"
+cairo-version = "=2.12.2"
 
 [workspace.package]
 version = "1.0.0"
 edition = "2024_07"
 
 [workspace.dependencies]
-starknet = ">=2.9.4"
-cairo_test = ">=2.9.4"
+starknet = "=2.12.2"
+cairo_test = "=2.12.2"
 
 [workspace.tool.fmt]
 sort-module-level-items = true
+
+
+#--------------------------
+# Dojo profiles declaration
+#
+[profile.dev]
+[profile.slot]
+[profile.sepolia]
+[profile.mainnet]
