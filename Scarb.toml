@@ -1,19 +1,19 @@
 [workspace]
 members = [
   "packages/nft_combo",
-  "example",
+  # "example",
 ]
 description = "A Cairo component extending OpenZeppelin ERC-721 tokens"
 homepage = "https://github.com/underware-gg/cairo-nft-combo"
-cairo-version = "=2.12.2"
+cairo-version = ">=2.12.2"
 
 [workspace.package]
 version = "1.1.0"
 edition = "2024_07"
 
 [workspace.dependencies]
-starknet = "=2.12.2"
-cairo_test = "=2.12.2"
+starknet = ">=2.12.2"
+cairo_test = ">=2.12.2"
 
 [workspace.tool.fmt]
 sort-module-level-items = true
