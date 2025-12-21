@@ -1,6 +1,6 @@
 use crate::utils::encoder::{Encoder};
 use starknet::{ContractAddress};
-pub use graffiti::json::{JsonImpl, Attribute};
+pub use graffiti::json::{JsonBuilder, JsonImpl, Attribute};
 
 // Based on OpenSea metadata standards
 // https://docs.opensea.io/docs/metadata-standards#metadata-structure
@@ -33,6 +33,8 @@ pub struct ContractMetadata {
     pub featured_image: Option<ByteArray>,
     pub external_link: Option<ByteArray>,
     pub collaborators: Option<Span<ContractAddress>>,
+    // new in v1.2.0
+    pub background_color: Option<ByteArray>,
 }
 
 pub trait MetadataRendererTrait {
@@ -42,32 +44,35 @@ pub trait MetadataRendererTrait {
 
 pub impl MetadataRenderer of MetadataRendererTrait {
     fn render_token_metadata(metadata: TokenMetadata) -> ByteArray {
-        let json = JsonImpl::new()
+        let json: JsonBuilder = JsonImpl::new()
             .add("id", format!("{}", metadata.token_id))
             .add("name", metadata.name)
             .add("description", metadata.description)
+            .add_if_some("external_url", metadata.external_url)
+            .add_if_some("youtube_url", metadata.youtube_url)
+            .add_if_some("background_color", metadata.background_color)
+            .add_if_some("metadata", MetadataHelper::_format_metadata(metadata.attributes, metadata.additional_metadata))
+            .add_array_if_some("attributes", MetadataHelper::_create_traits_array(metadata.attributes))
             .add_if_some("image", metadata.image)
             .add_if_some("image_data", metadata.image_data)
-            .add_if_some("external_url", metadata.external_url)
-            .add_if_some("background_color", metadata.background_color)
             .add_if_some("animation_url", metadata.animation_url)
-            .add_if_some("youtube_url", metadata.youtube_url)
-            .add_if_some("metadata", MetadataHelper::_format_metadata(metadata.attributes, metadata.additional_metadata))
-            .add_array_if_some("attributes", MetadataHelper::_create_traits_array(metadata.attributes));
-        let result = json.build();
+            ;
+        let result: ByteArray = json.build();
         (Encoder::encode_json(result, false))
     }
     fn render_contract_metadata(metadata: ContractMetadata) -> ByteArray {
-        let json = JsonImpl::new()
+        let json: JsonBuilder = JsonImpl::new()
             .add("name", metadata.name)
             .add("symbol", metadata.symbol)
             .add("description", metadata.description)
+            .add_if_some("external_link", metadata.external_link)
+            .add_if_some("background_color", metadata.background_color)
+            .add_array_if_some("collaborators", MetadataHelper::_create_address_array(metadata.collaborators))
             .add_if_some("image", metadata.image)
             .add_if_some("banner_image", metadata.banner_image)
             .add_if_some("featured_image", metadata.featured_image)
-            .add_if_some("external_link", metadata.external_link)
-            .add_array_if_some("collaborators", MetadataHelper::_create_address_array(metadata.collaborators));
-        let result = json.build();
+            ;
+        let result: ByteArray = json.build();
         (Encoder::encode_json(result, false))
     }
 }
@@ -75,7 +80,7 @@ pub impl MetadataRenderer of MetadataRendererTrait {
 #[generate_trait]
 impl MetadataHelper of MetadataHelperTrait {
     fn _format_metadata(attributes1: Option<Span<Attribute>>, attributes2: Option<Span<Attribute>>) -> Option<ByteArray> {
-        let mut json = JsonImpl::new();
+        let mut json: JsonBuilder = JsonImpl::new();
         match attributes1 {
             Option::Some(attr) => {
                 let mut n: usize = 0;
@@ -111,7 +116,7 @@ impl MetadataHelper of MetadataHelperTrait {
                 let mut n: usize = 0;
                 while (n < attr.len()) {
                     let attr: @Attribute = attr.at(n);
-                    let json = JsonImpl::new()
+                    let json: JsonBuilder = JsonImpl::new()
                         .add("trait", attr.key.clone())
                         .add("value", attr.value.clone());
                     result.append(json.build());

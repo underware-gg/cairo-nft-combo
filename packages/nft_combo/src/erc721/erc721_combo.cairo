@@ -152,20 +152,20 @@ pub mod ERC721ComboComponent {
             let mut erc721 = ERC721Component::HasComponent::get_component_mut(ref contract);
             if (erc721._owner_of(token_id).is_zero()) {
                 // check if minted out
-                let max_supply = ERC721Minter::max_supply(@comp);
+                let max_supply: u256 = ERC721Minter::max_supply(@comp);
                 assert(token_id <= max_supply, Errors::REACHED_MAX_SUPPLY);
                 // check if reserved
-                let reserved_supply = comp.ERC721_reserved_supply.read();
+                let reserved_supply: u256 = comp.ERC721_reserved_supply.read();
                 assert(token_id <= (max_supply - reserved_supply), Errors::REACHED_RESERVED_SUPPLY);
                 // check if paused
                 assert(!comp.ERC721_minting_paused.read(), Errors::MINTING_IS_PAUSED);
                 // minting...
-                let total_supply = comp.ERC721_total_supply.read();
+                let total_supply: u256 = comp.ERC721_total_supply.read();
                 comp.ERC721_total_supply.write(total_supply + 1);
                 comp.ERC721_last_token_id.write(token_id);
             } else if (to.is_zero()) {
                 // burning...
-                let total_supply = comp.ERC721_total_supply.read();
+                let total_supply: u256 = comp.ERC721_total_supply.read();
                 comp.ERC721_total_supply.write(total_supply - 1);
             }
             // call user hook if implemented
@@ -226,13 +226,13 @@ pub mod ERC721ComboComponent {
         }
         fn _mint_next(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
             let mut erc721 = get_dep_component_mut!(ref self, ERC721);
-            let token_id = self.ERC721_last_token_id.read() + 1;
+            let token_id: u256 = self.ERC721_last_token_id.read() + 1;
             // supply check done in before_update()
             erc721.mint(recipient, token_id);
             (token_id)
         }
         fn _mint_next_reserved(ref self: ComponentState<TContractState>, recipient: ContractAddress) -> u256 {
-            let reserved_supply = self.ERC721_reserved_supply.read();
+            let reserved_supply: u256 = self.ERC721_reserved_supply.read();
             assert(reserved_supply > 0, Errors::NO_RESERVE);
             self.ERC721_reserved_supply.write(reserved_supply - 1);
             (self._mint_next(recipient))
@@ -247,8 +247,8 @@ pub mod ERC721ComboComponent {
             self.ERC721_max_supply.write(max_supply);
         }
         fn _set_reserved_supply(ref self: ComponentState<TContractState>, reserved_supply: u256) {
-            let minted_supply = self.ERC721_last_token_id.read();
-            let available_supply = (ERC721Minter::max_supply(@self) - minted_supply);
+            let minted_supply: u256 = self.ERC721_last_token_id.read();
+            let available_supply: u256 = (ERC721Minter::max_supply(@self) - minted_supply);
             assert(reserved_supply <= available_supply, Errors::INVALID_SUPPLY);
             self.ERC721_reserved_supply.write(reserved_supply);
         }
@@ -257,7 +257,7 @@ pub mod ERC721ComboComponent {
         }
         fn _require_owner_of(self: @ComponentState<TContractState>, caller: ContractAddress, token_id: u256) -> ContractAddress {
             let erc721 = get_dep_component!(self, ERC721);
-            let owner = erc721._owner_of(token_id);
+            let owner: ContractAddress = erc721._owner_of(token_id);
             assert(!owner.is_zero() && owner == caller, Errors::NOT_OWNER);
             (owner)
         }
@@ -388,12 +388,12 @@ pub mod ERC721ComboComponent {
                         Option::Some(custom_uri) => {(custom_uri)},
                         Option::None => {
                             // 3. Off-chain metadata (_base_uri + token_id)
-                            let result = erc721.token_uri(token_id);
+                            let result: ByteArray = erc721.token_uri(token_id);
                             if (result.len() > 0) {
                                 (result)
                             } else {
                                 // 4. Automatic metadata
-                                let metadata = renderer::TokenMetadata {
+                                let metadata: renderer::TokenMetadata = renderer::TokenMetadata {
                                     token_id,
                                     name: format!("{} #{}", self.name(), token_id),
                                     description: format!("{} ERC-721 token", self.name()),
@@ -625,14 +625,15 @@ pub mod ERC721ComboComponent {
                                 Option::Some(contract_uri) => {(contract_uri)},
                                 Option::None => {
                                     // 4. Automatic metadata
-                                    let metadata = renderer::ContractMetadata {
+                                    let metadata: renderer::ContractMetadata = renderer::ContractMetadata {
                                         name: self.name(),
                                         symbol: self.symbol(),
                                         description: format!("{} ERC-721 token", self.name()),
+                                        external_link: Option::None,
+                                        background_color: Option::None,
                                         image: Option::None,
                                         banner_image: Option::None,
                                         featured_image: Option::None,
-                                        external_link: Option::None,
                                         collaborators: Option::None,
                                     };
                                     (renderer::MetadataRenderer::render_contract_metadata(metadata))
@@ -670,7 +671,7 @@ pub mod ERC721ComboComponent {
             (royalty_info.receiver, royalty_amount)
         }
         fn default_royalty(self: @ComponentState<TContractState>) -> (ContractAddress, u128, u128) {
-            let royalty_info = self.ERC2981_default_royalty_info.read();
+            let royalty_info: RoyaltyInfo = self.ERC2981_default_royalty_info.read();
             (royalty_info.receiver, royalty_info.royalty_fraction, ROYALTY_FEE_DENOMINATOR)
         }
         fn token_royalty(self: @ComponentState<TContractState>, token_id: u256) -> (ContractAddress, u128, u128) {

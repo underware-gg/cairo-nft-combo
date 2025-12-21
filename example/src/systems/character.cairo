@@ -307,10 +307,11 @@ pub mod character {
                 name: self.name(),
                 symbol: self.symbol(),
                 description: "This is a test token",
+                external_link: Option::Some("https://example.underware.gg"),
+                background_color: Option::Some("000000"),
                 image: Option::None,
                 banner_image: Option::None,
                 featured_image: Option::None,
-                external_link: Option::Some("https://example.underware.gg"),
                 collaborators: Option::Some(array![collab_1, collab_2].span()),
             };
             (Option::Some(metadata))
@@ -367,7 +368,7 @@ pub mod character {
                 image: Option::Some(image),
                 image_data: Option::None,
                 external_url: Option::Some("https://example.underware.gg"),
-                background_color: Option::Some("0x000000"),
+                background_color: Option::Some("000000"),
                 animation_url: Option::None,
                 youtube_url: Option::None,
                 attributes: Option::Some(attributes.span()),

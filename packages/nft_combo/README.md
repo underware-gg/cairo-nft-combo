@@ -11,9 +11,9 @@ A Cairo component extending OpenZeppelin ERC-721 tokens.
 
 ```toml
 [dependencies]
-openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.1.0"}
+openzeppelin_token = "1.0.0"
+openzeppelin_introspection = "1.0.0"
 ```
 
 ### Adding OpenZeppelin ERC-721 + `nft_combo` to a new contract:
@@ -74,10 +74,11 @@ pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<Con
             name: self.name(),
             symbol: self.symbol(),
             description: "This is a test token",
+            external_link: Option::Some("https://example.underware.gg"),
+            background_color: Option::Some("000000"),
             image: Option::Some("https://example.underware.gg/image.png"),
             banner_image: Option::None,
             featured_image: Option::None,
-            external_link: Option::Some("https://example.underware.gg"),
             collaborators: Option::Some(array![collab_address].span()),
         };
         (Option::Some(metadata))
@@ -103,7 +104,7 @@ pub impl ERC721ComboHooksImpl of ERC721ComboComponent::ERC721ComboHooksTrait<Con
             image: Option::Some("https://example.underware.gg/image.png"),
             image_data: Option::None,
             external_url: Option::Some("https://example.underware.gg"),
-            background_color: Option::Some("0x000000"),
+            background_color: Option::Some("000000"),
             animation_url: Option::None,
             youtube_url: Option::None,
             attributes: Option::Some(attributes.span()),
