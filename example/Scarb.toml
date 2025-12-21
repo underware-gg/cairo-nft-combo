@@ -1,6 +1,6 @@
 [package]
 name = "example"
-cairo-version = ">=2.12.2"
+cairo-version = ">=2.13.1"
 # version.workspace = true
 # edition.workspace = true
 version = "1.1.0"
@@ -21,14 +21,13 @@ build-external-contracts = [
 ]
 
 [dependencies]
-starknet = ">=2.12.2"
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0" }
-dojo_macros = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0" }
-openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-openzeppelin_introspection = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
-# nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.1.0"}
+starknet = ">=2.13.1"
+dojo = "1.8.0"
+openzeppelin_token = "1.0.0"
+openzeppelin_introspection = "1.0.0"
+# nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.2.0"}
 nft_combo = { path = "../packages/nft_combo" }
 
 [dev-dependencies]
-cairo_test = ">=2.12.2"
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0" }
+cairo_test = ">=2.13.1"
+dojo_cairo_test = "1.8.0"

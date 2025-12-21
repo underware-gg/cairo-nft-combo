@@ -162,7 +162,10 @@ pub mod tester {
         testing::set_block_number(1);
         testing::set_block_timestamp(1);
 
-        let mut world: WorldStorage = spawn_test_world([namespace_def].span());
+        let mut world: WorldStorage = spawn_test_world(
+            dojo::world::world::TEST_CLASS_HASH,
+            [namespace_def].span(),
+        );
         world.sync_perms_and_inits(contract_defs);
         
         // set owner (deployer)

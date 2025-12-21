@@ -3,24 +3,27 @@ version = 1
 
 [[package]]
 name = "dojo"
-version = "1.7.0"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0#503934a3882b245f104612af15b07475507614f7"
+version = "1.8.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:a9c35305a81e68a49de85b8f07c1f8a93e27492c6b16c304d1f7961dcd5d350f"
 dependencies = [
- "dojo_macros",
+ "dojo_cairo_macros",
 ]
+
+[[package]]
+name = "dojo_cairo_macros"
+version = "1.8.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:c4aa04037a0c5029b05b78229dae22bf02269b9912e8a8c12f8af34aa6b72051"
 
 [[package]]
 name = "dojo_cairo_test"
-version = "1.7.0"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0#503934a3882b245f104612af15b07475507614f7"
+version = "1.8.0"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:0cab4c86390b6ee9c3969b82d27f46ecd7f14e686b9868528506103944638465"
 dependencies = [
  "dojo",
 ]
-
-[[package]]
-name = "dojo_macros"
-version = "1.7.0"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0#503934a3882b245f104612af15b07475507614f7"
 
 [[package]]
 name = "example"
@@ -28,7 +31,6 @@ version = "1.1.0"
 dependencies = [
  "dojo",
  "dojo_cairo_test",
- "dojo_macros",
  "nft_combo",
  "openzeppelin_introspection",
  "openzeppelin_token",
@@ -51,7 +53,8 @@ dependencies = [
 [[package]]
 name = "openzeppelin_access"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:a39a4ea1582916c637bf7e3aee0832c3fe1ea3a3e39191955e8dc39d08327f9b"
 dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
@@ -60,7 +63,8 @@ dependencies = [
 [[package]]
 name = "openzeppelin_account"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:7e943a2de32ddca4d48e467e52790e380ab1f49c4daddbbbc4634dd930d0243f"
 dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
@@ -69,12 +73,14 @@ dependencies = [
 [[package]]
 name = "openzeppelin_introspection"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:34e088ecf19e0b3012481a29f1fbb20e600540cb9a5db1c3002a97ebb7f5a32a"
 
 [[package]]
 name = "openzeppelin_token"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:33fcb84a1a76d2d3fff9302094ff564f78d45b743548fd7568c130b272473f66"
 dependencies = [
  "openzeppelin_access",
  "openzeppelin_account",
@@ -85,4 +91,5 @@ dependencies = [
 [[package]]
 name = "openzeppelin_utils"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:fd348b31c4a4407add33adc3c2b8f26dca71dbd7431faaf726168f37a91db0c1"
