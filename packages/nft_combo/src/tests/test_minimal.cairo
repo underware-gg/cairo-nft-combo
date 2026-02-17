@@ -1,7 +1,6 @@
 // use core::num::traits::Zero;
 use starknet::{ContractAddress, testing};
-use openzeppelin_introspection::{interface as src5_interface};
-use openzeppelin_token::erc721::{interface as erc721_interface};
+use openzeppelin::interfaces::{introspection, erc721};
 use crate::common::{interface as common_interface};
 use crate::erc721::erc721_combo::{ERC721ComboComponent};
 use crate::erc721::erc721_combo::ERC721ComboComponent::{ERC721ComboMixinImpl, InternalImpl};
@@ -57,9 +56,9 @@ fn test_initializer() {
     println!("___minimal SYMBOL:[{}] NAME:[{}]", mock_state.symbol(), mock_state.name());
     assert_eq!(mock_state.symbol(), TOKEN_SYMBOL(), "Symbol is wrong");
     assert_eq!(mock_state.name(), TOKEN_NAME(), "Name is wrong");
-    assert!(mock_state.supports_interface(src5_interface::ISRC5_ID), "should support ISRC5_ID");
-    assert!(mock_state.supports_interface(erc721_interface::IERC721_ID), "should support IERC721_ID");
-    assert!(mock_state.supports_interface(erc721_interface::IERC721_METADATA_ID), "should support METADATA");
+    assert!(mock_state.supports_interface(introspection::ISRC5_ID), "should support ISRC5_ID");
+    assert!(mock_state.supports_interface(erc721::IERC721_ID), "should support IERC721_ID");
+    assert!(mock_state.supports_interface(erc721::IERC721_METADATA_ID), "should support METADATA");
     assert!(mock_state.supports_interface(common_interface::IERC7572_ID), "should support IERC7572_ID");
     assert!(mock_state.supports_interface(common_interface::IERC4906_ID), "should support IERC4906_ID");
     assert!(mock_state.supports_interface(common_interface::IERC2981_ID), "should support IERC2981_ID");

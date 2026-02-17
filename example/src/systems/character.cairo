@@ -122,8 +122,8 @@ pub mod character {
     //-----------------------------------
     // ERC721 start
     //
-    use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_token::erc721::ERC721Component;
+    use openzeppelin::introspection::src5::SRC5Component;
+    use openzeppelin::token::erc721::ERC721Component;
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent;
     use nft_combo::erc721::erc721_combo::ERC721ComboComponent::{ERC721HooksImpl, RoyaltyInfo};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);

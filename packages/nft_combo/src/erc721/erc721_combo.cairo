@@ -3,15 +3,15 @@ pub mod ERC721ComboComponent {
     use core::num::traits::{Zero, Bounded};
     use starknet::{ContractAddress};
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-    use openzeppelin_token::erc721::{ERC721Component};
-    use openzeppelin_token::erc721::ERC721Component::{
+    use openzeppelin::token::erc721::{ERC721Component};
+    use openzeppelin::token::erc721::ERC721Component::{
         InternalImpl as ERC721InternalImpl,
         ERC721Impl,
         ERC721MetadataImpl,
     };
-    use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_introspection::src5::SRC5Component::SRC5Impl;
-    use openzeppelin_introspection::src5::SRC5Component::InternalTrait as SRC5InternalTrait;
+    use openzeppelin::introspection::src5::SRC5Component;
+    use openzeppelin::introspection::src5::SRC5Component::SRC5Impl;
+    use openzeppelin::introspection::src5::SRC5Component::InternalTrait as SRC5InternalTrait;
     use crate::common::{interface as common_interface};
     use crate::utils::{renderer};
     use crate::erc721::interface;

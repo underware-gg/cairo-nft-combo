@@ -23,8 +23,7 @@ build-external-contracts = [
 [dependencies]
 starknet = ">=2.13.1"
 dojo = "1.8.0"
-openzeppelin_token = "1.0.0"
-openzeppelin_introspection = "1.0.0"
+openzeppelin = "3.0.0"
 # nft_combo = { git = "https://github.com/underware-gg/cairo-nft-combo", tag = "v1.2.0"}
 nft_combo = { path = "../packages/nft_combo" }
 

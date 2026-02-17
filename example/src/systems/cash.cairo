@@ -47,8 +47,8 @@ pub mod cash {
     //-----------------------------------
     // OpenZeppelin start
     //
-    use openzeppelin_token::erc20::ERC20Component;
-    use openzeppelin_token::erc20::ERC20HooksEmptyImpl;
+    use openzeppelin::token::erc20::ERC20Component;
+    use openzeppelin::token::erc20::ERC20HooksEmptyImpl;
     use crate::systems::components::coin_component::{CoinComponent};
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: CoinComponent, storage: coin, event: CoinEvent);
@@ -70,6 +70,10 @@ pub mod cash {
         ERC20Event: ERC20Component::Event,
         #[flat]
         CoinEvent: CoinComponent::Event,
+    }
+    // OpenZeppelin 2.0.0
+    impl ERC20ImmutableConfig of ERC20Component::ImmutableConfig {
+        const DECIMALS: u8 = 6;
     }
     //
     // OpenZeppelin end
@@ -107,7 +111,6 @@ pub mod cash {
             (self.world(@"example"))
         }
     }
-
 
     //-----------------------------------
     // Public

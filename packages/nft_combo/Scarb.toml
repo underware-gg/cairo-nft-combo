@@ -5,8 +5,7 @@ edition.workspace = true
 
 [dependencies]
 starknet = ">=2.13.1"
-openzeppelin_token = "1.0.0"
-openzeppelin_introspection = "1.0.0"
+openzeppelin = ">=1.0.0"
 graffiti = { git = "https://github.com/rsodre/graffiti", rev = "url" }
 
 [dev-dependencies]

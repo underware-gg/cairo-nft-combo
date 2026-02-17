@@ -13,8 +13,8 @@ pub mod MinimalERC721Mock {
     //-----------------------------------
     // ERC721 start
     //
-    use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_token::erc721::ERC721Component;
+    use openzeppelin::introspection::src5::SRC5Component;
+    use openzeppelin::token::erc721::ERC721Component;
     use crate::erc721::erc721_combo::{ERC721ComboComponent, ERC721ComboHooksEmptyImpl};
     use crate::erc721::erc721_combo::ERC721ComboComponent::{ERC721HooksImpl};
     component!(path: SRC5Component, storage: src5, event: SRC5Event);

@@ -18,8 +18,8 @@ pub mod CoinComponent {
     use starknet::{ContractAddress};
     use dojo::contract::components::world_provider::{IWorldProvider};
     
-    // use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_token::erc20::{
+    // use openzeppelin::introspection::src5::SRC5Component;
+    use openzeppelin::token::erc20::{
         ERC20Component,
         ERC20Component::{InternalImpl as ERC20InternalImpl},
     };

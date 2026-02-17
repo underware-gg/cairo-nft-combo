@@ -14,6 +14,7 @@ edition = "2024_07"
 [workspace.dependencies]
 starknet = ">=2.13.1"
 cairo_test = ">=2.13.1"
+openzeppelin = ">=1.0.0"
 
 [workspace.tool.fmt]
 sort-module-level-items = true

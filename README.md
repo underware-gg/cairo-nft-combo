@@ -7,17 +7,27 @@ A Cairo component extending OpenZeppelin ERC-721 tokens.
 * Implements [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981): NFT Royalty Standard
 * Fully on-chain metadata renderer with `ERC721ComboHooksTrait`
 * New [ERC-721](https://eips.ethereum.org/EIPS/eip-721) extension `IERC721Minter`, including...
-  * Token ID counter
   * Sequential minting with `_mint_next()`
   * **Reserved** supply and minting, with `_mint_next_reserved()`
+  * Minting pause control with `_set_minting_paused()`
   * Max supply control (or infinite) with `max_supply()` and `minted_supply()`
   * Token availability with `available_supply()`
-  * Minting pause control
+  * Token ID counter with `last_token_id()`
 
 Next...
 
 * ERC-1155 combo
 * ERC-1155 example
+
+
+## Compatibility
+
+Major version is paired with OpenZeppelin version.
+
+|  | cairo-nft-combo | OpenZeppelin | Scarb | Branch |
+| --- | --- | --- | --- | --- |
+| Version | 1.2 | >=[1.0.0](https://github.com/OpenZeppelin/cairo-contracts/tree/release-v1.0.0) | >=2.13.1 | main |
+
 
 
 ## Contents
