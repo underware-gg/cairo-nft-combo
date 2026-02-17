@@ -1,0 +1,20 @@
+# cairo-nft-combo
+
+This repository contains a Cairo component for building NFT contracts on Starknet.
+It extends OpenZeppelin's ERC-721 implementation with additional features like:
+- Sequential minting
+- Max supply and reserved supply management
+- Pausable minting
+- Contract-level metadata (ERC-7572)
+- Metadata updates (ERC-4906)
+- Royalties (ERC-2981)
+
+## Documentation for Agents
+
+If you are an AI agent looking to integrate this package, please read:
+- [AGENTS.md](AGENTS.md): Detailed integration guide and examples.
+
+## Key Source Files
+
+- [erc721_combo.cairo](packages/nft_combo/src/erc721/erc721_combo.cairo): Main component implementation.
+- [interface.cairo](packages/nft_combo/src/common/interface.cairo): Interface definitions.
