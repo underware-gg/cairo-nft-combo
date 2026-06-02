@@ -2,15 +2,15 @@
 version = 1
 
 [[package]]
-name = "graffiti"
+name = "graffiti_rsodre"
 version = "0.1.0"
-source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea299ed556900564ff2"
+source = "git+https://github.com/rsodre/graffiti?rev=graffiti_rsodre#e82b61cf83f37e66063057301becee35f8fa64d7"
 
 [[package]]
 name = "nft_combo"
 version = "1.2.0"
 dependencies = [
- "graffiti",
+ "graffiti_rsodre",
  "openzeppelin",
 ]
 

@@ -6,7 +6,7 @@ edition.workspace = true
 [dependencies]
 starknet = ">=2.13.1"
 openzeppelin = ">=1.0.0"
-graffiti = { git = "https://github.com/rsodre/graffiti", rev = "url" }
+graffiti_rsodre = { git = "https://github.com/rsodre/graffiti", rev = "graffiti_rsodre" }
 
 [dev-dependencies]
 cairo_test = ">=2.13.1"

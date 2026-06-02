@@ -1,6 +1,6 @@
 use crate::utils::encoder::{Encoder};
 use starknet::{ContractAddress};
-pub use graffiti::json::{JsonBuilder, JsonImpl, Attribute};
+pub use graffiti_rsodre::json::{JsonBuilder, JsonImpl, Attribute};
 
 // Based on OpenSea metadata standards
 // https://docs.opensea.io/docs/metadata-standards#metadata-structure
